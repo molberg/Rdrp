@@ -1,0 +1,20 @@
+Package: Rdrp
+Type: Package
+Title: R based data reduction package
+Version: 0.1
+Date: 2015-10-19
+Author: Michael Olberg
+Maintainer: Michael Olberg <michael.olberg@chalmers.se>
+Description: An R-based version of DRP.
+License: GPL (>= 2)
+LazyData: TRUE
+Imports:
+    Rcpp (>= 0.12.1),
+    RcppArmadillo (>= 0.4.200.0),
+    FITSio
+LinkingTo:
+    Rcpp,
+    RcppArmadillo
+Depends:
+    RcppArmadillo,
+    FITSio
