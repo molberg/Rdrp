@@ -26,10 +26,7 @@ baseline <- function(ds, order=1, window=NULL) {
                    rms=sd(yb, na.rm=TRUE))
     }, ds, order, window)
     bl
-    fit <- lapply(bl,
-                   function(x) {
-                       as.numeric(x$fit)
-                   })
+    fit <- lapply(bl, function(x) { as.numeric(x$fit) })
     mat <- do.call(cbind, fit)
     coeffs <- do.call(rbind, lapply(bl, function(x) { x$coefficients }))
     colnames(coeffs) <- paste("c", seq(ncol(coeffs))-1, sep="")

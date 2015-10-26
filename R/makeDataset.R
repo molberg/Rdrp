@@ -50,13 +50,14 @@ getData <- function(L) {
 #' @param L a list of lists with components head, freq, data
 #' @return a list with components head (data.frame), freq (matrix) and data (matrix)
 #' @export
-makeDataset <- function(L) {
+createDataset <- function(L) {
     h <- getHead(L)
     h$target <- as.factor(h$target)
     h$line <- as.factor(h$line)
     f <- getFreq(L)
     d <- getData(L)
     sd = list(head=h, freq=f, data=d)
+    class(sd) <- "spectra"
     sd
 }
 
@@ -68,11 +69,12 @@ makeDataset <- function(L) {
 #' @param index the rows (columns) to pick
 #' @return an object of the same kind as ds, but only keeping given rows (columns)
 #' @export
-pick <- function(ds, index, drop.levels=FALSE) {
+pickSubset <- function(ds, index, drop.levels=FALSE) {
     h <- ds$head[index,]
     if (drop.levels) droplevels(h)
     f <- ds$freq[,index]
     d <- ds$data[,index]
     sd <- list(head=h, freq=f, data=d)
+    class(sd) <- "spectra"
     sd
 }

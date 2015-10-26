@@ -61,7 +61,6 @@ readOSO20m <- function(fitsfiles) {
                                  T.amb=T.amb, p.amb=p.amb, rel.hum=rel.hum,
                                  T.sys=T.sys, df=df, dt=dt, obs.date=tstamp)
                     sd <- list(head=head, freq=freq, data=data)
-                    class(sd) <- "spectrum"
                     sd
                 })
     L
@@ -108,7 +107,6 @@ readSALSA <- function(fitsfiles) {
                                  f0=f0, f1=f1, v.LSR=vs,
                                  dt=dt, obs.date=tstamp)
                     sd <- list(head=head, freq=freq, data=data)
-                    class(sd) <- "spectrum"
                     sd
                 })
     L

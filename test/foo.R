@@ -8,21 +8,17 @@ fake <- function(id) {
     list(head=head, freq=freq, data=data)
 }
 
-average <- function(L) {
-    w <- sapply(L, function(S) { S$head$dt/S$head$T.sys^2 })
+average <- function(ds) {
+    w <- ds$head$dt/ds$head$T.sys^2
     w <- w/sum(w)
-    data <- lapply(L, function(S) { as.numeric(S$data) })
-    mat <- do.call(cbind, data)
-    A <- apply(scale(mat, center=FALSE, scale=1/w), 1, sum)
+    A <- apply(scale(ds$data, center=FALSE, scale=1/w), 1, sum)
     A
 }
 
-average2 <- function(L) {
-    w <- sapply(L, function(s) { s$head$dt/s$head$T.sys^2 })
+average2 <- function(ds) {
+    w <- ds$head$dt/ds$head$T.sys^2
     w <- w/sum(w)
-    data <- lapply(L, function(s) { as.numeric(s$data) })
-    mat <- do.call(cbind, data)
-    y <- accum(mat, w)
+    y <- accum(ds$data, w)
     y
 }
 
@@ -33,8 +29,9 @@ cmd <- sprintf("find /precise/data/O2014a-07/%s -name '*s.fits' -exec grep -l %s
 print(cmd)
 fitsfiles = system(cmd, intern=TRUE)
 L <- Rdrp::readOSO20m(fitsfiles)
+ds <- createDataset(L)
 
-benchmark(x <- average(L), y <- average2(L))
+benchmark(x <- average(ds), y <- average2(ds))
 f <- L[[1]]$freq
 d <- L[[1]]$data
 plot(f, d, type='s', col='blue')
