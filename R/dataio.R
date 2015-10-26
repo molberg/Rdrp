@@ -10,7 +10,7 @@ lookup <- function(hdr, keyword) {
 }
 
 #' Turn FITS files into a list of spectra.
-#' 
+#'
 #' Take a FITS file for a single spectrum from the OSO 20m and return a spectrum
 #' (i.e. a list consisting of header, frequency and data vectors).
 #' @param fitsfiles file name(s) including path of FITS file(s) to convert
@@ -18,8 +18,8 @@ lookup <- function(hdr, keyword) {
 #' @export
 readOSO20m <- function(fitsfiles) {
     require(FITSio)
-    
-    L <- lapply(fitsfiles, 
+
+    L <- lapply(fitsfiles,
                 function(filename) {
                     f <- readFITS(file=filename, hdu = 1, phdu = 1)
                     even <- seq(2, length(f$hdr), by=2)
@@ -61,14 +61,14 @@ readOSO20m <- function(fitsfiles) {
                                  T.amb=T.amb, p.amb=p.amb, rel.hum=rel.hum,
                                  T.sys=T.sys, df=df, dt=dt, obs.date=tstamp)
                     sd <- list(head=head, freq=freq, data=data)
-                    ## class(sd) <- "spectra"
+                    class(sd) <- "spectrum"
                     sd
                 })
     L
 }
 
 #' Turn FITS files into a list of spectra.
-#' 
+#'
 #' Take a FITS file for a single spectrum from SALSA and return a spectrum
 #' (i.e. a list consisting of header, frequency and data vectors).
 #' @param fitsfiles file name(s) including path of FITS file(s) to convert
@@ -76,7 +76,7 @@ readOSO20m <- function(fitsfiles) {
 #' @export
 readSALSA <- function(fitsfiles) {
     require(FITSio)
-    
+
     L <- lapply(fitsfiles,
                 function(filename) {
                     id <- as.integer(gsub("[^0-9]", "", basename(filename)))
@@ -108,53 +108,8 @@ readSALSA <- function(fitsfiles) {
                                  f0=f0, f1=f1, v.LSR=vs,
                                  dt=dt, obs.date=tstamp)
                     sd <- list(head=head, freq=freq, data=data)
-                    ## class(sd) <- "spectra"
+                    class(sd) <- "spectrum"
                     sd
                 })
     L
-}
-
-## readHIFI
-## readCLASS
-readHIPEtable <- function(filename) {
-    hnames <- read.table(filename, sep=",", nrows=1)
-    types <- read.table(filename, sep=",", skip=1, nrows=1)
-    
-    nc <- ncol(hnames)
-    header <- apply(hnames, 1, as.character)
-    
-    ## translate variable types to the ones R knows about
-    cols <- rep("", nc)
-    cols[types == "Double"]  <- "numeric"
-    cols[types == "Long"]    <- "integer"
-    cols[types == "Integer"] <- "integer"
-    cols[types == "String"]  <- "character"
-    cols[types == "Boolean"] <- "logical"
-    
-    tbl <- read.table(filename, sep=",", skip=4, colClasses=cols)
-    names(tbl) <- header
-    tbl
-}
-
-readHIFIobs <- function(obsid, backend, dir=getwd()) {
-    ## construct file names based on obsid and backend
-    hfile <- paste(dir, "/", obsid, "-", backend, ".head", sep="")
-    dfile <- paste(dir, "/", obsid, "-", backend, ".data", sep="")
-    ffile <- paste(dir, "/", obsid, "-", backend, ".freq", sep="")
-    
-    head <- readHIPEtable(hfile)
-    head$BBID <- as.factor(head$BBID)
-    head$RxBand <- as.factor(head$RxBand)
-    head$backend <- as.factor(head$backend)
-    
-    ## get number of spectra
-    ns <- nrow(head)
-    
-    ## get data and frequency matrix
-    data <- read.table(dfile, sep=",", skip=4, colClasses=rep("numeric", ns))
-    freq <- read.table(ffile, sep=",", skip=4, colClasses=rep("numeric", ns))
-    
-    sd <- list(head=head, freq=freq, data=data)
-    class(sd) <- "spectra"
-    sd
 }

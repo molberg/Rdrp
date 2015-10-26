@@ -6,6 +6,18 @@
 
 using namespace Rcpp;
 
+// accum
+NumericVector accum(NumericMatrix D, NumericVector w);
+RcppExport SEXP Rdrp_accum(SEXP DSEXP, SEXP wSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< NumericMatrix >::type D(DSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type w(wSEXP);
+    __result = Rcpp::wrap(accum(D, w));
+    return __result;
+END_RCPP
+}
 // getScanNumber
 int getScanNumber(List ds);
 RcppExport SEXP Rdrp_getScanNumber(SEXP dsSEXP) {

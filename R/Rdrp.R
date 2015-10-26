@@ -1,28 +1,7 @@
 ## align
 
-#' Average spectra.
-#' 
-#' Average the spectra in the given dataset, using the vector of supplied weights.
-#' If weights = NA, calculate weights based on Tsys and integration time.
-#' @param ds dataset to be averaged
-#' @param w weights to be used
-#' @return a dataset consisting of a single, averaged spectrum.
-#' @export
-average <- function(ds, w=NA) {
-    if (is.na(w)) w <- ds$head$dt/ds$head$T.sys^2
-    w <- w/sum(w)
-    h <- ds$head[1,]
-    h$dt <- sum(ds$head$dt*(300/ds$head$T.sys)^2)
-    h$T.sys <- 300.0
-    f <- ds$freq[,1]
-    d <- apply(scale(ds$data, center=FALSE, scale=1/w), 1, sum)
-    sd <- list(head=h, freq=as.matrix(f), data=as.matrix(d))
-    class(sd) <- "spectra"
-    sd
-}
-
 #' Fit a baseline to spectra in a dataset
-#' 
+#'
 #' For all spectra in a dataset fit a polynomial of given order, using only the
 #' spectral channels given in window.
 #' @param ds a dataset
@@ -42,7 +21,7 @@ baseline <- function(ds, order=1, window=NULL) {
             yb <- ds$data[window,i]
         }
         fit <- lm(yb ~ poly(xb, order, raw=TRUE))
-        bl <- list(fit=predict(fit, newdata=data.frame(xb=x)), 
+        bl <- list(fit=predict(fit, newdata=data.frame(xb=x)),
                    coefficients=fit$coefficients,
                    rms=sd(yb, na.rm=TRUE))
     }, ds, order, window)
@@ -59,7 +38,7 @@ baseline <- function(ds, order=1, window=NULL) {
 }
 
 #' Clip channels from spectra
-#' 
+#'
 #' Given a vector of channel numbers, only keep those channels from both the frequency
 #' and data matrices.
 #' @param ds a datase
