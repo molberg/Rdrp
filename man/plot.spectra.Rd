@@ -10,6 +10,6 @@
 \item{ds}{a dataset}
 }
 \description{
-Plot all spectra in a dataset using matplot.
+Plot all spectra in a dataset using matplot or a grid of plots.
 }
 

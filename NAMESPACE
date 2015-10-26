@@ -5,6 +5,7 @@ importFrom(Rcpp, evalCpp)
 
 S3method(plot,spectra)
 S3method(print,spectra)
+S3method(summary,spectra)
 export(baseline)
 export(clipChannels)
 export(getHead)

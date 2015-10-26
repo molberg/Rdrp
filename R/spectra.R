@@ -1,5 +1,5 @@
 #' Print method for class spectra.
-#' 
+#'
 #' Simply print the header (data.frame) part of the spectra.
 #' @param ds a dataset
 #' @export
@@ -8,8 +8,8 @@ print.spectra <- function(ds, ...) {
 }
 
 #' Plot method for class spectra.
-#' 
-#' Plot all spectra in a dataset using matplot.
+#'
+#' Plot all spectra in a dataset using matplot or a grid of plots.
 #' @param ds a dataset
 #' @export
 plot.spectra <- function(ds, index=seq(ncol(ds$data)), grid=NULL) {
@@ -20,7 +20,7 @@ plot.spectra <- function(ds, index=seq(ncol(ds$data)), grid=NULL) {
     } else {
         oldpar <- par(mfrow=grid, mar=c(2,2,1,1))
         for (i in index) {
-            plot(ds$freq[,i], ds$data[,i], type='l', col='blue', 
+            plot(ds$freq[,i], ds$data[,i], type='l', col='blue',
                  xlab="", ylab="")
             mtext(ds$head$target[i], 3, -2, adj=0.02)
         }
@@ -28,8 +28,15 @@ plot.spectra <- function(ds, index=seq(ncol(ds$data)), grid=NULL) {
     }
 }
 
-summary.spectra <- function(object, ...) {
-    list(header=summary(object$head), data=summary(object$data))
+#' Summary method for class spectra.
+#'
+#' Produce summary for all spectra in a dataset.
+#' @param ds a dataset
+#' @export
+summary.spectra <- function(ds, ...) {
+    foo <- data.frame(freq=as.numeric(ds$freq),
+                      data=as.numeric(ds$data))
+    list(header=summary(ds$head), stats=summary(foo))
 }
 
 positions <- function(sd, pch=1, col='blue') {
