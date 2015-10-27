@@ -1,5 +1,40 @@
 ## align
 
+#' Average spectra in a dataset
+#'
+#' Calculate a weighted sum of all spectra in a dataset.
+#' @param ds a dataset
+#' @return a new dataset with the averaged spectrum as the only entry
+#' @export
+average <- function(ds) {
+    # perform checks
+    tol <- drp.options$position.tolerance # 1.0 arcsec
+    if (sd(ds$head$RA) > tol | sd(ds$head$Dec) > tol) {
+        warning("position mismatch")
+    }
+    tol <- drp.options$frequency.tolerance/1.0e6 # MHz
+    if (sd(apply(ds$freq, 1, sd)) > tol) {
+        warning("frequency mismatch")
+    }
+    w <- ds$head$dt/ds$head$T.sys^2
+    w <- w/sum(w)
+    # new header has integration time normalized to 300 K Tsys
+    h <- ds$head[1,]
+    h$dt <- sum(ds$head$dt*(300/ds$head$T.sys)^2)
+    h$T.sys <- 300.0
+    names(h)[names(h) == "observed.date"] <- "reduced.date"
+    h$reduced.date <- Sys.time()
+    # use the first frequency vector
+    f <- ds$freq[,1]
+    # now calculate average
+    # d <- apply(scale(ds$data, center=FALSE, scale=1/w), 1, sum)
+    # Rcpp version
+    d <- accum(ds$data, w)
+    sd <- list(head=h, freq=as.matrix(f), data=as.matrix(d))
+    class(sd) <- "spectra"
+    sd
+}
+
 #' Fit a baseline to spectra in a dataset
 #'
 #' For all spectra in a dataset fit a polynomial of given order, using only the

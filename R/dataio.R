@@ -59,7 +59,7 @@ readOSO20m <- function(fitsfiles) {
                                  RA=RA, Dec=Dec, Az=Az, El=El,
                                  f0=f0, v.LSR=vs, eta.mb=eta.mb,
                                  T.amb=T.amb, p.amb=p.amb, rel.hum=rel.hum,
-                                 T.sys=T.sys, df=df, dt=dt, obs.date=tstamp)
+                                 T.sys=T.sys, df=df, dt=dt, observed.date=tstamp)
                     sd <- list(head=head, freq=freq, data=data)
                     sd
                 })
@@ -105,7 +105,7 @@ readSALSA <- function(fitsfiles) {
                     head <- list(id=id, target=target, line="21cm",
                                  LII=onx, BII=ony,
                                  f0=f0, f1=f1, v.LSR=vs,
-                                 dt=dt, obs.date=tstamp)
+                                 dt=dt, observed.date=tstamp)
                     sd <- list(head=head, freq=freq, data=data)
                     sd
                 })
