@@ -144,10 +144,7 @@ DataFrame getHead(List L) {
 
     /* So now we have all the headers in list H */
     H.attr("names") = names;
-    /* turn H into a dataframe */
-    Language call("as.data.frame", H);
-    DataFrame DF = call.eval();
-    return DF;
+    return DataFrame(H);
 }
 
 //' Get frequency vectors
