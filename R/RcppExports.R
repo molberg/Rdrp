@@ -5,6 +5,103 @@ accum <- function(D, w) {
     .Call('Rdrp_accum', PACKAGE = 'Rdrp', D, w)
 }
 
+#' Get header data.
+#'
+#' Given a list L, where each list member is itself a list with components 'head' (which is a list
+#' or a dataframe with one row), 'freq' (a numeric vector) and 'data' (another numeric vector of same
+#' length as freq), return a dataframe for the header information, with as many rows as the length
+#' of the original list.
+#'
+#' @param L a list of spectra (each with components 'head', 'freq' and 'data')
+#' @return a data.frame having all the individual headers as rows
+#' @examples
+#' S1 <- list(head=list(target="Orion", ra=1.23, dec=-0.5, dt=as.integer(20)), freq=-5:5, data=rnorm(11))
+#' S2 <- list(head=list(target="SgrB2", ra=5.43, dec=+0.5, dt=as.integer(20)), freq=-5:5, data=rnorm(11))
+#'
+#' getHead(list(S1,S2))
+#'
+#' will result in
+#'
+#'   target   ra  dec dt
+#' 1  Orion 1.23 -0.5 20
+#' 2  SgrB2 5.43  0.5 20
+#'
+getHead <- function(L) {
+    .Call('Rdrp_getHead', PACKAGE = 'Rdrp', L)
+}
+
+#' Get frequency vectors
+#'
+#' From a list of spectra, get the frequency vectors and return as matrix.
+#' @param L a list of spectra (each with components 'head', 'freq' and 'data')
+#' @return a matrix having all the frequency vectors as columns
+getFreq <- function(L) {
+    .Call('Rdrp_getFreq', PACKAGE = 'Rdrp', L)
+}
+
+#' Get data vectors
+#'
+#' From a list of spectra, get the data vectors and return as matrix.
+#' @param L a list of spectra (each with components 'head', 'freq' and 'data')
+#' @return a matrix having all the data vectors as columns
+getData <- function(L) {
+    .Call('Rdrp_getData', PACKAGE = 'Rdrp', L)
+}
+
+#' Get dimensions
+#'
+#' From a list of spectra, get the dimensions of the data.
+#' @param L a list of spectra (each with components 'head', 'freq' and 'data')
+#' @return a two component integer vector (nChannels, nSpectra)
+getDimension <- function(L) {
+    .Call('Rdrp_getDimension', PACKAGE = 'Rdrp', L)
+}
+
+#' Get subset
+#'
+#' From a list of spectra, get the subset which is described by an index vector.
+#' @param L a list of spectra (each with components 'head', 'freq' and 'data')
+#' @param index an integer vector holding the indices of the spectra to retrieve
+#' @return the requested subset of spectra returned as a list
+getSubset <- function(L, index) {
+    .Call('Rdrp_getSubset', PACKAGE = 'Rdrp', L, index)
+}
+
+#' Calculate average spectrum
+#'
+#' From a list of spectra, calculate the average spectrum where the weighting is
+#' done using system temperature and integration times of the headers.
+#'
+#' @param L a list of spectra (each with components 'head', 'freq' and 'data')
+#' @return the average spectrum
+average <- function(L) {
+    .Call('Rdrp_average', PACKAGE = 'Rdrp', L)
+}
+
+modify <- function(L, column, value) {
+    invisible(.Call('Rdrp_modify', PACKAGE = 'Rdrp', L, column, value))
+}
+
+addColumns <- function(L, newnames) {
+    invisible(.Call('Rdrp_addColumns', PACKAGE = 'Rdrp', L, newnames))
+}
+
+foo <- function(S) {
+    .Call('Rdrp_foo', PACKAGE = 'Rdrp', S)
+}
+
+#' Clip channels from spectra
+#'
+#' Given a single spectrum and a vector of channel numbers, clip the spectrum such that
+#' only the given channels are kept in the frequency and data vectors.
+#'
+#' @param S a single spectrum
+#' @param keep a vector holding the channel numbers to keep
+#' @return the clipped spectrum
+clip <- function(S, keep) {
+    .Call('Rdrp_clip', PACKAGE = 'Rdrp', S, keep)
+}
+
 getScanNumber <- function(ds) {
     .Call('Rdrp_getScanNumber', PACKAGE = 'Rdrp', ds)
 }

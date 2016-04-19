@@ -25,7 +25,7 @@ readOSO20m <- function(fitsfiles) {
                     even <- seq(2, length(f$hdr), by=2)
                     odd <- even-1
                     hdr <- data.frame(key=f$hdr[odd], value=f$hdr[even], stringsAsFactors=FALSE)
-                    data <- f$imDat
+                    data <- as.numeric(f$imDat)
                     f0 <- f$axDat$crval[1]/1.0e6
                     f.rest <- as.numeric(lookup(hdr, "RESTFREQ"))/1.0e6
                     if (f0 == 0.0 & is.numeric(f.rest)) {
@@ -33,12 +33,19 @@ readOSO20m <- function(fitsfiles) {
                     }
                     RA <- f$axDat$crval[2]
                     Dec <- f$axDat$crval[3]
+                    offx <- f$axDat$cdelt[2]
+                    offy <- f$axDat$cdelt[3]
                     freq <- f0+f$axDat$cdelt[1]*(seq(f$axDat$len[1])-f$axDat$crpix[1])/1.0e6
                     id <- as.integer(lookup(hdr, "SCAN-NUM"))
                     dt <- as.double(lookup(hdr, "OBSTIME"))
                     target <- lookup(hdr, "OBJECT")
                     #f1 <- as.numeric(as.double(lookup(hdr, "IMAGFREQ")))
                     df <- as.double(lookup(hdr, "CDELT1"))/1.0e6
+                    if (df < 0.0) {
+                        df <- -df
+                        freq <- rev(freq)
+                        data <- rev(data)
+                    }
                     vs <- as.double(lookup(hdr, "VELO-LSR"))/1.0e3
                     T.sys <- as.double(lookup(hdr, "TSYS"))
                     T.rec <- as.double(lookup(hdr, "TREC"))
@@ -52,21 +59,23 @@ readOSO20m <- function(fitsfiles) {
                     if (nchar(date) == 10) {
                         date <- paste(date, lookup(hdr, "UTC"), sep="T")
                     }
-                    tstamp <- as.POSIXlt(date, format="%Y-%m-%dT%H:%M:%S")
+                    # tstamp <- as.POSIXlt(date, format="%Y-%m-%dT%H:%M:%S")
                     Az <- as.double(lookup(hdr, "AZIMUTH"))
                     El <- as.double(lookup(hdr, "ELEVATIO"))
                     head <- list(id=id, target=target, line=line,
-                                 RA=RA, Dec=Dec, Az=Az, El=El,
+                                 RA=RA, Dec=Dec, offx=offx, offy=offy, Az=Az, El=El,
                                  f0=f0, v.LSR=vs, eta.mb=eta.mb,
                                  T.amb=T.amb, p.amb=p.amb, rel.hum=rel.hum,
-                                 T.sys=T.sys, df=df, dt=dt, observed.date=tstamp)
+                                 T.sys=T.sys, df=df, dt=dt, observed.date=date)
                     sd <- list(head=head, freq=freq, data=data)
+                    class(sd) <- "spectrum"
                     sd
                 })
+    class(L) <- "spectra"
     L
 }
 
-#' Turn FITS files into a list of spectra.
+#' Read a FITS file from the SALSA telescope..
 #'
 #' Take a FITS file for a single spectrum from SALSA and return a spectrum
 #' (i.e. a list consisting of header, frequency and data vectors).
@@ -88,8 +97,9 @@ readSALSA <- function(fitsfiles) {
                     if (is.na(bzero)) bzero <- 0.0
                     bscale <- as.double(lookup(hdr, "BSCALE"))
                     if (is.na(bscale)) bscale <- 1.0
-                    data <- f$imDat*bscale + bzero
+                    data <- as.numeric(f$imDat*bscale + bzero)
                     target <- lookup(hdr, "OBJECT")
+                    if (is.na(target)) target = "unknown"
                     onx <- as.double(lookup(hdr, "CRVAL2"))
                     ony <- as.double(lookup(hdr, "CRVAL3"))
                     dt <- as.double(lookup(hdr, "OBSTIME"))
@@ -101,13 +111,15 @@ readSALSA <- function(fitsfiles) {
                     if (is.na(vs)) vs <- as.double(lookup(hdr, "VELO-LSR"))
                     tsys <- as.double(lookup(hdr, "TSYS"))
                     date <- lookup(hdr, "DATE-OBS")
-                    tstamp <- as.POSIXlt(sub("T", " ", date))
+                    # tstamp <- as.POSIXlt(date, format="%Y-%m-%dT%H:%M:%S")
                     head <- list(id=id, target=target, line="21cm",
                                  LII=onx, BII=ony,
                                  f0=f0, f1=f1, v.LSR=vs,
-                                 dt=dt, observed.date=tstamp)
+                                 dt=dt, observed.date=date)
                     sd <- list(head=head, freq=freq, data=data)
+                    class(sd) <- "spectrum"
                     sd
                 })
+    class(L) <- "spectra"
     L
 }

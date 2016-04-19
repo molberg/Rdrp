@@ -4,10 +4,10 @@
 \alias{plot.spectra}
 \title{Plot method for class spectra.}
 \usage{
-\method{plot}{spectra}(ds, index = seq(ncol(ds$data)), grid = NULL)
+\method{plot}{spectra}(L, index = seq(ncol(ds$data)), grid = NULL)
 }
 \arguments{
-\item{ds}{a dataset}
+\item{L}{a list of spectra}
 }
 \description{
 Plot all spectra in a dataset using matplot or a grid of plots.

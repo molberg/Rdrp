@@ -2,7 +2,7 @@
 % Please edit documentation in R/dataio.R
 \name{readSALSA}
 \alias{readSALSA}
-\title{Turn FITS files into a list of spectra.}
+\title{Read a FITS file from the SALSA telescope..}
 \usage{
 readSALSA(fitsfiles)
 }

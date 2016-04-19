@@ -4,10 +4,10 @@
 \alias{print.spectra}
 \title{Print method for class spectra.}
 \usage{
-\method{print}{spectra}(ds, ...)
+\method{print}{spectra}(L, ...)
 }
 \arguments{
-\item{ds}{a dataset}
+\item{L}{a list of spectra}
 }
 \description{
 Simply print the header (data.frame) part of the spectra.

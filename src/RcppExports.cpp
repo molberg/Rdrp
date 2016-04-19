@@ -18,6 +18,119 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// getHead
+DataFrame getHead(List L);
+RcppExport SEXP Rdrp_getHead(SEXP LSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< List >::type L(LSEXP);
+    __result = Rcpp::wrap(getHead(L));
+    return __result;
+END_RCPP
+}
+// getFreq
+NumericMatrix getFreq(List L);
+RcppExport SEXP Rdrp_getFreq(SEXP LSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< List >::type L(LSEXP);
+    __result = Rcpp::wrap(getFreq(L));
+    return __result;
+END_RCPP
+}
+// getData
+NumericMatrix getData(List L);
+RcppExport SEXP Rdrp_getData(SEXP LSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< List >::type L(LSEXP);
+    __result = Rcpp::wrap(getData(L));
+    return __result;
+END_RCPP
+}
+// getDimension
+IntegerVector getDimension(List L);
+RcppExport SEXP Rdrp_getDimension(SEXP LSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< List >::type L(LSEXP);
+    __result = Rcpp::wrap(getDimension(L));
+    return __result;
+END_RCPP
+}
+// getSubset
+List getSubset(List L, IntegerVector index);
+RcppExport SEXP Rdrp_getSubset(SEXP LSEXP, SEXP indexSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< List >::type L(LSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type index(indexSEXP);
+    __result = Rcpp::wrap(getSubset(L, index));
+    return __result;
+END_RCPP
+}
+// average
+List average(List L);
+RcppExport SEXP Rdrp_average(SEXP LSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< List >::type L(LSEXP);
+    __result = Rcpp::wrap(average(L));
+    return __result;
+END_RCPP
+}
+// modify
+void modify(List L, std::string column, SEXP value);
+RcppExport SEXP Rdrp_modify(SEXP LSEXP, SEXP columnSEXP, SEXP valueSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< List >::type L(LSEXP);
+    Rcpp::traits::input_parameter< std::string >::type column(columnSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type value(valueSEXP);
+    modify(L, column, value);
+    return R_NilValue;
+END_RCPP
+}
+// addColumns
+void addColumns(List L, CharacterVector newnames);
+RcppExport SEXP Rdrp_addColumns(SEXP LSEXP, SEXP newnamesSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< List >::type L(LSEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type newnames(newnamesSEXP);
+    addColumns(L, newnames);
+    return R_NilValue;
+END_RCPP
+}
+// foo
+List foo(List S);
+RcppExport SEXP Rdrp_foo(SEXP SSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< List >::type S(SSEXP);
+    __result = Rcpp::wrap(foo(S));
+    return __result;
+END_RCPP
+}
+// clip
+List clip(List S, IntegerVector keep);
+RcppExport SEXP Rdrp_clip(SEXP SSEXP, SEXP keepSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< List >::type S(SSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type keep(keepSEXP);
+    __result = Rcpp::wrap(clip(S, keep));
+    return __result;
+END_RCPP
+}
 // getScanNumber
 int getScanNumber(List ds);
 RcppExport SEXP Rdrp_getScanNumber(SEXP dsSEXP) {

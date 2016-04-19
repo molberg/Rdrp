@@ -4,17 +4,15 @@
 \alias{baseline}
 \title{Fit a baseline to spectra in a dataset}
 \usage{
-baseline(ds, order = 1, window = NULL)
+baseline(s, order = 1)
 }
 \arguments{
-\item{ds}{a dataset}
+\item{s}{a single spectrum}
 
 \item{order}{the order of the polynomial to fit}
-
-\item{window}{if given, a logical vector with TRUE for channels to be used}
 }
 \value{
-a list of fitted baselines
+the fitted baselines
 }
 \description{
 For all spectra in a dataset fit a polynomial of given order, using only the

@@ -4,10 +4,14 @@
 \alias{velocity}
 \title{Calculate velocity vectors}
 \usage{
-velocity(ds)
+velocity(f, f0, vs)
 }
 \arguments{
-\item{ds}{dataset for which velocities will be calculated}
+\item{f}{a matrix of frequency vectors for which velocities will be calculated}
+
+\item{f0}{the rest frequency in the same units as f}
+
+\item{vs}{the source velocity in km/s}
 }
 \value{
 vel a matrix with one velocity vector per column
