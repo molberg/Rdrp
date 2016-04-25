@@ -6,6 +6,18 @@
 
 using namespace Rcpp;
 
+// accum
+NumericVector accum(NumericMatrix D, NumericVector w);
+RcppExport SEXP Rdrp_accum(SEXP DSEXP, SEXP wSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< NumericMatrix >::type D(DSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type w(wSEXP);
+    __result = Rcpp::wrap(accum(D, w));
+    return __result;
+END_RCPP
+}
 // getHead
 DataFrame getHead(List L);
 RcppExport SEXP Rdrp_getHead(SEXP LSEXP) {
@@ -25,6 +37,28 @@ BEGIN_RCPP
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< List >::type L(LSEXP);
     __result = Rcpp::wrap(getFreq(L));
+    return __result;
+END_RCPP
+}
+// velocity
+NumericVector velocity(List S);
+RcppExport SEXP Rdrp_velocity(SEXP SSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< List >::type S(SSEXP);
+    __result = Rcpp::wrap(velocity(S));
+    return __result;
+END_RCPP
+}
+// getVelo
+NumericMatrix getVelo(List L);
+RcppExport SEXP Rdrp_getVelo(SEXP LSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< List >::type L(LSEXP);
+    __result = Rcpp::wrap(getVelo(L));
     return __result;
 END_RCPP
 }
@@ -96,6 +130,17 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// bar
+SEXP bar(StringVector which);
+RcppExport SEXP Rdrp_bar(SEXP whichSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< StringVector >::type which(whichSEXP);
+    __result = Rcpp::wrap(bar(which));
+    return __result;
+END_RCPP
+}
 // foo
 List foo(List S);
 RcppExport SEXP Rdrp_foo(SEXP SSEXP) {
@@ -107,26 +152,63 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
-// clip
-List clip(List S, IntegerVector keep);
-RcppExport SEXP Rdrp_clip(SEXP SSEXP, SEXP keepSEXP) {
+// area
+double area(List S, LogicalVector mask);
+RcppExport SEXP Rdrp_area(SEXP SSEXP, SEXP maskSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< List >::type S(SSEXP);
+    Rcpp::traits::input_parameter< LogicalVector >::type mask(maskSEXP);
+    __result = Rcpp::wrap(area(S, mask));
+    return __result;
+END_RCPP
+}
+// trim
+List trim(List S, IntegerVector keep);
+RcppExport SEXP Rdrp_trim(SEXP SSEXP, SEXP keepSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< List >::type S(SSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type keep(keepSEXP);
-    __result = Rcpp::wrap(clip(S, keep));
+    __result = Rcpp::wrap(trim(S, keep));
     return __result;
 END_RCPP
 }
-// getScanNumber
-int getScanNumber(List ds);
-RcppExport SEXP Rdrp_getScanNumber(SEXP dsSEXP) {
+// filter
+List filter(List S, NumericVector coeffs);
+RcppExport SEXP Rdrp_filter(SEXP SSEXP, SEXP coeffsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< List >::type ds(dsSEXP);
-    __result = Rcpp::wrap(getScanNumber(ds));
+    Rcpp::traits::input_parameter< List >::type S(SSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type coeffs(coeffsSEXP);
+    __result = Rcpp::wrap(filter(S, coeffs));
+    return __result;
+END_RCPP
+}
+// resample
+List resample(List S, NumericVector freq1);
+RcppExport SEXP Rdrp_resample(SEXP SSEXP, SEXP freq1SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< List >::type S(SSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type freq1(freq1SEXP);
+    __result = Rcpp::wrap(resample(S, freq1));
+    return __result;
+END_RCPP
+}
+// mask
+LogicalVector mask(List S, NumericVector limits);
+RcppExport SEXP Rdrp_mask(SEXP SSEXP, SEXP limitsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< List >::type S(SSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type limits(limitsSEXP);
+    __result = Rcpp::wrap(mask(S, limits));
     return __result;
 END_RCPP
 }
@@ -138,6 +220,17 @@ BEGIN_RCPP
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< int >::type n(nSEXP);
     __result = Rcpp::wrap(getZeros(n));
+    return __result;
+END_RCPP
+}
+// fooData
+arma::mat fooData(Rcpp::List L);
+RcppExport SEXP Rdrp_fooData(SEXP LSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< Rcpp::List >::type L(LSEXP);
+    __result = Rcpp::wrap(fooData(L));
     return __result;
 END_RCPP
 }

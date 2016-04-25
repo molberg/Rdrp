@@ -2,12 +2,14 @@
 % Please edit documentation in R/spectra.R
 \name{print.spectra}
 \alias{print.spectra}
-\title{Print method for class spectra.}
+\title{Print method for class spectra}
 \usage{
-\method{print}{spectra}(L, ...)
+\method{print}{spectra}(x, ...)
 }
 \arguments{
-\item{L}{a list of spectra}
+\item{x}{a list of spectra}
+
+\item{...}{further arguments to be passed to generic function print}
 }
 \description{
 Simply print the header (data.frame) part of the spectra.

@@ -17,11 +17,9 @@ lookup <- function(hdr, keyword) {
 #' @return a list of lists with components head, freq and data
 #' @export
 readOSO20m <- function(fitsfiles) {
-    require(FITSio)
-
     L <- lapply(fitsfiles,
                 function(filename) {
-                    f <- readFITS(file=filename, hdu = 1, phdu = 1)
+                    f <- FITSio::readFITS(file=filename, hdu = 1, phdu = 1)
                     even <- seq(2, length(f$hdr), by=2)
                     odd <- even-1
                     hdr <- data.frame(key=f$hdr[odd], value=f$hdr[even], stringsAsFactors=FALSE)
@@ -83,12 +81,10 @@ readOSO20m <- function(fitsfiles) {
 #' @return a list of lists with components head, freq and data
 #' @export
 readSALSA <- function(fitsfiles) {
-    require(FITSio)
-
     L <- lapply(fitsfiles,
                 function(filename) {
                     id <- as.integer(gsub("[^0-9]", "", basename(filename)))
-                    f <- readFITS(file=filename, hdu = 1, phdu = 1)
+                    f <- FITSio::readFITS(file=filename, hdu = 1, phdu = 1)
                     even <- seq(2, length(f$hdr), by=2)
                     odd <- even-1
                     hdr <- data.frame(key=f$hdr[odd], value=f$hdr[even], stringsAsFactors=FALSE)

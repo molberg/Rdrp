@@ -1,5 +1,15 @@
-library(Rcpp)
-library(rbenchmark)
+#library(Rcpp)
+#library(rbenchmark)
+
+gauss <- function() {
+    head <- data.frame(id=1234, target='foo', line=NA, RA=0.0, Dec=0.0, T.sys=300.0, dt=10.0, f0 = 1421.0)
+    freq <-  -200:200*0.01
+    data <-  exp(-(freq^2/0.5))+rnorm(length(freq), sd=0.02)
+    freq <- freq+1421.0
+    G <- list(head=head, freq=freq, data=data)
+    class(G) <- "spectrum"
+    G
+}
 
 fake <- function(id) {
     head <- data.frame(id=id, target='foo', line=NA, RA=0.0, Dec=0.0, T.sys=300.0+id, dt=10.0+id)
@@ -43,11 +53,13 @@ average2 <- function(ds) {
 #plot(A)
 #print(A)
 
-S <- list()
+L <- list()
 for (i in seq(20)) {
-    S[[i]] <- fake(i)
-    plot(S[[i]]$freq, S[[i]]$data, type='s', col='blue')
+    L[[i]] <- fake(i)
 }
-ds <- createDataset(S)
-print(ds$head)
-print(drapply(ds))
+
+G <- gauss()
+plot(G, type='s') #, xlim=c(1420.5,1421.5))
+F <- seq(min(G$freq), max(G$freq), length.out = length(G$freq)-199)
+H = resample(G, F)
+points(H$freq, H$data, type='b', col='red')

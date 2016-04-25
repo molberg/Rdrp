@@ -10,13 +10,18 @@ getHead(L)
 \item{L}{a list of spectra (each with components 'head', 'freq' and 'data')}
 }
 \value{
-a data.frame having all the individual headers as rows
+a data.frame formed by row-binding all the individual 'head'ers
 }
 \description{
-Given a list L, where each list member is itself a list with components 'head' (which is a list
-or a dataframe with one row), 'freq' (a numeric vector) and 'data' (another numeric vector of same
-length as freq), return a dataframe for the header information, with as many rows as the length
-of the original list.
+Given a list L, where each list member is itself a list with
+components 'head' (which is a list or a dataframe with one row),
+'freq' (a numeric vector) and 'data' (another numeric vector of same
+length as freq), return all the 'head'components as a dataframe,
+which will have as many rows as the length of the original list.
+}
+\details{
+It is assumed that all 'head' components have the same number of
+members with identical names and types.
 }
 \examples{
 S1 <- list(head=list(target="Orion", ra=1.23, dec=-0.5, dt=as.integer(20)), freq=-5:5, data=rnorm(11))
@@ -24,10 +29,10 @@ S2 <- list(head=list(target="SgrB2", ra=5.43, dec=+0.5, dt=as.integer(20)), freq
 
 getHead(list(S1,S2))
 
-will result in
+# will result in
 
-  target   ra  dec dt
-1  Orion 1.23 -0.5 20
-2  SgrB2 5.43  0.5 20
+#   target   ra  dec dt
+# 1  Orion 1.23 -0.5 20
+# 2  SgrB2 5.43  0.5 20
 }
 

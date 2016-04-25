@@ -2,12 +2,16 @@
 % Please edit documentation in R/spectra.R
 \name{plot.spectra}
 \alias{plot.spectra}
-\title{Plot method for class spectra.}
+\title{Plot method for class spectra}
 \usage{
-\method{plot}{spectra}(L, index = seq(ncol(ds$data)), grid = NULL)
+\method{plot}{spectra}(x, ..., grid = NULL)
 }
 \arguments{
-\item{L}{a list of spectra}
+\item{x}{a list of spectra}
+
+\item{...}{further arguments to be passed to generic function plot}
+
+\item{grid}{specify grid (nrow x ncol) on which to organize spectra}
 }
 \description{
 Plot all spectra in a dataset using matplot or a grid of plots.

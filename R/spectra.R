@@ -1,64 +1,68 @@
-#' Print method for class spectra.
+drp.options <- NULL
+
+#' Print method for class spectrum
 #'
-#' Simply print the header (data.frame) part of the spectra.
-#' @param L a list of spectra
+#' Simply print the header part of the spectrum.
+#' @param x a single spectrum
+#' @param ... further arguments to be passed to generic function print
 #' @export
-print.spectra <- function(L, ...) {
-    print(getHead(L))
+print.spectrum <- function(x, ...) {
+    print(as.data.frame(x$head))
+    print(head(cbind(x$freq, x$data)))
+    print(tail(cbind(x$freq, x$data)))
 }
 
-#' Plot method for class spectra.
+#' Print method for class spectra
+#'
+#' Simply print the header (data.frame) part of the spectra.
+#' @param x a list of spectra
+#' @param ... further arguments to be passed to generic function print
+#' @export
+print.spectra <- function(x, ...) {
+    print(getHead(x))
+}
+
+#' Plot method for class spectrum
+#'
+#' Plot a single spectrum.
+#' @param x a single spectrum
+#' @param ... further arguments to be passed to generic function plot
+#' @export
+plot.spectrum <- function(x, ...) {
+    freq <- x$freq
+    data <- x$data
+    print(drp.options$system)
+    if (drp.options$system == "velocity") {
+        vel = velocity(x)
+        plot(vel, data, ...)
+    } else {
+        plot(freq, data, ...)
+    }
+    mtext(paste(x$head$id, x$head$target), 3, 1, adj=0.01)
+}
+
+#' Plot method for class spectra
 #'
 #' Plot all spectra in a dataset using matplot or a grid of plots.
-#' @param L a list of spectra
+#' @param x a list of spectra
+#' @param ... further arguments to be passed to generic function plot
+#' @param grid specify grid (nrow x ncol) on which to organize spectra
 #' @export
-plot.spectra <- function(L, index=seq(ncol(ds$data)), grid=NULL) {
-    head <- getHead(L)
-    x <- getFreq(L)
-    y <- getData(L)
+plot.spectra <- function(x, ..., grid=NULL) {
+    head <- getHead(x)
+    freq <- getFreq(x)
+    data <- getData(x)
     if (drp.options$system == "velocity") {
-        x <- velocity(x, head$f0, head$v.LSR)
+        freq = getVelo(x)
     }
     if (is.null(grid)) {
-        matplot(x[,index], y[,index], type='l', lty=1, xlab="", ylab="")
+        matplot(freq, data, type='l', lty=1, xlab="", ylab="", ...)
     } else {
-        oldpar <- par(mfrow=grid, mar=c(2,2,1,1))
-        for (i in index) {
-            plot(x[,i], y[,i], type='l', col='blue', xlab="", ylab="")
-            if ("mask" %in% names(ds)) {
-                j <- ds$mask[,i]
-                lines(x[j,i], y[j,i], col='green')
-            }
-            mtext(head$target[i], 3, -2, adj=0.02)
+        oldpar <- par(mfrow=grid, mar=c(0,0,0,0), oma=c(2,2,2,2))
+        for (i in seq(nrow(head))) {
+            plot(freq[,i], data[,i], type='l', col='blue', xaxt='n', yaxt='n', xlab="", ylab="", ...)
+            # mtext(head$target[i], 3, -2, adj=0.02)
         }
         par(oldpar)
     }
-}
-
-positions <- function(lon, lat, pch=1, col='blue') {
-    proj <- cos(mean(lat, na.rm=TRUE)*pi/180)
-    plot(lon, lat, type='p', pch=pch, col=col, asp=1/proj)
-    grid()
-}
-
-stamp <- function(L) {
-    op <- par(mar=c(0.0,0.0,0.0,0.0), oma=c(3,3,3,3))
-    ns <- length(L)
-    nx <- floor(sqrt(ns))
-    ny <- nx
-    while (nx*ny < ns) {
-        nx <- nx+1
-    }
-    freq <- getFreq(L)
-    data <- getData(L)
-
-    par(mfrow=c(ny, nx))
-    ymin=min(data, na.rm=TRUE)
-    ymax=max(data, na.rm=TRUE)
-    for (i in seq(ns)) {
-        plot(freq[,i], data[,i], type='l', col='blue',
-             ylim=c(ymin,ymax), xaxt='n', yaxt='n', xlab="", ylab="")
-    }
-    par(mfrow=c(1, 1))
-    par(op)
 }
