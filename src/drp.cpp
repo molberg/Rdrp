@@ -364,6 +364,10 @@ List average(List L) {
         stop(error);
     }
 
+    List head1 = clone(head0);
+    NumericVector freq1 = clone(freq1);
+    NumericVector data1 = clone(data1);
+
     double dt = 1.0;
     if (head0.containsElementNamed("dt")) dt = as<double>(head0["dt"]);
 
@@ -373,7 +377,7 @@ List average(List L) {
     double w = dt/(Tsys*Tsys);
     double total = dt*pow(300.0/Tsys, 2.0);
 
-    for (int k = 0; k < nChannels; k++) data0[k] *= w;
+    for (int k = 0; k < nChannels; k++) data1[k] *= w;
 
     double sumw = w;
     for (int i = 1; i < nSpectra; i++) {
@@ -394,22 +398,21 @@ List average(List L) {
         }
 
         NumericVector data = l["data"];
-        if (data.length() != data0.length()) {
+        if (data.length() != data1.length()) {
             sprintf(error, "data vector %d differs in length: %ld <> %ld",
-                    i, data.length(), data0.length());
+                    i, data.length(), data1.length());
             stop(error);
         }
         for (int k = 0; k < nChannels; k++) {
-            data0[k] += data[k]*w;
+            data1[k] += data[k]*w;
         }
     }
-    for (int k = 0; k < nChannels; k++) data0[k] /= sumw;
+    for (int k = 0; k < nChannels; k++) data1[k] /= sumw;
 
-    List head = clone(head0);
-    if (head.containsElementNamed("dt")) head["dt"] = total;
-    if (head.containsElementNamed("T.sys")) head["T.sys"] = 300.0;
+    if (head1.containsElementNamed("dt"))    head1["dt"] = total;
+    if (head1.containsElementNamed("T.sys")) head1["T.sys"] = 300.0;
 
-    List average = List::create(Named("head") = head, Named("freq") = freq0, Named("data") = data0);
+    List average = List::create(Named("head") = head1, Named("freq") = freq1, Named("data") = data1);
     average.attr("class") = "spectrum";
 
     return average;
