@@ -365,8 +365,8 @@ List average(List L) {
     }
 
     List head1 = clone(head0);
-    NumericVector freq1 = clone(freq1);
-    NumericVector data1 = clone(data1);
+    NumericVector freq1 = clone(freq0);
+    NumericVector data1 = clone(data0);
 
     double dt = 1.0;
     if (head0.containsElementNamed("dt")) dt = as<double>(head0["dt"]);
