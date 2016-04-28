@@ -1,5 +1,5 @@
 options <- new.env()
-options$system <- "velocity"
+options$system <- "frequency"
 options$position.tolerance <- 1/3600  # 1 arcsec
 options$frequency.tolerance <- 1.0e6  # 1 MHz
 

@@ -517,21 +517,21 @@ SEXP bar(StringVector which) {
 // [[Rcpp::export]]
 List foo(List S) {
     if (!S.inherits("spectrum")) stop("Input must be a spectrum");
-    List head = S["head"];
-    NumericVector freq = S["freq"];
-    NumericVector data = S["data"];
+    List head0 = S["head"];
+    NumericVector freq0 = S["freq"];
+    NumericVector data0 = S["data"];
 
-    Environment env = Environment::global_env();
-    List options = env["drp.options"];
-    Rcout << "options = " << options.containsElementNamed("system") << std::endl;
-    bool usevel = false;
-    if (options.containsElementNamed("system")) {
-        std::string system = as<std::string>(options["system"]);
-        usevel = (system == "velocity");
-    }
-    Rcout << "velocity = " << usevel << std::endl;
+    SEXP o;
+    Environment env("package:Rdrp");
+    o = env.get("options");
+    Environment options(o);
+    bool found = options.exists("system");
 
-    List S1 = List::create(Named("head") = head, Named("freq") = freq, Named("data") = data);
+    List head1 = clone(head0);
+    NumericVector freq1 = clone(freq0);
+    NumericVector data1 = clone(data0);
+
+    List S1 = List::create(Named("head") = head1, Named("freq") = freq1, Named("data") = data1);
     S1.attr("class") = "spectrum";
     return S1;
 }
@@ -568,6 +568,20 @@ List reverse(List S) {
     return S1;
 }
 
+bool useVelocity() {
+    bool flag = false;
+    SEXP o;
+    Environment env("package:Rdrp");
+    o = env.get("options");
+    Environment options(o);
+    if (options.exists("system")) {
+        std::string system = as<std::string>(options["system"]);
+        flag = (system == "velocity");
+    }
+    Rcout << "use velocity ? " << flag << std::endl;
+    return flag;
+}
+
 //' Calculate integrated area
 //'
 //' Given a mask defining the spectral areas of interest, return the integrated
@@ -590,20 +604,13 @@ double area(List S, LogicalVector mask) {
         stop(error);
     }
 
-    Environment env = Environment::global_env();
-    List options = env["drp.options"];
-    bool usevel = false;
-    if (options.containsElementNamed("system")) {
-        std::string system = as<std::string>(options["system"]);
-        usevel = (system == "velocity");
-    }
-
+    bool flag = useVelocity();
     double dx = 0.0;
     double sum = 0.0;
     for (int i = 1; i < nc-1; i++) {
         if (mask[i]) {
             dx = fabs(freq[i+1]-freq[i-1])/2.0;
-            if (usevel) dx = 2.0*299792.46*dx/(freq[i+1]+freq[i-1]);
+            if (flag) dx = 2.0*299792.46*dx/(freq[i+1]+freq[i-1]);
             sum += data[i]*dx;
         }
     }
@@ -763,16 +770,9 @@ LogicalVector mask(List S, NumericVector limits) {
     NumericVector freq = S["freq"];
     int nc = freq.length();
 
-    Environment env = Environment::global_env();
-    List options = env["drp.options"];
-    bool usevel = false;
-    if (options.containsElementNamed("system")) {
-        std::string system = as<std::string>(options["system"]);
-        usevel = (system == "velocity");
-    }
-
+    bool flag = useVelocity();
     NumericVector x(clone(freq));
-    if (usevel) x = velocity(S);
+    if (flag) x = velocity(S);
 
     LogicalVector window(nc);
     for (int j = 0; j < nc; j++) {
@@ -807,7 +807,6 @@ matplot(F, D, lty=1, type='l', xlab="frequency", ylab="")
 A <- average(L1)
 lines(A$freq, A$data, col="black", lwd=3)
 
-drp.options$system = "frequency"
 M <- mask(A, range(A$freq[120:220]))
 area(A, M)
 lines(A$freq, M*10, type='S', lwd=3, col='grey')
