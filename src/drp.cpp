@@ -486,11 +486,26 @@ void addColumns(List L, CharacterVector newnames) {
 
 // [[Rcpp::export]]
 SEXP bar(StringVector which) {
-    Environment env = Environment::global_env();
-    List options = env["drp.options"];
+    SEXP o;
+    Environment env("package:Rdrp");
+    o = env.ls(false);
+    Rcout << "type of o = " << TYPEOF(o) << std::endl;
+    StringVector sv(o);
+    for (int i = 0; i < sv.length(); i++) {
+        Rcout << i << ":" << sv[i] << std::endl;
+    }
+
+    bool oflag = env.exists("options");
+    Rcout << "options = " << oflag << std::endl;
+
+    o = env.get("options");
+    Rcout << "type of o = " << TYPEOF(o) << std::endl;
+
+    Environment options(o);
+    // List options = env["options"];
 
     std::string name = as<std::string>(which[0]);
-    bool found = options.containsElementNamed(name.data());
+    bool found = options.exists(name.data());
     Rcout << "options = " << found << std::endl;
     if (found) return wrap(options[name]);
     else       return R_NilValue;

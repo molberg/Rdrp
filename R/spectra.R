@@ -1,5 +1,3 @@
-drp.options <- NULL
-
 #' Print method for class spectrum
 #'
 #' Simply print the header part of the spectrum.
@@ -31,12 +29,13 @@ print.spectra <- function(x, ...) {
 plot.spectrum <- function(x, ...) {
     X <- x$freq
     D <- x$data
-    if (exists("system", envir=drp.options)) {
-        print(drp.options$system)
-        if (drp.options$system == "velocity") {
+    if (exists("system", envir=options)) {
+        print(options$system)
+        if (options$system == "velocity") {
             X = velocity(x)
         }
     }
+    # print(cbind(X,D))
     plot(X, D, xlab="", ylab="", ...)
     mtext(paste(x$head$id, x$head$target), 3, 1, adj=0.01)
 }
