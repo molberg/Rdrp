@@ -6,18 +6,6 @@
 
 using namespace Rcpp;
 
-// accum
-NumericVector accum(NumericMatrix D, NumericVector w);
-RcppExport SEXP Rdrp_accum(SEXP DSEXP, SEXP wSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< NumericMatrix >::type D(DSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type w(wSEXP);
-    __result = Rcpp::wrap(accum(D, w));
-    return __result;
-END_RCPP
-}
 // getHead
 DataFrame getHead(List L);
 RcppExport SEXP Rdrp_getHead(SEXP LSEXP) {
@@ -149,6 +137,17 @@ BEGIN_RCPP
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< List >::type S(SSEXP);
     __result = Rcpp::wrap(foo(S));
+    return __result;
+END_RCPP
+}
+// reverse
+List reverse(List S);
+RcppExport SEXP Rdrp_reverse(SEXP SSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< List >::type S(SSEXP);
+    __result = Rcpp::wrap(reverse(S));
     return __result;
 END_RCPP
 }

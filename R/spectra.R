@@ -29,15 +29,15 @@ print.spectra <- function(x, ...) {
 #' @param ... further arguments to be passed to generic function plot
 #' @export
 plot.spectrum <- function(x, ...) {
-    freq <- x$freq
-    data <- x$data
-    print(drp.options$system)
-    if (drp.options$system == "velocity") {
-        vel = velocity(x)
-        plot(vel, data, ...)
-    } else {
-        plot(freq, data, ...)
+    X <- x$freq
+    D <- x$data
+    if (exists("system", envir=drp.options)) {
+        print(drp.options$system)
+        if (drp.options$system == "velocity") {
+            X = velocity(x)
+        }
     }
+    plot(X, D, xlab="", ylab="", ...)
     mtext(paste(x$head$id, x$head$target), 3, 1, adj=0.01)
 }
 

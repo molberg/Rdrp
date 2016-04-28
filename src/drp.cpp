@@ -330,7 +330,7 @@ List getSubset(List L, IntegerVector index) {
     List out(ndx);
 
     for (int i = 0; i < ndx; i++) {
-        out[i] = L[index[i]];
+        out[i] = L[index[i]-1];
     }
 
     return out;
@@ -521,6 +521,38 @@ List foo(List S) {
     return S1;
 }
 
+//' Reverse a spectrum
+//'
+//' Reverse the order of the channels, i.e. turn both the frequency and data
+//' vector around.
+//' @param S a single spectrum
+//' @return the reversed spectrum
+// [[Rcpp::export]]
+List reverse(List S) {
+    if (!S.inherits("spectrum")) stop("Input must be a spectrum");
+    List head0 = S["head"];
+    List head1 = clone(head0);
+    if (head1.containsElementNamed("df")) {
+        double df = as<double>(head1["df"]);
+        head1["df"] = -df;
+    }
+    NumericVector freq0 = S["freq"];
+    NumericVector data0 = S["data"];
+
+    int nc = data0.length();
+    NumericVector freq1(nc);
+    NumericVector data1(nc);
+
+    for (int i = 0; i < nc; i++) {
+        freq1[i] = freq0[nc-1-i];
+        data1[i] = data0[nc-1-i];
+    }
+
+    List S1 = List::create(Named("head") = head1, Named("freq") = freq1, Named("data") = data1);
+    S1.attr("class") = "spectrum";
+    return S1;
+}
+
 //' Calculate integrated area
 //'
 //' Given a mask defining the spectral areas of interest, return the integrated
@@ -575,7 +607,8 @@ double area(List S, LogicalVector mask) {
 // [[Rcpp::export]]
 List trim(List S, IntegerVector keep) {
     if (!S.inherits("spectrum")) stop("Input must be a spectrum");
-    List head = S["head"];
+    List head0 = S["head"];
+    List head1 = clone(head0);
     NumericVector freq0 = S["freq"];
     NumericVector data0 = S["data"];
     int nk = keep.length();
@@ -584,11 +617,11 @@ List trim(List S, IntegerVector keep) {
     NumericVector freq1(nk);
     NumericVector data1(nk);
     for (int i = 0; i < nk; i++) {
-        freq1[i] = freq0[keep[i]];
-        data1[i] = data0[keep[i]];
+        freq1[i] = freq0[keep[i]-1];
+        data1[i] = data0[keep[i]-1];
     }
 
-    List S1 = List::create(Named("head") = head, Named("freq") = freq1, Named("data") = data1);
+    List S1 = List::create(Named("head") = head1, Named("freq") = freq1, Named("data") = data1);
     S1.attr("class") = "spectrum";
     return S1;
 }
