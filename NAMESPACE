@@ -36,4 +36,3 @@ export(resample)
 export(reverse)
 
 export(options)
-export(bar)

@@ -490,7 +490,7 @@ void addColumns(List L, CharacterVector newnames) {
 // [[Rcpp::export]]
 SEXP bar(StringVector which) {
     SEXP o;
-    Environment env("package:Rdrp");
+    Environment env = Environment::namespace_env("Rdrp");
     o = env.ls(false);
     Rcout << "type of o = " << TYPEOF(o) << std::endl;
     StringVector sv(o);
@@ -525,7 +525,7 @@ List foo(List S) {
     NumericVector data0 = S["data"];
 
     SEXP o;
-    Environment env("package:Rdrp");
+    Environment env = Environment::namespace_env("Rdrp");
     o = env.get("options");
     Environment options(o);
     bool found = options.exists("system");
@@ -573,9 +573,8 @@ List reverse(List S) {
 
 bool useVelocity() {
     bool flag = false;
-    SEXP o;
-    Environment env("package:Rdrp");
-    o = env.get("options");
+    Environment env = Environment::namespace_env("Rdrp");
+    SEXP o = env.get("options");
     Environment options(o);
     if (options.exists("system")) {
         std::string system = as<std::string>(options["system"]);
