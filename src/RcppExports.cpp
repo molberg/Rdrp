@@ -140,6 +140,19 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// fold
+List fold(List S, double ft, bool shift);
+RcppExport SEXP Rdrp_fold(SEXP SSEXP, SEXP ftSEXP, SEXP shiftSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< List >::type S(SSEXP);
+    Rcpp::traits::input_parameter< double >::type ft(ftSEXP);
+    Rcpp::traits::input_parameter< bool >::type shift(shiftSEXP);
+    __result = Rcpp::wrap(fold(S, ft, shift));
+    return __result;
+END_RCPP
+}
 // reverse
 List reverse(List S);
 RcppExport SEXP Rdrp_reverse(SEXP SSEXP) {
@@ -160,6 +173,18 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< List >::type S(SSEXP);
     Rcpp::traits::input_parameter< LogicalVector >::type mask(maskSEXP);
     __result = Rcpp::wrap(area(S, mask));
+    return __result;
+END_RCPP
+}
+// moment
+NumericVector moment(List S, LogicalVector mask);
+RcppExport SEXP Rdrp_moment(SEXP SSEXP, SEXP maskSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< List >::type S(SSEXP);
+    Rcpp::traits::input_parameter< LogicalVector >::type mask(maskSEXP);
+    __result = Rcpp::wrap(moment(S, mask));
     return __result;
 END_RCPP
 }
@@ -196,6 +221,19 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< List >::type S(SSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type freq1(freq1SEXP);
     __result = Rcpp::wrap(resample(S, freq1));
+    return __result;
+END_RCPP
+}
+// rescale
+List rescale(List S, double factor, double bias);
+RcppExport SEXP Rdrp_rescale(SEXP SSEXP, SEXP factorSEXP, SEXP biasSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< List >::type S(SSEXP);
+    Rcpp::traits::input_parameter< double >::type factor(factorSEXP);
+    Rcpp::traits::input_parameter< double >::type bias(biasSEXP);
+    __result = Rcpp::wrap(rescale(S, factor, bias));
     return __result;
 END_RCPP
 }

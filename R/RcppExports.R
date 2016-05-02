@@ -126,6 +126,15 @@ foo <- function(S) {
     .Call('Rdrp_foo', PACKAGE = 'Rdrp', S)
 }
 
+#' Fold a frequency switched spectrum
+#'
+#' @param S a single spectrum
+#' @param throw frequency throw in Mhz
+#' @return the folded spectrum
+fold <- function(S, ft, shift = FALSE) {
+    .Call('Rdrp_fold', PACKAGE = 'Rdrp', S, ft, shift)
+}
+
 #' Reverse a spectrum
 #'
 #' Reverse the order of the channels, i.e. turn both the frequency and data
@@ -146,6 +155,18 @@ reverse <- function(S) {
 #' @return the integrated value
 area <- function(S, mask) {
     .Call('Rdrp_area', PACKAGE = 'Rdrp', S, mask)
+}
+
+#' Calculate moments
+#'
+#' Given a mask defining the spectral areas of interest, return the integrated
+#' area over those region(s).
+#' @param S a single spectrum
+#' @param mask a logical vector equal to TRUE for all the channels that should
+#'        be integrated.
+#' @return minimum, maximum, mean, rms, skewness and kurtosis
+moment <- function(S, mask) {
+    .Call('Rdrp_moment', PACKAGE = 'Rdrp', S, mask)
 }
 
 #' Trim channels from spectra
@@ -180,6 +201,18 @@ filter <- function(S, coeffs) {
 #' @return the resampled spectrum
 resample <- function(S, freq1) {
     .Call('Rdrp_resample', PACKAGE = 'Rdrp', S, freq1)
+}
+
+#' Rescale spectrum
+#'
+#' Add bias and/or scale by factor.
+#'
+#' @param S a single spectrum
+#' @param factor a numeric value by which to scale the whole spectrum
+#' @param bias a numeric value to add to all channels
+#' @return the rescaled spectrum, out = in * factor + bias
+rescale <- function(S, factor = 1.0, bias = 0.0) {
+    .Call('Rdrp_rescale', PACKAGE = 'Rdrp', S, factor, bias)
 }
 
 #' Construct a line mask

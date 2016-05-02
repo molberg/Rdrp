@@ -315,27 +315,6 @@ IntegerVector getDimension(List L) {
     return dim;
 }
 
-//' Get subset
-//'
-//' From a list of spectra, get the subset which is described by an index vector.
-//' @param L a list of spectra (each with components 'head', 'freq' and 'data')
-//' @param index an integer vector holding the indices of the spectra to retrieve
-//' @return the requested subset of spectra returned as a list
-// [[Rcpp::export]]
-List getSubset(List L, IntegerVector index) {
-    /* the length of our list is the number of spectra */
-    int nSpectra = L.length();
-    int ndx = index.length();
-    // Rcout << "spectra = " << nSpectra << ", length of index = " << ndx << std::endl;
-    List out(ndx);
-
-    for (int i = 0; i < ndx; i++) {
-        out[i] = L[index[i]-1];
-    }
-
-    return out;
-}
-
 //' Calculate average spectrum
 //'
 //' From a list of spectra, calculate the average spectrum where the weighting is
@@ -539,6 +518,57 @@ List foo(List S) {
     return S1;
 }
 
+//' Fold a frequency switched spectrum
+//'
+//' @param S a single spectrum
+//' @param throw frequency throw in Mhz
+//' @return the folded spectrum
+// [[Rcpp::export]]
+List fold(List S, double ft, bool shift = false) {
+    if (!S.inherits("spectrum")) stop("Input must be a spectrum");
+    List head0 = S["head"];
+    NumericVector freq0 = S["freq"];
+    NumericVector data0 = S["data"];
+    int nc = data0.length();
+    
+    List head1 = clone(head0);
+    NumericVector freq1 = clone(freq0);
+    NumericVector data1 = clone(data0);
+
+    if (ft == 0.0) stop("zero frequency throw");
+    int n = (int)(ft/(freq0[1]-freq0[0]));
+    int i;
+    
+    if (n > 0) {
+	for (i = 0; i < nc-n; i++) {
+	    data1[i] -= data1[i+n];
+	    data1[i] /= 2.0;
+	}
+	if (shift) {
+	    n /= 2;
+	    for (i = nc-1; i >= n; i--) {
+		data1[i] = data1[i-n];
+	    }
+	}
+    } else {
+	n = -n;
+	for (i = nc-1; i >= n; i--) {
+	    data1[i] -= data1[i-n];
+	    data1[i] /= 2.0;
+	}
+	if (shift) {
+	    n /= 2;
+	    for (i = 0; i < nc-n; i++) {
+		data1[i+n] = data1[i];
+	    }
+	}
+    }
+
+    List S1 = List::create(Named("head") = head1, Named("freq") = freq1, Named("data") = data1);
+    S1.attr("class") = "spectrum";
+    return S1;
+}
+
 //' Reverse a spectrum
 //'
 //' Reverse the order of the channels, i.e. turn both the frequency and data
@@ -618,6 +648,69 @@ double area(List S, LogicalVector mask) {
     }
 
     return sum;
+}
+
+//' Calculate moments
+//'
+//' Given a mask defining the spectral areas of interest, return the integrated
+//' area over those region(s).
+//' @param S a single spectrum
+//' @param mask a logical vector equal to TRUE for all the channels that should
+//'        be integrated.
+//' @return minimum, maximum, mean, rms, skewness and kurtosis
+// [[Rcpp::export]]
+NumericVector moment(List S, LogicalVector mask) {
+    static char error[80];
+
+    if (!S.inherits("spectrum")) stop("Input must be a spectrum");
+    List head = S["head"];
+    NumericVector freq = S["freq"];
+    NumericVector data = S["data"];
+    int nc = data.length();
+    if (mask.length() != nc) {
+        sprintf(error, "supplied mask has wrong length: %ld <> %d", mask.length(), nc);
+        stop(error);
+    }
+
+    NumericVector results(6);
+    double mean = data[0];
+    double Tmin = mean;
+    double Tmax = Tmin;
+    double var = 0.0;
+    double sdev = 0.0;
+    double skew = 0.0;
+    double kurt = 0.0;
+    for (int i = 1; i < nc; i++) {
+        double X = data[i];
+        if (X < Tmin) Tmin = X;
+        if (X > Tmax) Tmax = X;
+        mean += X;
+    }
+    mean /= (double)nc;
+
+    for (int i = 0; i < nc; i++) {
+        double X = data[i];
+        double Y = X*X;
+        var += Y;
+        Y *= X;
+        skew += Y;
+        Y *= X;
+        kurt += Y;
+    }
+    var /= (double)(nc-1);
+    sdev = sqrt(var);
+    if (var != 0.0) {
+	skew /= pow((double)nc*sdev, 3.0);
+	kurt /= pow((double)nc*var, 2.0)-3.0;
+    }
+    results[0] = Tmin;
+    results[1] = Tmax;
+    results[2] = mean;
+    results[3] = sdev;
+    results[4] = skew;
+    results[5] = kurt;
+    
+    return results;
 }
 
 //' Trim channels from spectra
@@ -748,6 +841,38 @@ List resample(List S, NumericVector freq1) {
             double b = 1.0-a;
 	    data1[j] = a*(wi[l]+(a*a-1)*wr[l]/6)+b*(wi[u]+(b*b-1)*wr[u]/6);
         }
+    }
+
+    List S1 = List::create(Named("head") = head1, Named("freq") = freq1, Named("data") = data1);
+    S1.attr("class") = "spectrum";
+    return S1;
+}
+
+//' Rescale spectrum
+//'
+//' Add bias and/or scale by factor.
+//'
+//' @param S a single spectrum
+//' @param factor a numeric value by which to scale the whole spectrum
+//' @param bias a numeric value to add to all channels
+//' @return the rescaled spectrum, out = in * factor + bias
+// [[Rcpp::export]]
+List rescale(List S, double factor = 1.0, double bias = 0.0) {
+    int i, j;
+    if (!S.inherits("spectrum")) stop("Input must be a spectrum");
+
+    List head0 = S["head"];
+    NumericVector freq0 = S["freq"];
+    NumericVector data0 = S["data"];
+
+    List head1 = clone(head0);
+    NumericVector freq1 = clone(freq0);
+    NumericVector data1 = clone(data0);
+
+    int nc = data0.length();
+
+    for (i = 1; i < nc; i++) {
+        data1[i] = data0[i]*factor + bias;
     }
 
     List S1 = List::create(Named("head") = head1, Named("freq") = freq1, Named("data") = data1);
