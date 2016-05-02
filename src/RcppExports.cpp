@@ -72,18 +72,6 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
-// getSubset
-List getSubset(List L, IntegerVector index);
-RcppExport SEXP Rdrp_getSubset(SEXP LSEXP, SEXP indexSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< List >::type L(LSEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type index(indexSEXP);
-    __result = Rcpp::wrap(getSubset(L, index));
-    return __result;
-END_RCPP
-}
 // average
 List average(List L);
 RcppExport SEXP Rdrp_average(SEXP LSEXP) {

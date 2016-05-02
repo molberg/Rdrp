@@ -493,6 +493,23 @@ SEXP bar(StringVector which) {
     else       return R_NilValue;
 }
 
+void printStats(const char *cmd, NumericVector d) {
+    int nc = d.length();
+    double min, max, mean, var;
+
+    mean = min = max = d[0];
+    var = 0.0;
+    for (int i = 1; i < nc; i++) {
+        if (min > d[i]) min = d[i];
+        if (max < d[i]) max = d[i];
+        mean += d[i];
+    }
+    mean /= (double)nc;
+    for (int i = 0; i < nc; i++) var += (d[i]-mean)*(d[i]-mean);
+    var /= (double)(nc-1);
+    Rcout << cmd << ":" << min << " " << max << " " << mean << " " << var << std::endl;
+}
+
 // Prototype of function working on a single spectrum
 //
 // Does nothing
@@ -590,11 +607,14 @@ List reverse(List S) {
     int nc = data0.length();
     NumericVector freq1(nc);
     NumericVector data1(nc);
+    // Rprintf("old: %p %p %p\n", head0, freq0, data0);
+    // Rprintf("new: %p %p %p\n", head1, freq1, data1);
 
     for (int i = 0; i < nc; i++) {
         freq1[i] = freq0[nc-1-i];
         data1[i] = data0[nc-1-i];
     }
+    printStats("reverse", data1);
 
     List S1 = List::create(Named("head") = head1, Named("freq") = freq1, Named("data") = data1);
     S1.attr("class") = "spectrum";
@@ -725,18 +745,23 @@ NumericVector moment(List S, LogicalVector mask) {
 List trim(List S, IntegerVector keep) {
     if (!S.inherits("spectrum")) stop("Input must be a spectrum");
     List head0 = S["head"];
-    List head1 = clone(head0);
     NumericVector freq0 = S["freq"];
     NumericVector data0 = S["data"];
     int nk = keep.length();
     int nc = data0.length();
 
+    List head1 = clone(head0);
     NumericVector freq1(nk);
     NumericVector data1(nk);
+
+    // Rprintf("old: %p %p %p\n", head0, freq0, data0);
+    // Rprintf("new: %p %p %p\n", head1, freq1, data1);
+
     for (int i = 0; i < nk; i++) {
         freq1[i] = freq0[keep[i]-1];
         data1[i] = data0[keep[i]-1];
     }
+    printStats("trim", data1);
 
     List S1 = List::create(Named("head") = head1, Named("freq") = freq1, Named("data") = data1);
     S1.attr("class") = "spectrum";
@@ -755,7 +780,6 @@ List filter(List S, NumericVector coeffs) {
     if (!S.inherits("spectrum")) stop("Input must be a spectrum");
 
     List head0 = S["head"];
-    List head1 = clone(head0);
     NumericVector freq0 = S["freq"];
     NumericVector data0 = S["data"];
     int nf = coeffs.length();
@@ -769,19 +793,28 @@ List filter(List S, NumericVector coeffs) {
     for (int j = 0; j < nf; j++) coeffs[j] /= sum;
 
     /* calculate length of output vectors */
+    List head1 = clone(head0);
     nf = (nf+1)/2;
     int nout = (nc-2*nf)/nf + 1;
     NumericVector freq1(nout);
     NumericVector data1(nout);
+
+    // Rprintf("old: %p %p %p\n", head0, freq0, data0);
+    // Rprintf("new: %p %p %p\n", head1, freq1, data1);
+
     int iout = 0;
     for (int i = nf-1; i < nc-nf; i += nf) {
         freq1[iout] = freq0[i];
         data1[iout] = 0;
         for (int j = -(nf-1); j <= (nf-1); j++) {
-            data1[iout] += data0[i+j]*coeffs[j];
+            data1[iout] += data0[i+j]*coeffs[j+nf-1];
+            // Rcout << "data0[" << i+j << "] = " << data0[i+j] << std::endl;
+            // Rcout << "coeffs[" << j+nf-1 << "] = " << coeffs[j+nf-1] << std::endl;
+            // Rcout << "data1[" << iout << "] = " << data1[iout] << std::endl;
         }
         iout++;
     }
+    printStats("filter", data1);
 
     List S1 = List::create(Named("head") = head1, Named("freq") = freq1, Named("data") = data1);
     S1.attr("class") = "spectrum";

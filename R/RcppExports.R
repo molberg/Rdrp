@@ -76,16 +76,6 @@ getDimension <- function(L) {
     .Call('Rdrp_getDimension', PACKAGE = 'Rdrp', L)
 }
 
-#' Get subset
-#'
-#' From a list of spectra, get the subset which is described by an index vector.
-#' @param L a list of spectra (each with components 'head', 'freq' and 'data')
-#' @param index an integer vector holding the indices of the spectra to retrieve
-#' @return the requested subset of spectra returned as a list
-getSubset <- function(L, index) {
-    .Call('Rdrp_getSubset', PACKAGE = 'Rdrp', L, index)
-}
-
 #' Calculate average spectrum
 #'
 #' From a list of spectra, calculate the average spectrum where the weighting is

@@ -26,7 +26,7 @@ print.spectra <- function(x, ...) {
 #' @param x a single spectrum
 #' @param ... further arguments to be passed to generic function plot
 #' @export
-plot.spectrum <- function(x, ...) {
+plot.spectrum <- function(x, type='l', col='blue', ...) {
     X <- x$freq
     D <- x$data
     if (exists("system", envir=options)) {
@@ -36,7 +36,7 @@ plot.spectrum <- function(x, ...) {
         }
     }
     # print(cbind(X,D))
-    plot(X, D, xlab="", ylab="", ...)
+    plot(X, D, type=type, col=col, xlab="", ylab="", ...)
     mtext(paste(x$head$id, x$head$target), 3, 1, adj=0.01)
 }
 
@@ -47,7 +47,7 @@ plot.spectrum <- function(x, ...) {
 #' @param ... further arguments to be passed to generic function plot
 #' @param grid specify grid (nrow x ncol) on which to organize spectra
 #' @export
-plot.spectra <- function(x, ..., grid=NULL) {
+plot.spectra <- function(x, type='l', col='blue', ..., grid=NULL) {
     head <- getHead(x)
     freq <- getFreq(x)
     data <- getData(x)
@@ -55,11 +55,11 @@ plot.spectra <- function(x, ..., grid=NULL) {
         freq = getVelo(x)
     }
     if (is.null(grid)) {
-        matplot(freq, data, type='l', lty=1, xlab="", ylab="", ...)
+        matplot(freq, data, type=type, lty=1, xlab="", ylab="", ...)
     } else {
         oldpar <- par(mfrow=grid, mar=c(0,0,0,0), oma=c(2,2,2,2))
         for (i in seq(nrow(head))) {
-            plot(freq[,i], data[,i], type='l', col='blue', xaxt='n', yaxt='n', xlab="", ylab="", ...)
+            plot(freq[,i], data[,i], type=type, col=col, xaxt='n', yaxt='n', xlab="", ylab="", ...)
             # mtext(head$target[i], 3, -2, adj=0.02)
         }
         par(oldpar)
