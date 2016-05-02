@@ -4,7 +4,7 @@
 \alias{plot.spectra}
 \title{Plot method for class spectra}
 \usage{
-\method{plot}{spectra}(x, ..., grid = NULL)
+\method{plot}{spectra}(x, type = "l", col = "blue", ..., grid = NULL)
 }
 \arguments{
 \item{x}{a list of spectra}
