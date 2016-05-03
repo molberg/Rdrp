@@ -352,6 +352,7 @@ List average(List L) {
 
     double Tsys = 300.0;
     if (head0.containsElementNamed("T.sys")) Tsys = as<double>(head0["T.sys"]);
+    // Rcout << "dt = " << dt << ", Tsys = " << Tsys << std::endl;
 
     double w = dt/(Tsys*Tsys);
     double total = dt*pow(300.0/Tsys, 2.0);
@@ -364,7 +365,7 @@ List average(List L) {
         List head = l["head"];
         if (head.containsElementNamed("dt"))    dt = as<double>(head["dt"]);
         if (head.containsElementNamed("T.sys")) Tsys = as<double>(head["T.sys"]);
-        Rcout << "dt = " << dt << ", Tsys = " << Tsys << std::endl;
+        // Rcout << "dt = " << dt << ", Tsys = " << Tsys << std::endl;
         w = dt/(Tsys*Tsys);
         sumw += w;
         total += dt*pow(300.0/Tsys, 2.0);
@@ -547,7 +548,7 @@ List fold(List S, double ft, bool shift = false) {
     NumericVector freq0 = S["freq"];
     NumericVector data0 = S["data"];
     int nc = data0.length();
-    
+
     List head1 = clone(head0);
     NumericVector freq1 = clone(freq0);
     NumericVector data1 = clone(data0);
@@ -555,7 +556,7 @@ List fold(List S, double ft, bool shift = false) {
     if (ft == 0.0) stop("zero frequency throw");
     int n = (int)(ft/(freq0[1]-freq0[0]));
     int i;
-    
+
     if (n > 0) {
 	for (i = 0; i < nc-n; i++) {
 	    data1[i] -= data1[i+n];
@@ -614,7 +615,7 @@ List reverse(List S) {
         freq1[i] = freq0[nc-1-i];
         data1[i] = data0[nc-1-i];
     }
-    printStats("reverse", data1);
+    // printStats("reverse", data1);
 
     List S1 = List::create(Named("head") = head1, Named("freq") = freq1, Named("data") = data1);
     S1.attr("class") = "spectrum";
@@ -729,7 +730,7 @@ NumericVector moment(List S, LogicalVector mask) {
     results[3] = sdev;
     results[4] = skew;
     results[5] = kurt;
-    
+
     return results;
 }
 
@@ -761,7 +762,7 @@ List trim(List S, IntegerVector keep) {
         freq1[i] = freq0[keep[i]-1];
         data1[i] = data0[keep[i]-1];
     }
-    printStats("trim", data1);
+    // printStats("trim", data1);
 
     List S1 = List::create(Named("head") = head1, Named("freq") = freq1, Named("data") = data1);
     S1.attr("class") = "spectrum";
@@ -814,7 +815,7 @@ List filter(List S, NumericVector coeffs) {
         }
         iout++;
     }
-    printStats("filter", data1);
+    // printStats("filter", data1);
 
     List S1 = List::create(Named("head") = head1, Named("freq") = freq1, Named("data") = data1);
     S1.attr("class") = "spectrum";

@@ -32,7 +32,6 @@ average2 <- function(ds) {
     y
 }
 
-
 #target <- "L183"
 #run <- "RUN2"
 #cmd <- sprintf("find /precise/data/O2014a-07/%s -name '*s.fits' -exec grep -l %s {} \\;", run, target)
