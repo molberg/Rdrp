@@ -6,8 +6,7 @@
 #' @export
 print.spectrum <- function(x, ...) {
     print(as.data.frame(x$head))
-    print(head(cbind(x$freq, x$data)))
-    print(tail(cbind(x$freq, x$data)))
+    print(cbind(x$freq, x$data))
 }
 
 #' Print method for class spectra

@@ -827,10 +827,13 @@ List filter(List S, NumericVector coeffs) {
 //' Perform resampling (cubic spline interpolation) on a single spectrum.
 //'
 //' @param S a single spectrum
-//' @param freq1 a frequency vector onto which the spectrum should be resampled.
+//' @param f a frequency vector onto which the spectrum should be resampled
+//' @param smooth if TRUE convolve with Gaussian response, if FALSE perform
+//' cubic spline interpolation
 //' @return the resampled spectrum
 // [[Rcpp::export]]
-List resample(List S, NumericVector freq1) {
+List resample(List S, NumericVector f, bool smooth=true) {
+    const double a = 4.0*log(2.0);
     int i, j;
     if (!S.inherits("spectrum")) stop("Input must be a spectrum");
 
@@ -840,40 +843,71 @@ List resample(List S, NumericVector freq1) {
     NumericVector data0 = S["data"];
 
     int nc = data0.length();
-    int nout = freq1.length();
+    int nout = f.length();
+    // Rcout << "resample: f[0] = " << f[0] << ", f[" << nout-1 << "] = " << f[nout-1] << std::endl;
+    NumericVector freq1 = clone(f);
     NumericVector data1(nout);
 
-    NumericVector wi(nc);
-    NumericVector wr(nc);
-    wi[0] = wr[0] = 0.0;
-    for (i = 1; i < nc-1; i++) {
-	double p = 0.5*data0[i-1]+2.0;
-	if (p != 0.0) {
-	    wr[i] = -0.5/p;
-	    wi[i] = (3.0*(data0[i+1]-2.0*data0[i]
-			  +data0[i-1])-0.5*wi[i-1])/p;
-	} else wi[i] = wr[i] = 0.0;
-    }
-    wi[nc-1] = wr[nc-1] = 0.0;
-    for (i = nc-1; i > 0; i--) wr[i-1] = wr[i-1]*wr[i]+wi[i-1];
-    /* save old spectrum in 'wi' for interpolation */
-    for (i = 0; i < nc; i++) wi[i] = data0[i];
-
-    i = 0;
-    for (j = 0; j < nout; j++) {
-        if ((freq1[j] < freq0[0]) || (freq1[j] > freq0[nc-1])) {
-            freq1[j] = NA_REAL;
-            continue;
+    if (smooth) {
+        i = 0;
+        double DF = fabs(freq1[1]-freq1[0]);
+        // Rcout << "resample: DF = " << DF << std::endl;
+        for (j = 0; j < nout; j++) {
+            double sum = 0.0;
+            double sumw = 0.0;
+            double w = 0.0;
+            for (i = 0; i < nc; i++) {
+                double delta = (freq1[j]-freq0[i])/DF;
+                if (fabs(delta) < 1.5) {
+                    w = exp(-a*delta*delta);
+                    sum += data0[i]*w;
+                    sumw += w;
+                }
+            }
+            if (sumw > 0.0) data1[j] = sum/sumw;
+            else            data1[j] = 0.0;
         }
-        while (freq0[i] < freq1[j]) i++;
-        int l = i-1;
-        int u = (freq0[i] == freq1[j]) ? l : l+1;
-        if (u == l) {
-            data1[j] = data0[i];
-        } else {
-            double a = (freq0[u]-freq1[j])/(freq0[u]-freq0[l]);
-            double b = 1.0-a;
-	    data1[j] = a*(wi[l]+(a*a-1)*wr[l]/6)+b*(wi[u]+(b*b-1)*wr[u]/6);
+    } else {
+        NumericVector wi(nc);
+        NumericVector wr(nc);
+        wi[0] = wr[0] = 0.0;
+        for (i = 1; i < nc-1; i++) {
+            double p = 0.5*data0[i-1]+2.0;
+            if (p != 0.0) {
+                wr[i] = -0.5/p;
+                wi[i] = (3.0*(data0[i+1]-2.0*data0[i]
+                              +data0[i-1])-0.5*wi[i-1])/p;
+            } else wi[i] = wr[i] = 0.0;
+        }
+        wi[nc-1] = wr[nc-1] = 0.0;
+        for (i = nc-1; i > 0; i--) wr[i-1] = wr[i-1]*wr[i]+wi[i-1];
+        /* save old spectrum in 'wi' for interpolation */
+        for (i = 0; i < nc; i++) wi[i] = data0[i];
+
+        i = 0;
+        for (j = 0; j < nout; j++) {
+            if ((freq1[j] < freq0[0]) || (freq1[j] > freq0[nc-1])) {
+                data1[j] = NA_REAL;
+                // Rcout << "resample: NA " << i << " " << j << " " << freq1[j] << std::endl;
+                continue;
+            }
+            while (freq0[i] < freq1[j]) i++;
+            int l = i-1;
+            int u = (freq0[i] == freq1[j]) ? l : l+1;
+            if (u == l) {
+                data1[j] = data0[i];
+            } else {
+                double a = (freq0[u]-freq1[j])/(freq0[u]-freq0[l]);
+                double b = 1.0-a;
+                data1[j] = a*(wi[l]+(a*a-1)*wr[l]/6)+b*(wi[u]+(b*b-1)*wr[u]/6);
+                /* if ((data1[j] > data0[l]) && (data1[j] > data0[u])) {
+                    Rcout << j << ": " << data1[j] << std::endl;
+                    Rcout << data0[l] << " " << data0[u] << std::endl;
+                    Rcout << a << " " << b << std::endl;
+                    Rcout << wi[l] << " " << wi[u] << std::endl;
+                    Rcout << wr[l] << " " << wr[u] << std::endl;
+                } */
+            }
         }
     }
 

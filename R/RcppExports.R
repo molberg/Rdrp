@@ -187,10 +187,10 @@ filter <- function(S, coeffs) {
 #' Perform resampling (cubic spline interpolation) on a single spectrum.
 #'
 #' @param S a single spectrum
-#' @param freq1 a frequency vector onto which the spectrum should be resampled.
+#' @param f a frequency vector onto which the spectrum should be resampled.
 #' @return the resampled spectrum
-resample <- function(S, freq1) {
-    .Call('Rdrp_resample', PACKAGE = 'Rdrp', S, freq1)
+resample <- function(S, f, smooth = TRUE) {
+    .Call('Rdrp_resample', PACKAGE = 'Rdrp', S, f, smooth)
 }
 
 #' Rescale spectrum

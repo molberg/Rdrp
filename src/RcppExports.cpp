@@ -201,14 +201,15 @@ BEGIN_RCPP
 END_RCPP
 }
 // resample
-List resample(List S, NumericVector freq1);
-RcppExport SEXP Rdrp_resample(SEXP SSEXP, SEXP freq1SEXP) {
+List resample(List S, NumericVector f, bool smooth);
+RcppExport SEXP Rdrp_resample(SEXP SSEXP, SEXP fSEXP, SEXP smoothSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< List >::type S(SSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type freq1(freq1SEXP);
-    __result = Rcpp::wrap(resample(S, freq1));
+    Rcpp::traits::input_parameter< NumericVector >::type f(fSEXP);
+    Rcpp::traits::input_parameter< bool >::type smooth(smoothSEXP);
+    __result = Rcpp::wrap(resample(S, f, smooth));
     return __result;
 END_RCPP
 }
