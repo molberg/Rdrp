@@ -539,7 +539,8 @@ List foo(List S) {
 //' Fold a frequency switched spectrum
 //'
 //' @param S a single spectrum
-//' @param throw frequency throw in Mhz
+//' @param ft frequency requency throw in Mhz
+//' @param shift if TRUE, assume symmetric switching around true, centre frequency
 //' @return the folded spectrum
 // [[Rcpp::export]]
 List fold(List S, double ft, bool shift = false) {

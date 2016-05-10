@@ -23,6 +23,8 @@ print.spectra <- function(x, ...) {
 #'
 #' Plot a single spectrum.
 #' @param x a single spectrum
+#' @param type the type of plot to be used, default is 'l', i.e. line
+#' @param col the colour of the plot, default 'blue'
 #' @param ... further arguments to be passed to generic function plot
 #' @export
 plot.spectrum <- function(x, type='l', col='blue', ...) {
@@ -43,6 +45,8 @@ plot.spectrum <- function(x, type='l', col='blue', ...) {
 #'
 #' Plot all spectra in a dataset using matplot or a grid of plots.
 #' @param x a list of spectra
+#' @param type the type of plot to be used, default is 'l', i.e. line
+#' @param col the colour of the plot, default 'blue'
 #' @param ... further arguments to be passed to generic function plot
 #' @param grid specify grid (nrow x ncol) on which to organize spectra
 #' @export
@@ -50,8 +54,11 @@ plot.spectra <- function(x, type='l', col='blue', ..., grid=NULL) {
     head <- getHead(x)
     freq <- getFreq(x)
     data <- getData(x)
-    if (drp.options$system == "velocity") {
-        freq = getVelo(x)
+    if (exists("system", envir=options)) {
+        print(options$system)
+        if (options$system == "velocity") {
+            freq = getVelo(x)
+        }
     }
     if (is.null(grid)) {
         matplot(freq, data, type=type, lty=1, xlab="", ylab="", ...)

@@ -9,6 +9,10 @@
 \arguments{
 \item{x}{a list of spectra}
 
+\item{type}{the type of plot to be used, default is 'l', i.e. line}
+
+\item{col}{the colour of the plot, default 'blue'}
+
 \item{...}{further arguments to be passed to generic function plot}
 
 \item{grid}{specify grid (nrow x ncol) on which to organize spectra}

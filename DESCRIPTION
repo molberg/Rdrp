@@ -1,8 +1,8 @@
 Package: Rdrp
 Type: Package
 Title: R based data reduction package
-Version: 0.4
-Date: 2016-05-03
+Version: 0.5
+Date: 2016-05-10
 Author: Michael Olberg
 Maintainer: Michael Olberg <michael.olberg@chalmers.se>
 Description: An R-based version of DRP.

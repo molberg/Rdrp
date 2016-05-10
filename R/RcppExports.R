@@ -119,7 +119,8 @@ foo <- function(S) {
 #' Fold a frequency switched spectrum
 #'
 #' @param S a single spectrum
-#' @param throw frequency throw in Mhz
+#' @param ft frequency requency throw in Mhz
+#' @param shift if TRUE, assume symmetric switching around true, centre frequency
 #' @return the folded spectrum
 fold <- function(S, ft, shift = FALSE) {
     .Call('Rdrp_fold', PACKAGE = 'Rdrp', S, ft, shift)
@@ -187,7 +188,9 @@ filter <- function(S, coeffs) {
 #' Perform resampling (cubic spline interpolation) on a single spectrum.
 #'
 #' @param S a single spectrum
-#' @param f a frequency vector onto which the spectrum should be resampled.
+#' @param f a frequency vector onto which the spectrum should be resampled
+#' @param smooth if TRUE convolve with Gaussian response, if FALSE perform
+#' cubic spline interpolation
 #' @return the resampled spectrum
 resample <- function(S, f, smooth = TRUE) {
     .Call('Rdrp_resample', PACKAGE = 'Rdrp', S, f, smooth)

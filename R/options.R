@@ -5,5 +5,5 @@ options$frequency.tolerance <- 1.0e6  # 1 MHz
 
 .onLoad <- function(libname, pkgname) {
     packageStartupMessage('This is Rdrp\n', domain = NULL, appendLF = TRUE)
-    print(ls(envir=options))
+    # print(ls(envir=options))
 }
