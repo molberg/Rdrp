@@ -778,7 +778,7 @@ List trim(List S, IntegerVector keep) {
 //' @param coeffs a numeric vector with an odd number of filter coefficients
 //' @return the filtered spectrum
 // [[Rcpp::export]]
-List filter(List S, NumericVector coeffs) {
+List sieve(List S, NumericVector coeffs) {
     if (!S.inherits("spectrum")) stop("Input must be a spectrum");
 
     List head0 = S["head"];
@@ -816,7 +816,7 @@ List filter(List S, NumericVector coeffs) {
         }
         iout++;
     }
-    // printStats("filter", data1);
+    // printStats("sieve", data1);
 
     List S1 = List::create(Named("head") = head1, Named("freq") = freq1, Named("data") = data1);
     S1.attr("class") = "spectrum";

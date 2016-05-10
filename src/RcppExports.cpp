@@ -188,15 +188,15 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
-// filter
-List filter(List S, NumericVector coeffs);
-RcppExport SEXP Rdrp_filter(SEXP SSEXP, SEXP coeffsSEXP) {
+// sieve
+List sieve(List S, NumericVector coeffs);
+RcppExport SEXP Rdrp_sieve(SEXP SSEXP, SEXP coeffsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< List >::type S(SSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type coeffs(coeffsSEXP);
-    __result = Rcpp::wrap(filter(S, coeffs));
+    __result = Rcpp::wrap(sieve(S, coeffs));
     return __result;
 END_RCPP
 }

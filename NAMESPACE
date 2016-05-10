@@ -28,7 +28,7 @@ export(addColumns)
 
 export(area)
 export(trim)
-export(filter)
+export(sieve)
 export(fold)
 export(mask)
 export(modify)

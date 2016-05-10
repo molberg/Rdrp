@@ -20,8 +20,8 @@
 #' The available routines to read data from a FITS file or a CLASS
 #' formatted binary file, typically return lists of objects, each of
 #' which will be of the format described above. Helper functions
-#' \code{\link[getHead]}, \code{\link[getFreq]} and
-#' \code{\link[getData]} are available to return all headers as a data
+#' \code{\link{getHead}}, \code{\link{getFreq}} and
+#' \code{\link{getData}} are available to return all headers as a data
 #' frame (with one row per spectrum) and all the frequency (or data)
 #' vectors as a numeric matrix, where spectral channels run along rows
 #' and the columns correspond to an individual spectrum. Such a list of
@@ -44,10 +44,12 @@
 #' A <- average(L)     # form the average
 #' # we expect a spectral line between -20 and +20 km/s
 #' linemask <- mask(A, c(-20,20))
-#' # fit and subtract a second order baseline
+#' # fit a second order baseline
 #' bl <- baseline(A, order=2, mask=linemask)
-#' A$data <- A$data - bl
-#' plot(A, xlab="velocity [km/s]", ylab=expression(T[A]))
+#' plot(A)                           # plot the spectrum ...
+#' lines(velocity(A), bl, col='red') # ... and fitted baseline
+#' A$data <- A$data - bl             # subtract baseline
+#' plot(A, type='s', xlab="velocity [km/s]", ylab=expression(T[A]))
 #' }
 #' # Here is how you would construct a very simple, fake spectrum:
 #' head <- list(target="my target", ra=1.0, dec=2.0, f0=1421.0)
@@ -59,6 +61,7 @@
 #'
 #' @docType package
 #' @name Rdrp
+#' @author Michael Olberg, \email{michael.olberg@@chalmers.se}
 NULL
 
 ## NULL

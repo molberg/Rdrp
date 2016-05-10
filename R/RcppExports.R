@@ -179,8 +179,8 @@ trim <- function(S, keep) {
 #' @param S a single spectrum
 #' @param coeffs a numeric vector with an odd number of filter coefficients
 #' @return the filtered spectrum
-filter <- function(S, coeffs) {
-    .Call('Rdrp_filter', PACKAGE = 'Rdrp', S, coeffs)
+sieve <- function(S, coeffs) {
+    .Call('Rdrp_sieve', PACKAGE = 'Rdrp', S, coeffs)
 }
 
 #' Resample spectrum
