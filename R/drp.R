@@ -1,24 +1,3 @@
-## align
-
-#' Examine a dataset or single spectrum
-#'
-#' Print class and dimension information.
-#' @param s a dataset (class 'spectra') or a single spectrum (class 'spectrum')
-#' @export
-examine <- function(s) {
-    print(names(s$head))
-    print(s$head)
-    print(class(s$head))
-    print(class(s$freq))
-    if (class(s$freq) == "matrix") print(dim(s$freq))
-    else                           print(length(s$freq))
-    ## print(head(s$freq))
-    print(class(s$data))
-    if (class(s$data) == "matrix") print(dim(s$data))
-    else                           print(length(s$data))
-    ## print(head(s$data))
-}
-
 #' Apply function to each spectrum in a dataaset
 #'
 #' Given a dataset of class 'spectra' and a function, apply this
@@ -56,23 +35,33 @@ drapply <- function(L, FUN, ..., simplify=TRUE) {
 #'
 #' For all spectra in a dataset fit a polynomial of given order, using only the
 #' spectral channels given in window.
-#' @param s a single spectrum
+#' @param S a single spectrum
 #' @param order the order of the polynomial to fit
 #' @param mask a channel line mask, fit baseline to channels where mask = FALSE
 #' @return the fitted baselines
+#' @seealso \code{\link{mask}}
+#' @examples
+#' data(salsa)
+#' A <- average(salsa)
+#' plot(A)
+#' limits <- c(1419.9, 1421.1)
+#' abline(v=limits, lty=2, col='grey')    # mark line region
+#' linemask <- mask(A, limits)
+#' bl <- baseline(A, order=3, mask=linemask)
+#' lines(A$freq, bl, col='red')
 #' @export
-baseline <- function(s, order=1, mask=NULL) {
-    x <- seq(-1, 1, length.out=length(s$data))
+baseline <- function(S, order=1, mask=NULL) {
+    x <- seq(-1, 1, length.out=length(S$data))
     if (!is.null(mask)) {
         xb <- x[!mask]
-        yb <- s$data[!mask]
+        yb <- S$data[!mask]
     } else {
         xb <- x
-        yb <- s$data
+        yb <- S$data
     }
     fit <- lm(yb ~ poly(xb, order, raw=TRUE))
     res <- as.numeric(residuals(fit))
-    print(sd(res, na.rm=TRUE))
+    cat("standard deviation of residuals: ", sd(res, na.rm=TRUE), "\n")
     bl <- as.numeric(predict(fit, newdata=data.frame(xb=x)))
     bl
 }

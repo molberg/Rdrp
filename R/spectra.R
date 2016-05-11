@@ -49,6 +49,10 @@ plot.spectrum <- function(x, type='l', col='blue', ...) {
 #' @param col the colour of the plot, default 'blue'
 #' @param ... further arguments to be passed to generic function plot
 #' @param grid specify grid (nrow x ncol) on which to organize spectra
+#' @examples
+#' data(salsa)
+#' plot(salsa)
+#' plot(salsa, grid=c(29,1))
 #' @export
 plot.spectra <- function(x, type='l', col='blue', ..., grid=NULL) {
     head <- getHead(x)

@@ -19,4 +19,9 @@
 \description{
 Plot all spectra in a dataset using matplot or a grid of plots.
 }
+\examples{
+data(salsa)
+plot(salsa)
+plot(salsa, grid=c(29,1))
+}
 

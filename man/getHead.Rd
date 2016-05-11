@@ -9,7 +9,7 @@ getHead(L)
 \item{L}{a list of spectra (each with components 'head', 'freq' and 'data')}
 }
 \value{
-a data.frame formed by row-binding all the individual 'head'ers
+a data.frame formed by row-binding all the individual 'head's
 }
 \description{
 Given a list L, where each list member is itself a list with
@@ -33,5 +33,8 @@ getHead(list(S1,S2))
 #   target   ra  dec dt
 # 1  Orion 1.23 -0.5 20
 # 2  SgrB2 5.43  0.5 20
+}
+\seealso{
+\code{\link{addColumns}}, \code{\link{modify}}
 }
 

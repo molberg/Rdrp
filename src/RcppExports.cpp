@@ -176,7 +176,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // moment
-NumericVector moment(List S, LogicalVector mask);
+DataFrame moment(List S, LogicalVector mask);
 RcppExport SEXP Rdrp_moment(SEXP SSEXP, SEXP maskSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;

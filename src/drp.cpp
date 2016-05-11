@@ -14,7 +14,8 @@ using namespace Rcpp;
 //' members with identical names and types.
 //'
 //' @param L a list of spectra (each with components 'head', 'freq' and 'data')
-//' @return a data.frame formed by row-binding all the individual 'head'ers
+//' @return a data.frame formed by row-binding all the individual 'head's
+//' @seealso \code{\link{addColumns}}, \code{\link{modify}}
 //' @examples
 //' S1 <- list(head=list(target="Orion", ra=1.23, dec=-0.5, dt=as.integer(20)), freq=-5:5, data=rnorm(11))
 //' S2 <- list(head=list(target="SgrB2", ra=5.43, dec=+0.5, dt=as.integer(20)), freq=-5:5, data=rnorm(11))
@@ -259,6 +260,11 @@ NumericMatrix getVelo(List L) {
 //' From a list of spectra, get the data vectors and return as matrix.
 //' @param L a list of spectra (each with components 'head', 'freq' and 'data')
 //' @return a matrix having all the data vectors as columns
+//' @seealso \code{\link{getFreq}}, \code{\link{getVelo}}
+//' @examples
+//' data(salsa)
+//' D <- getData(salsa)
+//' image(D)             # show data matrix as color image
 // [[Rcpp::export]]
 NumericMatrix getData(List L) {
     static char error[80];
@@ -322,6 +328,11 @@ IntegerVector getDimension(List L) {
 //'
 //' @param L a list of spectra (each with components 'head', 'freq' and 'data')
 //' @return the average spectrum
+//' @examples
+//' data(salsa)
+//' plot(salsa)           # plot individual spectra in upper frame ...
+//' A <- average(salsa)
+//' lines(A$freq, A$data, lwd=5, col='red')
 // [[Rcpp::export]]
 List average(List L) {
     static char error[80];
@@ -439,6 +450,13 @@ void modify(List L, std::string column, SEXP value) {
 //' @param L a list of spectra
 //' @param newnames a character vector holding an array of column names to be
 //'        added to the header
+//' @seealso \code{\link{modify}}
+//' @examples
+//' data(salsa)
+//' print(getHead(salsa))
+//' addColumns(salsa, "T.sys")
+//' modify(salsa, "T.sys", rep(300.0, 29))
+//' print(getHead(salsa))    # header should now have additional column T.sys
 // [[Rcpp::export]]
 void addColumns(List L, CharacterVector newnames) {
     static char error[80];
@@ -632,7 +650,7 @@ bool useVelocity() {
         std::string system = as<std::string>(options["system"]);
         flag = (system == "velocity");
     }
-    Rcout << "use velocity ? " << flag << std::endl;
+    // Rcout << "use velocity ? " << flag << std::endl;
     return flag;
 }
 
@@ -644,6 +662,13 @@ bool useVelocity() {
 //' @param mask a logical vector equal to TRUE for all the channels that should
 //'        be integrated.
 //' @return the integrated value
+//' @examples
+//' data(salsa)
+//' assign("system","velocity", Rdrp::options)     # work in velocity space
+//' v <- velocity(salsa[[1]])     # get velocity vector from first spectrum
+//' mask <- v > -20 & v < 20      # integrate from -20..20 km/s
+//' # call 'area' for each of the spectra in 'salsa' with parameter 'mask'
+//' sapply(salsa, FUN=area, mask)
 // [[Rcpp::export]]
 double area(List S, LogicalVector mask) {
     static char error[80];
@@ -679,9 +704,16 @@ double area(List S, LogicalVector mask) {
 //' @param S a single spectrum
 //' @param mask a logical vector equal to TRUE for all the channels that should
 //'        be integrated.
-//' @return minimum, maximum, mean, rms, skewness and kurtosis
+//' @return a data frame containing minimum, maximum, mean, sdev, skewness and kurtosis
+//' @seealso \code{\link{area}}
+//' @examples
+//' data(salsa)
+//' A <- average(salsa)
+//' lmask <- mask(A, c(1420,1421))  # calculate moments between 1420...1421 MHz
+//' moment(A, mask=lmask)
+//' do.call("rbind", lapply(salsa, moment, lmask)) # do this for individual spectra
 // [[Rcpp::export]]
-NumericVector moment(List S, LogicalVector mask) {
+DataFrame moment(List S, LogicalVector mask) {
     static char error[80];
 
     if (!S.inherits("spectrum")) stop("Input must be a spectrum");
@@ -694,7 +726,6 @@ NumericVector moment(List S, LogicalVector mask) {
         stop(error);
     }
 
-    NumericVector results(6);
     double mean = data[0];
     double Tmin = mean;
     double Tmax = Tmin;
@@ -722,17 +753,12 @@ NumericVector moment(List S, LogicalVector mask) {
     var /= (double)(nc-1);
     sdev = sqrt(var);
     if (var != 0.0) {
-	skew /= pow((double)nc*sdev, 3.0);
-	kurt /= pow((double)nc*var, 2.0)-3.0;
-    }
-    results[0] = Tmin;
-    results[1] = Tmax;
-    results[2] = mean;
-    results[3] = sdev;
-    results[4] = skew;
-    results[5] = kurt;
+        skew /= pow((double)nc*sdev, 3.0);
+        kurt /= pow((double)nc*var, 2.0)-3.0;
 
-    return results;
+    }
+    return DataFrame::create(_["min"]= Tmin, _["max"]= Tmax, _["mean"]= mean,
+                             _["sdev"]= sdev, _["skew"]= skew, _["kurt"]= kurt);
 }
 
 //' Trim channels from spectra

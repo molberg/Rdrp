@@ -18,4 +18,12 @@ the integrated value
 Given a mask defining the spectral areas of interest, return the integrated
 area over those region(s).
 }
+\examples{
+data(salsa)
+assign("system","velocity", Rdrp::options)     # work in velocity space
+v <- velocity(salsa[[1]])     # get velocity vector from first spectrum
+mask <- v > -20 & v < 20      # integrate from -20..20 km/s
+# call 'area' for each of the spectra in 'salsa' with parameter 'mask'
+sapply(salsa, FUN=area, mask)
+}
 

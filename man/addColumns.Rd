@@ -15,4 +15,14 @@ added to the header}
 Add new columns to the header part of the spectra, you may fill these new
 columns by using routine 'modify'.
 }
+\examples{
+data(salsa)
+print(getHead(salsa))
+addColumns(salsa, "T.sys")
+modify(salsa, "T.sys", rep(300.0, 29))
+print(getHead(salsa))    # header should now have additional column T.sys
+}
+\seealso{
+\code{\link{modify}}
+}
 

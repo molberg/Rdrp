@@ -12,7 +12,7 @@ readClass(filename)
 list of length n, where n is the number of scans found
 }
 \description{
-Given a file name, open the file and scan it for single dish spectra
+Given a filename, open the file and scan it for single dish spectra
 or continuum scans. Each encountered scan is returned as a list with
 a head, freq and data section. For continuum scans, the frequency
 vector will simply be a running index. All the individual lists are

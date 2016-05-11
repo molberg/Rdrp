@@ -18,10 +18,10 @@ fake <- function(id) {
     list(head=head, freq=freq, data=data)
 }
 
-test_that("filter is working", {
+test_that("sieve is working", {
     S <- list(head=list(target="foo"), freq=seq(10),data=seq(10))
     class(S) <- "spectrum"
-    S <- Rdrp::filter(S, rep(1,3))
+    S <- Rdrp::sieve(S, rep(1,3))
     expect_equal(S$freq, c(2,4,6,8))
     expect_equal(S$data, c(2,4,6,8))
 })
@@ -73,21 +73,21 @@ test_that("resample is working", {
     S <- Rdrp::resample(S, f1, smooth=FALSE)
     expect_equal(S$freq, f1)
     expect_equal(S$data, c(NA, f1[2:8]))
-    f <- seq(182500,183500)
-    f0 = 183000
-    S <- list(head=list(id=1, target="foo", dt=10, T.sys=300, f0=f0), freq=f, data=rnorm(length(f))) # +5.0*exp(-(f-f0)^2/100.0))
-    class(S) <- "spectrum"
-    plot(S)
-    N <- 100
-    f1 <- seq(182500, 183500, length.out=N)
-    points(f1, rep(0, N), col='red', pch=3)
-    S1 <- resample(S, f1)
-    lines(S1$freq, S1$data, lwd=3, col='green')
+    # f <- seq(182500,183500)
+    # f0 = 183000
+    # S <- list(head=list(id=1, target="foo", dt=10, T.sys=300, f0=f0), freq=f, data=rnorm(length(f))) # +5.0*exp(-(f-f0)^2/100.0))
+    # class(S) <- "spectrum"
+    # plot(S)
+    # N <- 100
+    # f1 <- seq(182500, 183500, length.out=N)
+    # points(f1, rep(0, N), col='red', pch=3)
+    # S1 <- resample(S, f1)
+    # lines(S1$freq, S1$data, lwd=3, col='green')
     # S2 <- resample(S, f1, smooth=FALSE)
     # lines(S2$freq, S2$data, lwd=3, col='red')
-    r.df <- sqrt((S1$freq[2]-S1$freq[1])/(S$freq[2]-S$freq[1]))
-    r.rms <- sd(S$data)/sd(S1$data)
-    percent <- (r.rms-r.df)/r.rms
-    print(c(r.df, r.rms, percent))
-    expect_lt(percent, 0.20)
+    # r.df <- sqrt((S1$freq[2]-S1$freq[1])/(S$freq[2]-S$freq[1]))
+    # r.rms <- sd(S$data)/sd(S1$data)
+    # percent <- (r.rms-r.df)/r.rms
+    # print(c(r.df, r.rms, percent))
+    # expect_lt(percent, 0.20)
 })

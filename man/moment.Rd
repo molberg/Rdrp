@@ -12,10 +12,20 @@ moment(S, mask)
 be integrated.}
 }
 \value{
-minimum, maximum, mean, rms, skewness and kurtosis
+a data frame containing minimum, maximum, mean, sdev, skewness and kurtosis
 }
 \description{
 Given a mask defining the spectral areas of interest, return the integrated
 area over those region(s).
+}
+\examples{
+data(salsa)
+A <- average(salsa)
+lmask <- mask(A, c(1420,1421))  # calculate moments between 1420...1421 MHz
+moment(A, mask=lmask)
+do.call("rbind", lapply(salsa, moment, lmask)) # do this for individual spectra
+}
+\seealso{
+\code{\link{area}}
 }
 

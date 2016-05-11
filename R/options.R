@@ -1,3 +1,5 @@
+#' Global options
+#'
 options <- new.env()
 
 .onLoad <- function(libname, pkgname) {

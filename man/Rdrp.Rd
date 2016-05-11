@@ -8,7 +8,7 @@
 The Rdrp package provides commands for the reduction of spectral line
 data originating from single dish radio astronomical observations. In
 that sense it is similar to programs like CLASS, which is part of the
-\code{\link[GILDAS]{https://www.iram.fr/IRAMFR/GILDAS/}} system. But
+\url{https://www.iram.fr/IRAMFR/GILDAS/} system. But
 contrary to CLASS (and other alternatives), Rdrp is built as a
 package for the R programming language, thus building on a huge
 reservoir of other numerical and statistical tools. Also, the user

@@ -15,4 +15,10 @@ the average spectrum
 From a list of spectra, calculate the average spectrum where the weighting is
 done using system temperature and integration times of the headers.
 }
+\examples{
+data(salsa)
+plot(salsa)           # plot individual spectra in upper frame ...
+A <- average(salsa)
+lines(A$freq, A$data, lwd=5, col='red')
+}
 

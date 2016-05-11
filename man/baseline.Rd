@@ -3,10 +3,10 @@
 \alias{baseline}
 \title{Fit a baseline to spectra in a dataset}
 \usage{
-baseline(s, order = 1, mask = NULL)
+baseline(S, order = 1, mask = NULL)
 }
 \arguments{
-\item{s}{a single spectrum}
+\item{S}{a single spectrum}
 
 \item{order}{the order of the polynomial to fit}
 
@@ -18,5 +18,18 @@ the fitted baselines
 \description{
 For all spectra in a dataset fit a polynomial of given order, using only the
 spectral channels given in window.
+}
+\examples{
+data(salsa)
+A <- average(salsa)
+plot(A)
+limits <- c(1419.9, 1421.1)
+abline(v=limits, lty=2, col='grey')    # mark line region
+linemask <- mask(A, limits)
+bl <- baseline(A, order=3, mask=linemask)
+lines(A$freq, bl, col='red')
+}
+\seealso{
+\code{\link{mask}}
 }
 

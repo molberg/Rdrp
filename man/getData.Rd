@@ -14,4 +14,12 @@ a matrix having all the data vectors as columns
 \description{
 From a list of spectra, get the data vectors and return as matrix.
 }
+\examples{
+data(salsa)
+D <- getData(salsa)
+image(D)             # show data matrix as color image
+}
+\seealso{
+\code{\link{getFreq}}, \code{\link{getVelo}}
+}
 
