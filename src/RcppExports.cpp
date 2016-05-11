@@ -6,6 +6,17 @@
 
 using namespace Rcpp;
 
+// readClass
+SEXP readClass(SEXP filename);
+RcppExport SEXP Rdrp_readClass(SEXP filenameSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< SEXP >::type filename(filenameSEXP);
+    __result = Rcpp::wrap(readClass(filename));
+    return __result;
+END_RCPP
+}
 // getHead
 DataFrame getHead(List L);
 RcppExport SEXP Rdrp_getHead(SEXP LSEXP) {
@@ -257,6 +268,17 @@ BEGIN_RCPP
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< Rcpp::List >::type L(LSEXP);
     __result = Rcpp::wrap(fooData(L));
+    return __result;
+END_RCPP
+}
+// smooft
+SEXP smooft(Rcpp::List S);
+RcppExport SEXP Rdrp_smooft(SEXP SSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< Rcpp::List >::type S(SSEXP);
+    __result = Rcpp::wrap(smooft(S));
     return __result;
 END_RCPP
 }

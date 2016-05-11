@@ -15,6 +15,7 @@ export(examine)
 
 export(readOSO20m)
 export(readSALSA)
+export(readClass)
 
 export(getHead)
 export(getFreq)

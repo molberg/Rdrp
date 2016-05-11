@@ -10,7 +10,7 @@ arma::vec getZeros(int n)
 }
 
 // [[Rcpp::export]]
-arma::mat fooData(Rcpp::List L) 
+arma::mat fooData(Rcpp::List L)
 {
     static char error[80];
 
@@ -44,3 +44,20 @@ arma::mat fooData(Rcpp::List L)
 
     return D;
 }
+
+// [[Rcpp::export]]
+SEXP smooft(Rcpp::List S)
+{
+    int i, j;
+    if (!S.inherits("spectrum")) Rcpp::stop("Input must be a spectrum");
+    arma::vec data = Rcpp::as<arma::vec>(S["data"]);
+    int nc = data.size();
+    Rcpp::Rcout << "length of data = " << nc << std::endl;
+
+    return R_NilValue;
+}
+
+/*** R
+head <- list(target="foo")
+S <-
+*/

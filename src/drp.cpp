@@ -995,7 +995,7 @@ files  <- system("ls /home/olberg/R/salsa/FITS/spectrum*.fits", intern = TRUE)
 L <- readSALSA(files)
 
 index <- seq(3,11, by=2)
-L1 <- getSubset(L, index)
+L1 <- L[index]
 head <- getHead(L1)
 F <- getFreq(L1)
 D <- getData(L1)
