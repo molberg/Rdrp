@@ -5,7 +5,8 @@ Version: 0.5
 Date: 2016-05-10
 Author: Michael Olberg
 Maintainer: Michael Olberg <michael.olberg@chalmers.se>
-Description: An R-based version of DRP.
+Description: The package provides commands for the reduction of spectral line
+    data originating from single dish radio astronomical observations.
 License: GPL (>= 2)
 LazyData: FALSE
 Depends:

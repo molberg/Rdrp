@@ -25,7 +25,11 @@ print.spectra <- function(x, ...) {
 #' @param x a single spectrum
 #' @param type the type of plot to be used, default is 'l', i.e. line
 #' @param col the colour of the plot, default 'blue'
-#' @param ... further arguments to be passed to generic function plot
+#' @param ... further arguments to be passed to generic plot function
+#' @examples
+#' \dontrun{
+#' plot(S, type='s')   # use 'histo' mode to plot spectrum
+#' }
 #' @export
 plot.spectrum <- function(x, type='l', col='blue', ...) {
     X <- x$freq
@@ -47,7 +51,7 @@ plot.spectrum <- function(x, type='l', col='blue', ...) {
 #' @param x a list of spectra
 #' @param type the type of plot to be used, default is 'l', i.e. line
 #' @param col the colour of the plot, default 'blue'
-#' @param ... further arguments to be passed to generic function plot
+#' @param ... further arguments to be passed to generic plot function
 #' @param grid specify grid (nrow x ncol) on which to organize spectra
 #' @examples
 #' data(salsa)

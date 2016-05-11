@@ -13,7 +13,7 @@ using namespace Rcpp;
 //' It is assumed that all 'head' components have the same number of
 //' members with identical names and types.
 //'
-//' @param L a list of spectra (each with components 'head', 'freq' and 'data')
+//' @param L a list of spectra, each with components 'head', 'freq' and 'data'
 //' @return a data.frame formed by row-binding all the individual 'head's
 //' @seealso \code{\link{addColumns}}, \code{\link{modify}}
 //' @examples
@@ -155,8 +155,9 @@ DataFrame getHead(List L) {
 //' Get frequency vectors
 //'
 //' From a list of spectra, get the frequency vectors and return as matrix.
-//' @param L a list of spectra (each with components 'head', 'freq' and 'data')
+//' @param L a list of spectra, each with components 'head', 'freq' and 'data'
 //' @return a matrix having all the frequency vectors as columns
+//' @seealso \code{\link{getVelo}}
 // [[Rcpp::export]]
 NumericMatrix getFreq(List L) {
     static char error[80];
@@ -233,8 +234,9 @@ NumericVector velocity(List S) {
 //' Get velocity vectors
 //'
 //' From a list of spectra, get the velocity vectors and return as matrix.
-//' @param L a list of spectra (each with components 'head', 'freq' and 'data')
+//' @param L a list of spectra, each with components 'head', 'freq' and 'data'
 //' @return a matrix having all the velcity vectors as columns
+//' @seealso \code{\link{getFreq}}
 // [[Rcpp::export]]
 NumericMatrix getVelo(List L) {
     static char error[80];
@@ -258,7 +260,7 @@ NumericMatrix getVelo(List L) {
 //' Get data vectors
 //'
 //' From a list of spectra, get the data vectors and return as matrix.
-//' @param L a list of spectra (each with components 'head', 'freq' and 'data')
+//' @param L a list of spectra, each with components 'head', 'freq' and 'data'
 //' @return a matrix having all the data vectors as columns
 //' @seealso \code{\link{getFreq}}, \code{\link{getVelo}}
 //' @examples
@@ -302,7 +304,7 @@ NumericMatrix getData(List L) {
 //' Get dimensions
 //'
 //' From a list of spectra, get the dimensions of the data.
-//' @param L a list of spectra (each with components 'head', 'freq' and 'data')
+//' @param L a list of spectra, each with components 'head', 'freq' and 'data'
 //' @return a two component integer vector (nChannels, nSpectra)
 // [[Rcpp::export]]
 IntegerVector getDimension(List L) {
@@ -326,13 +328,13 @@ IntegerVector getDimension(List L) {
 //' From a list of spectra, calculate the average spectrum where the weighting is
 //' done using system temperature and integration times of the headers.
 //'
-//' @param L a list of spectra (each with components 'head', 'freq' and 'data')
+//' @param L a list of spectra, each with components 'head', 'freq' and 'data'
 //' @return the average spectrum
 //' @examples
 //' data(salsa)
-//' plot(salsa)           # plot individual spectra in upper frame ...
 //' A <- average(salsa)
-//' lines(A$freq, A$data, lwd=5, col='red')
+//' plot(salsa)                              # plot individual spectra
+//' lines(A$freq, A$data, lwd=5, col='red')  # draw average spectrum on top
 // [[Rcpp::export]]
 List average(List L) {
     static char error[80];
@@ -665,8 +667,10 @@ bool useVelocity() {
 //' @examples
 //' data(salsa)
 //' assign("system","velocity", Rdrp::options)     # work in velocity space
-//' v <- velocity(salsa[[1]])     # get velocity vector from first spectrum
-//' mask <- v > -20 & v < 20      # integrate from -20..20 km/s
+//' S <- salsa[[1]]               # get the first spectrum
+//' v <- velocity(S)              # get velocity vector
+//' mask <- (v > -20) & (v < 20)  # integrate from -20..20 km/s
+//' area(S, mask)                 # calculate integrated area in K*km/s
 //' # call 'area' for each of the spectra in 'salsa' with parameter 'mask'
 //' sapply(salsa, FUN=area, mask)
 // [[Rcpp::export]]
@@ -982,6 +986,7 @@ List rescale(List S, double factor = 1.0, double bias = 0.0) {
 //' in baseline fitting.
 //' @param S a single spectrum
 //' @param limits pairs of values, which each define a window
+//' @return a vector of logical values, one per channel 
 // [[Rcpp::export]]
 LogicalVector mask(List S, NumericVector limits) {
     int nw = limits.length();
