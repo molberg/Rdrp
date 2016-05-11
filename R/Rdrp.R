@@ -60,7 +60,7 @@
 #' plot(S, type='s', col='red')
 #'
 #' @docType package
-#' @name Rdrp
+#' @name Rdrp-package
 #' @author Michael Olberg, \email{michael.olberg@@chalmers.se}
 NULL
 

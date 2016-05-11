@@ -12,9 +12,14 @@
 
 \item{col}{the colour of the plot, default 'blue'}
 
-\item{...}{further arguments to be passed to generic function plot}
+\item{...}{further arguments to be passed to generic plot function}
 }
 \description{
 Plot a single spectrum.
+}
+\examples{
+\dontrun{
+plot(S, type='s')   # use 'histo' mode to plot spectrum
+}
 }
 

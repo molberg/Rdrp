@@ -10,6 +10,9 @@ mask(S, limits)
 
 \item{limits}{pairs of values, which each define a window}
 }
+\value{
+a vector of logical values, one per channel
+}
 \description{
 For a given set of frequency (or velocity) windows, construct a
 matrix of logical values, defining the areas which should not be used

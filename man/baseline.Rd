@@ -22,12 +22,12 @@ spectral channels given in window.
 \examples{
 data(salsa)
 A <- average(salsa)
-plot(A)
-limits <- c(1419.9, 1421.1)
+limits <- c(1419.9, 1421.1)            # define line region
+linemask <- mask(A, limits)            # turn into mask
+bl <- baseline(A, order=3, mask=linemask)  # fit baseline
+plot(A)                                # plot average spectrum
 abline(v=limits, lty=2, col='grey')    # mark line region
-linemask <- mask(A, limits)
-bl <- baseline(A, order=3, mask=linemask)
-lines(A$freq, bl, col='red')
+lines(A$freq, bl, col='red')           # draw baseline on top
 }
 \seealso{
 \code{\link{mask}}

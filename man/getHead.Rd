@@ -6,7 +6,7 @@
 getHead(L)
 }
 \arguments{
-\item{L}{a list of spectra (each with components 'head', 'freq' and 'data')}
+\item{L}{a list of spectra, each with components 'head', 'freq' and 'data'}
 }
 \value{
 a data.frame formed by row-binding all the individual 'head's

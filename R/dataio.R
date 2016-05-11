@@ -9,7 +9,7 @@ lookup <- function(hdr, keyword) {
     value
 }
 
-#' Turn FITS files into a list of spectra.
+#' Read FITS files from the Onsala 20m telescope.
 #'
 #' Take a FITS file for a single spectrum from the OSO 20m and return a spectrum
 #' (i.e. a list consisting of header, frequency and data vectors).
@@ -73,7 +73,7 @@ readOSO20m <- function(fitsfiles) {
     L
 }
 
-#' Read a FITS file from the SALSA telescope..
+#' Read a FITS file from the Onsala SALSA student telescope.
 #'
 #' Take a FITS file for a single spectrum from SALSA and return a spectrum
 #' (i.e. a list consisting of header, frequency and data vectors).

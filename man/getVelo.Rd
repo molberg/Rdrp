@@ -6,12 +6,15 @@
 getVelo(L)
 }
 \arguments{
-\item{L}{a list of spectra (each with components 'head', 'freq' and 'data')}
+\item{L}{a list of spectra, each with components 'head', 'freq' and 'data'}
 }
 \value{
 a matrix having all the velcity vectors as columns
 }
 \description{
 From a list of spectra, get the velocity vectors and return as matrix.
+}
+\seealso{
+\code{\link{getFreq}}
 }
 

@@ -12,7 +12,7 @@
 
 \item{col}{the colour of the plot, default 'blue'}
 
-\item{...}{further arguments to be passed to generic function plot}
+\item{...}{further arguments to be passed to generic plot function}
 
 \item{grid}{specify grid (nrow x ncol) on which to organize spectra}
 }

@@ -6,7 +6,7 @@
 average(L)
 }
 \arguments{
-\item{L}{a list of spectra (each with components 'head', 'freq' and 'data')}
+\item{L}{a list of spectra, each with components 'head', 'freq' and 'data'}
 }
 \value{
 the average spectrum
@@ -17,8 +17,8 @@ done using system temperature and integration times of the headers.
 }
 \examples{
 data(salsa)
-plot(salsa)           # plot individual spectra in upper frame ...
 A <- average(salsa)
-lines(A$freq, A$data, lwd=5, col='red')
+plot(salsa)                              # plot individual spectra
+lines(A$freq, A$data, lwd=5, col='red')  # draw average spectrum on top
 }
 
