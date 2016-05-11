@@ -75,34 +75,34 @@ void trim(char *input)
     }
 }
 
-void fill_class_obs(CLASS_SECTION *o, char *i)
+void fill_class_v1_obs(CLASS_SECTION *o, char *edesc)
 {
     int k, nmax, n;
 
     if (!o) return;
-    if (!i) return;
+    if (!edesc) return;
 
     n = 0;
-    memcpy(o->ident,     &i[n], 4); n += 4;
-    memcpy(&(o->nbl),    &i[n], 4); n += 4;
-    memcpy(&(o->bytes),  &i[n], 4); n += 4;
-    memcpy(&(o->adr),    &i[n], 4); n += 4;
-    memcpy(&(o->nhead),  &i[n], 4); n += 4;
-    memcpy(&(o->len),    &i[n], 4); n += 4;
-    memcpy(&(o->ientry), &i[n], 4); n += 4;
-    memcpy(&(o->nsec),   &i[n], 4); n += 4;
-    memcpy(&(o->obsnum), &i[n], 4); n += 4;
+    memcpy(o->ident,     &edesc[n], 4); n += 4;
+    memcpy(&(o->nbl),    &edesc[n], 4); n += 4;
+    memcpy(&(o->bytes),  &edesc[n], 4); n += 4;
+    memcpy(&(o->adr),    &edesc[n], 4); n += 4;
+    memcpy(&(o->nhead),  &edesc[n], 4); n += 4;
+    memcpy(&(o->len),    &edesc[n], 4); n += 4;
+    memcpy(&(o->ientry), &edesc[n], 4); n += 4;
+    memcpy(&(o->nsec),   &edesc[n], 4); n += 4;
+    memcpy(&(o->obsnum), &edesc[n], 4); n += 4;
 
     nmax = o->nsec;
     if (nmax >= 4) nmax=4;
     for (k = 0; k < nmax; k++) {
-        memcpy(&(o->sec_cod[k]), &i[n], 4); n += 4;
+        memcpy(&(o->sec_cod[k]), &edesc[n], 4); n += 4;
     }
     for (k = 0; k < nmax; k++) {
-        memcpy(&(o->sec_len[k]), &i[n], 4); n += 4;
+        memcpy(&(o->sec_len[k]), &edesc[n], 4); n += 4;
     }
     for (k = 0; k < nmax; k++) {
-        memcpy(&(o->sec_adr[k]), &i[n], 4); n += 4;
+        memcpy(&(o->sec_adr[k]), &edesc[n], 4); n += 4;
     }
 }
 
@@ -136,6 +136,48 @@ void fill_class_v1_table(CLASS *o, char *i)
     strncpy(o->unused,  &i[n], 24); n += 24; o->unused[24] = '\0';
 }
 
+void fill_class_v2_obs(CLASS_SECTION_v2 *o, char *edesc)
+{
+    int k, nmax, n;
+
+    if (!o) return;
+    if (!edesc) return;
+
+    n = 0;
+    memcpy(o->ident,      &edesc[n], 4); n += 4;
+    memcpy(&(o->version), &edesc[n], 4); n += 4;
+    memcpy(&(o->nsec),    &edesc[n], 4); n += 4;
+    memcpy(&(o->nword),   &edesc[n], 8); n += 8;
+    memcpy(&(o->adata),   &edesc[n], 8); n += 8;
+    memcpy(&(o->ldata),   &edesc[n], 8); n += 8;
+    memcpy(&(o->xnum),    &edesc[n], 8); n += 8;
+
+    nmax = o->nsec;
+    if (nmax >= MAX_CLASS_SECT) nmax = MAX_CLASS_SECT;
+    for (k = 0; k < nmax; k++) {
+        memcpy(&(o->sec_cod[k]), &edesc[n], 4); n += 4;
+    }
+    for (k = 0; k < nmax; k++) {
+        memcpy(&(o->sec_len[k]), &edesc[n], 8); n += 8;
+    }
+    for (k = 0; k < nmax; k++) {
+        memcpy(&(o->sec_adr[k]), &edesc[n], 8); n += 8;
+    }
+#ifdef DEBUG
+    Rprintf("n=%d\n", n);
+    Rprintf("  ident   '%s' Identifier of Entry Description.\n", o->ident);
+    Rprintf("  version '%d' Observations version.\n", o->version);
+    Rprintf("  nsec    '%d' Number of sections.\n", o->nsec);
+    Rprintf("  nword   '%lli' Length of this entry [words].\n", o->nword);
+    Rprintf("  adata   '%lli' Data address [word].\n", o->adata);
+    Rprintf("  ldata   '%lli' Data length [words].\n", o->ldata);
+    Rprintf("  xnum    '%lli' Entry number.\n", o->xnum);
+    for (k = 0; k < nmax; k++) {
+        Rprintf("  %3d len=%lld words at addr %lld\n", o->sec_cod[k], o->sec_len[k], o->sec_adr[k]);
+    }
+#endif
+}
+
 void fill_class_v2_table(CLASS *o, char *i)
 {
     int n;
@@ -165,48 +207,6 @@ void fill_class_v2_table(CLASS *o, char *i)
     o->xbloc = (int)o->xlbloc;
     o->xnum = (int)o->xlnum;
     o->xscan = (int)o->xlscan;
-}
-
-void fill_class_v2_entrydesc(CLASS_SECTION_v2 *o, char *edesc)
-{
-    int a = 0, m, nmax;
-
-    if (!o) return;
-    if (!edesc) return;
-
-    memcpy(o->ident,      &edesc[a], 4); a += 4;
-    memcpy(&(o->version), &edesc[a], 4); a += 4;
-    memcpy(&(o->nsec),    &edesc[a], 4); a += 4;
-    memcpy(&(o->nword),   &edesc[a], 8); a += 8;
-    memcpy(&(o->adata),   &edesc[a], 8); a += 8;
-    memcpy(&(o->ldata),   &edesc[a], 8); a += 8;
-    memcpy(&(o->xnum),    &edesc[a], 8);  a += 8;
-
-    nmax = o->nsec;
-    if (nmax >= MAX_CLASS_SECT) nmax = MAX_CLASS_SECT;
-
-    for (m=0; m<nmax; m++) {
-        memcpy(&(o->sec_cod[m]), &edesc[a], 4); a += 4;
-    }
-    for (m=0; m<nmax; m++) {
-        memcpy(&(o->sec_len[m]), &edesc[a], 8); a += 8;
-    }
-    for (m=0; m<nmax; m++) {
-        memcpy(&(o->sec_adr[m]), &edesc[a], 8); a += 8;
-    }
-#ifdef DEBUG
-    Rprintf("a=%d\n", a);
-    Rprintf("  ident   '%s' Identifier of Entry Description.\n", o->ident);
-    Rprintf("  version '%d' Observations version.\n", o->version);
-    Rprintf("  nsec    '%d' Number of sections.\n", o->nsec);
-    Rprintf("  nword   '%lli' Length of this entry [words].\n", o->nword);
-    Rprintf("  adata   '%lli' Data address [word].\n", o->adata);
-    Rprintf("  ldata   '%lli' Data length [words].\n", o->ldata);
-    Rprintf("  xnum    '%lli' Entry number.\n", o->xnum);
-    for (m=0; m<nmax; m++) {
-        Rprintf("  %3d len=%lld words at addr %lld\n", o->sec_cod[m], o->sec_len[m], o->sec_adr[m]);
-    }
-#endif
 }
 
 void list_xdata(int nbl, CLASS *c)
@@ -523,7 +523,6 @@ int fill_class_v2_data(CLASS_SECTION_v2 *cs, char *s, int size, CLASS *c)
 #ifdef ALLOC
     Rprintf("%p -- allocated %d floats for data\n", c->data, ndata);
 #endif
-
     p = &s[0];
     for (i = 0; i < ndata; i++) {
         memcpy(&(c->data[i]), p, 4);
@@ -653,14 +652,14 @@ FILE *get_classfile_descriptor(const char *file, CLASS_INFO *info)
 
 int get_class_v1_data(FILE *fp, int curr_nbl, CLASS_INFO *info, SEXP a)
 {
-    int k, n, len, nbl, ns, nc, nchan;
+    int k, n, len, nbl, ns, nc;
     static char block[CLASS_BLK_SIZE], *sbl = NULL;
     const char *datetime = NULL;
     double restf, fres, LO, lam, bet, rchan; // vres
     SEXP scan, classattrib;
     SEXP head, freq, data;
     SEXP nam;
-    SEXP id, scanno, target, line, RA, Dec, f0, fLO, df, vs, dt, tsys, utc; // dv
+    SEXP id, scanno, target, line, RA, Dec, f0, fLO, df, vs, dt, tsys, utc;
 
     CLASS_SECTION cobs;
 
@@ -670,7 +669,7 @@ int get_class_v1_data(FILE *fp, int curr_nbl, CLASS_INFO *info, SEXP a)
         len = fread(block, sizeof(char), CLASS_BLK_SIZE, fp);
         nbl = check_block(st, info->first, n+1);
         if (nbl) {
-            fill_class_obs(&cobs, block);
+            fill_class_v1_obs(&cobs, block);
 #ifdef DEBUG
             Rprintf("%7d %12s %12s %d %d %d %d %d %d %d %d %d (%d %d %d %d | %d %d %d %d | %d %d %d %d)\n",
                     n,
@@ -768,11 +767,9 @@ int get_class_v1_data(FILE *fp, int curr_nbl, CLASS_INFO *info, SEXP a)
                                   sbl, cobs.nbl*512, &st[cobs.obsnum]);
             }
             rchan = (st[cobs.obsnum]).s.rchan;
-            nchan = (st[cobs.obsnum]).s.nchan;
             restf = (st[cobs.obsnum]).s.restf;
             LO = ((st[cobs.obsnum]).s.restf + (st[cobs.obsnum]).s.image)/2.0;
             fres = (st[cobs.obsnum]).s.fres;
-            // vres = (st[cobs.obsnum]).s.vres;
             lam = (st[cobs.obsnum]).p.lam;
             bet = (st[cobs.obsnum]).p.bet;
             lam += (st[cobs.obsnum]).p.lamof/cos(bet);
@@ -782,8 +779,7 @@ int get_class_v1_data(FILE *fp, int curr_nbl, CLASS_INFO *info, SEXP a)
             REAL(fLO)[0] = LO;
             REAL(f0)[0] = restf;
             REAL(df)[0] = fres;
-            REAL(vs)[0] = (st[cobs.obsnum]).s.voff; // xs has this: + (0.0-rchan)*vres;
-            // REAL(dv)[0] = vres;
+            REAL(vs)[0] = (st[cobs.obsnum]).s.voff;
             REAL(dt)[0] = (st[cobs.obsnum]).g.time;
             REAL(tsys)[0] = (st[cobs.obsnum]).g.tsys;
             datetime = obstime((st[cobs.obsnum]).xdobs + 60549, (st[cobs.obsnum]).g.ut);
@@ -853,7 +849,7 @@ int get_class_v2_data(FILE *fp, int nscans, CLASS_INFO *info, int extno, SEXP a,
     SEXP scan, classattrib;
     SEXP head, freq, data;
     SEXP nam;
-    SEXP id, scanno, target, line, RA, Dec, f0, fLO, df, vs, dt, tsys, utc; // dv
+    SEXP id, scanno, target, line, RA, Dec, f0, fLO, df, vs, dt, tsys, utc;
 
     CLASS_SECTION_v2 cobs;
     CLASS *o;
@@ -869,7 +865,7 @@ int get_class_v2_data(FILE *fp, int nscans, CLASS_INFO *info, int extno, SEXP a,
         fseek(fp, 4*pos, SEEK_SET);
         len = fread(block, sizeof(char), CLASS_BLK_SIZE, fp);
         //        if (nbl) {
-        fill_class_v2_entrydesc(&cobs, block);
+        fill_class_v2_obs(&cobs, block);
 #ifdef DEBUG
         Rprintf("%7d %12s %12s %d %d (%d %d %d %d | %d %d %d %d | %d %d %d %d)\n",
                 n,
@@ -902,19 +898,19 @@ int get_class_v2_data(FILE *fp, int nscans, CLASS_INFO *info, int extno, SEXP a,
         namesgets(head, nam);
         UNPROTECT(1);
 
-        PROTECT(id = allocVector(INTSXP, 1));
-        PROTECT(scanno = allocVector(INTSXP, 1));
-        PROTECT(target = allocVector(STRSXP, 1));
-        PROTECT(line = allocVector(STRSXP, 1));
-        PROTECT(RA = allocVector(REALSXP, 1));
-        PROTECT(Dec = allocVector(REALSXP, 1));
-        PROTECT(fLO = allocVector(REALSXP, 1));
-        PROTECT(f0 = allocVector(REALSXP, 1));
-        PROTECT(df = allocVector(REALSXP, 1));
-        PROTECT(vs = allocVector(REALSXP, 1));
-        PROTECT(dt = allocVector(REALSXP, 1));
-        PROTECT(tsys = allocVector(REALSXP, 1));
-        PROTECT(utc = allocVector(STRSXP, 1));
+        PROTECT(id = allocVector(INTSXP, 1));         // 0
+        PROTECT(scanno = allocVector(INTSXP, 1));     // 1
+        PROTECT(target = allocVector(STRSXP, 1));     // 2
+        PROTECT(line = allocVector(STRSXP, 1));       // 3
+        PROTECT(RA = allocVector(REALSXP, 1));        // 4
+        PROTECT(Dec = allocVector(REALSXP, 1));       // 5
+        PROTECT(fLO = allocVector(REALSXP, 1));       // 6
+        PROTECT(f0 = allocVector(REALSXP, 1));        // 7
+        PROTECT(df = allocVector(REALSXP, 1));        // 8
+        PROTECT(vs = allocVector(REALSXP, 1));        // 9
+        PROTECT(dt = allocVector(REALSXP, 1));        // 10
+        PROTECT(tsys = allocVector(REALSXP, 1));      // 11
+        PROTECT(utc = allocVector(STRSXP, 1));        // 12
 
         INTEGER(id)[0] = n;
         INTEGER(scanno)[0] = st[ns].xscan;
@@ -985,7 +981,6 @@ int get_class_v2_data(FILE *fp, int nscans, CLASS_INFO *info, int extno, SEXP a,
         bet = (st[ns]).p.bet;
         lam += (st[ns]).p.lamof/cos(bet);
         bet += (st[ns]).p.betof;
-
         REAL(RA)[0] = lam*180.0/M_PI;
         REAL(Dec)[0] = bet*180.0/M_PI;
         REAL(fLO)[0] = LO;
@@ -997,7 +992,7 @@ int get_class_v2_data(FILE *fp, int nscans, CLASS_INFO *info, int extno, SEXP a,
         datetime = obstime((st[ns]).xdobs + 60549, (st[ns]).g.ut);
         SET_STRING_ELT(utc, 0, mkChar(datetime));
 
-        // Scan the data
+        /* Scan data */
         datasize = 4*cobs.ldata;
         datapos = 4*(pos + cobs.adata - 1);
         databl = (char *)malloc(datasize * sizeof(char));
