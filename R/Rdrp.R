@@ -31,10 +31,9 @@
 #' @examples
 #' library(Rdrp)
 #' \dontrun{
-#' library(Rgildas)    # allows to read native CLASS data files
 #' assign("system","velocity", Rdrp::options) # work in velocity space
 #' # now read some data which e.g. we may have obtained at APEX
-#' L <- readGildas("mydata.apex")
+#' L <- readClass("mydata.apex")
 #' H <- getHead(L)
 #' print(H)            # take a look at the header information
 #' i <- which(H$target == "IC348" & H$line == "CO(3-2)")
