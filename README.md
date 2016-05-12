@@ -10,7 +10,7 @@ reservoir of other numerical and statistical tools. Also, the user
 gets the high quality, powerful built-in graphics from R for free.
 
 The principle design is as follows: data are organized in memory in
-the form of lists (of class *spectrum*), which have three componnents:
+the form of lists (of class *spectrum*), which have three components:
 
  * *head* header information for the spectrum, itself a list
  * *freq* a numeric vector giving the frequencies of all spectral
