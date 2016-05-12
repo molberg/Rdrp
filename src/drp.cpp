@@ -859,12 +859,15 @@ List sieve(List S, NumericVector coeffs) {
 //'
 //' @param S a single spectrum
 //' @param f a frequency vector onto which the spectrum should be resampled
-//' @param smooth if TRUE convolve with Gaussian response, if FALSE perform
-//' cubic spline interpolation
+//' @param smooth if TRUE convolve with Gaussian response
 //' @return the resampled spectrum
 // [[Rcpp::export]]
-List resample(List S, NumericVector f, bool smooth=true) {
+List resample(List S, NumericVector f, bool smooth=false) {
+    // We will use a Gaussian filter below with a noise bandwidth given by the
+    // channel spacing of vector f, we need the follwoing constants for this:
     const double a = 4.0*log(2.0);
+    const double A = sqrt(M_PI/a);
+    double df, DF, Df, df0, df1, w, sum, sumw;
     int i, j;
     if (!S.inherits("spectrum")) stop("Input must be a spectrum");
 
@@ -879,65 +882,49 @@ List resample(List S, NumericVector f, bool smooth=true) {
     NumericVector freq1 = clone(f);
     NumericVector data1(nout);
 
-    if (smooth) {
-        i = 0;
-        double DF = fabs(freq1[1]-freq1[0]);
-        // Rcout << "resample: DF = " << DF << std::endl;
-        for (j = 0; j < nout; j++) {
-            double sum = 0.0;
-            double sumw = 0.0;
-            double w = 0.0;
-            for (i = 0; i < nc; i++) {
-                double delta = (freq1[j]-freq0[i])/DF;
-                if (fabs(delta) < 1.5) {
-                    w = exp(-a*delta*delta);
-                    sum += data0[i]*w;
-                    sumw += w;
-                }
-            }
-            if (sumw > 0.0) data1[j] = sum/sumw;
-            else            data1[j] = 0.0;
-        }
-    } else {
-        NumericVector wi(nc);
-        NumericVector wr(nc);
-        wi[0] = wr[0] = 0.0;
-        for (i = 1; i < nc-1; i++) {
-            double p = 0.5*data0[i-1]+2.0;
-            if (p != 0.0) {
-                wr[i] = -0.5/p;
-                wi[i] = (3.0*(data0[i+1]-2.0*data0[i]
-                              +data0[i-1])-0.5*wi[i-1])/p;
-            } else wi[i] = wr[i] = 0.0;
-        }
-        wi[nc-1] = wr[nc-1] = 0.0;
-        for (i = nc-1; i > 0; i--) wr[i-1] = wr[i-1]*wr[i]+wi[i-1];
-        /* save old spectrum in 'wi' for interpolation */
-        for (i = 0; i < nc; i++) wi[i] = data0[i];
+    df = fabs(freq0[1]-freq0[0]);
+    DF = fabs(freq1[1]-freq1[0]);
+    if (DF < df) stop("Can't resample to higher resolution");
+    df0 = (DF-df)/2.0;
+    df1 = (DF+df)/2.0;
 
-        i = 0;
+    if (smooth) {
         for (j = 0; j < nout; j++) {
             if ((freq1[j] < freq0[0]) || (freq1[j] > freq0[nc-1])) {
                 data1[j] = NA_REAL;
-                // Rcout << "resample: NA " << i << " " << j << " " << freq1[j] << std::endl;
-                continue;
-            }
-            while (freq0[i] < freq1[j]) i++;
-            int l = i-1;
-            int u = (freq0[i] == freq1[j]) ? l : l+1;
-            if (u == l) {
-                data1[j] = data0[i];
             } else {
-                double a = (freq0[u]-freq1[j])/(freq0[u]-freq0[l]);
-                double b = 1.0-a;
-                data1[j] = a*(wi[l]+(a*a-1)*wr[l]/6)+b*(wi[u]+(b*b-1)*wr[u]/6);
-                /* if ((data1[j] > data0[l]) && (data1[j] > data0[u])) {
-                    Rcout << j << ": " << data1[j] << std::endl;
-                    Rcout << data0[l] << " " << data0[u] << std::endl;
-                    Rcout << a << " " << b << std::endl;
-                    Rcout << wi[l] << " " << wi[u] << std::endl;
-                    Rcout << wr[l] << " " << wr[u] << std::endl;
-                } */
+                sum = 0.0;
+                sumw = 0.0;
+                w = 0.0;
+                for (i = 0; i < nc; i++) {
+                    double delta = A*(freq1[j]-freq0[i])/DF;
+                    if (fabs(delta) < 1.5) {
+                        w = exp(-a*delta*delta);
+                        sum += data0[i]*w;
+                        sumw += w;
+                    }
+                }
+                data1[j] = sum/sumw;
+            }
+        }
+    } else {
+        for (j = 0; j < nout; j++) {
+            if ((freq1[j] < freq0[0]) || (freq1[j] > freq0[nc-1])) {
+                data1[j] = NA_REAL;
+            } else {
+                sum = 0.0;
+                sumw = 0.0;
+                w = 0.0;
+                for (i = 0; i < nc; i++) {
+                    Df = fabs(freq1[j] - freq0[i]); 
+                    if (Df < df1) {
+                        if (Df < df0) w = 1.0;
+                        else          w = (df1-Df)/(df1-df0);
+                        sum += data0[i]*w;
+                        sumw += w;
+                    } 
+                }
+                data1[j] = sum/sumw;
             }
         }
     }

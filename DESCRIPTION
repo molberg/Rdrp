@@ -7,7 +7,7 @@ Author: Michael Olberg
 Maintainer: Michael Olberg <michael.olberg@chalmers.se>
 Description: The package provides commands for the reduction of spectral line
     data originating from single dish radio astronomical observations.
-License: GPL-2
+License: GPL-2 | file LICENSE
 LazyData: FALSE
 Depends:
     R(>= 2.10.0)
