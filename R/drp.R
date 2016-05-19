@@ -1,3 +1,54 @@
+#' Get header data.
+#'
+#' Given a list L, where each list member is itself a list with
+#' components 'head' (which is a list or a dataframe with one row),
+#' 'freq' (a numeric vector) and 'data' (another numeric vector of same
+#' length as freq), return all the 'head' components as a data frame,
+#' which will have as many rows as the length of the original list.
+#'
+#' It is assumed that all 'head' components have the same number of
+#' members with identical names and types.
+#'
+#' @param L a list of spectra, each with components 'head', 'freq' and 'data'
+#' @return a data.frame formed by row-binding all the individual 'head's
+#' @seealso \code{\link{modify}}
+#' @examples
+#' S1 <- list(head=list(target="Orion", ra=1.23, dec=-0.5, dt=as.integer(20)), freq=-5:5, data=rnorm(11))
+#' S2 <- list(head=list(target="SgrB2", ra=5.43, dec=+0.5, dt=as.integer(20)), freq=-5:5, data=rnorm(11))
+#'
+#' getHead(list(S1,S2))
+#'
+#' # will result in
+#'
+#' #   target   ra  dec dt
+#' # 1  Orion 1.23 -0.5 20
+#' # 2  SgrB2 5.43  0.5 20
+#'
+#' @export
+getHead <- function(L) {
+    headers <- do.call(rbind, lapply(L, function(x) { x$head }))
+    H <- as.data.frame(headers)
+    H
+}
+
+#' Modify a header column
+#'
+#' Supply new values for a column of the header
+#' @param L a list of spectra
+#' @param colname a string specifying which header column to modify
+#' @param value a vector holding the new values of the header column
+#' @export
+modify <- function(L, colname, value) {
+    if (length(value) == 1) value <- rep(value, length(L))
+    if (length(value) != length(L)) stop("wrong length of supplied value")
+    L <- lapply(seq(length(L)), function(i) {
+        S <- L[[i]]
+        S$head[colname] <- value[i]
+        S
+    })
+    L
+}
+
 #' Apply function to each spectrum in a dataaset
 #'
 #' Given a dataset of class 'spectra' and a function, apply this
@@ -112,4 +163,44 @@ stamp <- function(L) {
     }
     par(mfrow=c(1, 1))
     par(op)
+}
+
+#' Mark a region
+#'
+#' Use the mouse to mark region(s) of a spectrum to be avoided in baseline
+#' fitting. The number of points to be clicked should be even. The logical
+#' vector returned is of the same type as if mask(S, limits) hade been called
+#' with limits being the x-coordinates of all the clicked points.
+#'
+#' @param S a single spectrum, the one that is currently plotted
+#' @param n maximum number of points to be marked
+#' @param ... further parameters passed to 'identify'
+#' @return a logical vector, one per channel
+#' @seealso mask
+markregion <- function(S, n = length(x), ...) {
+    xy <- xy.coords(S$freq, S$data); x <- xy$x; y <- xy$y
+    sel <- rep(FALSE, length(x)); res <- integer(0)
+    while(sum(sel) < n) {
+        ans <- identify(x[!sel], y[!sel], n = 1, plot = FALSE, ...)
+        if (!length(ans)) break
+        ans <- which(!sel)[ans]
+        ## points(x[ans], y[ans], pch = pch)
+        abline(v=x[ans], lty=2, col='grey')
+        sel[ans] <- TRUE
+        res <- c(res, ans)
+    }
+    res
+    nw <- length(res)
+    if ((nw %% 2) == 1) stop("length of limits must be even")
+    W <- matrix(x[res], ncol=2, byrow=TRUE)
+    colnames(W) <- c("from","to")
+    rownames(W) <- NULL
+    print(as.data.frame(W))
+    usr <- par("usr")
+    y0 <- usr[3]+0.1*(usr[4]-usr[3])
+    mx <- c(x[1], rep(x[res], each=2), x[length(x)])
+    my <- c(rep(rep(c(0,1), nw/2), each=2), 0, 0)
+    lines(mx, y0+0.1*my*(usr[4]-usr[3]), type='s', col='red')
+    M <- mask(S, x[res])
+    M
 }

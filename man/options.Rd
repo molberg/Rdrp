@@ -3,7 +3,7 @@
 \name{options}
 \alias{options}
 \title{Global options}
-\format{\preformatted{<environment: 0x5303a90> 
+\format{\preformatted{<environment: 0x686f568> 
 }}
 \usage{
 options

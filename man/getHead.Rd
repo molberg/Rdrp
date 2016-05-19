@@ -15,7 +15,7 @@ a data.frame formed by row-binding all the individual 'head's
 Given a list L, where each list member is itself a list with
 components 'head' (which is a list or a dataframe with one row),
 'freq' (a numeric vector) and 'data' (another numeric vector of same
-length as freq), return all the 'head'components as a dataframe,
+length as freq), return all the 'head' components as a data frame,
 which will have as many rows as the length of the original list.
 }
 \details{
@@ -35,6 +35,6 @@ getHead(list(S1,S2))
 # 2  SgrB2 5.43  0.5 20
 }
 \seealso{
-\code{\link{addColumns}}, \code{\link{modify}}
+\code{\link{modify}}
 }
 

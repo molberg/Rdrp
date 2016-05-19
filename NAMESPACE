@@ -17,6 +17,8 @@ export(readSALSA)
 export(readClass)
 
 export(getHead)
+export(modify)
+
 export(getFreq)
 export(getVelo)
 export(getData)
@@ -24,8 +26,6 @@ export(frequencies)
 export(velocities)
 export(getDimension)
 export(average)
-export(modify)
-export(addColumns)
 
 export(area)
 export(trim)

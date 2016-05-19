@@ -14,36 +14,6 @@ readClass <- function(filename) {
     .Call('Rdrp_readClass', PACKAGE = 'Rdrp', filename)
 }
 
-#' Get header data.
-#'
-#' Given a list L, where each list member is itself a list with
-#' components 'head' (which is a list or a dataframe with one row),
-#' 'freq' (a numeric vector) and 'data' (another numeric vector of same
-#' length as freq), return all the 'head'components as a dataframe,
-#' which will have as many rows as the length of the original list.
-#'
-#' It is assumed that all 'head' components have the same number of
-#' members with identical names and types.
-#'
-#' @param L a list of spectra, each with components 'head', 'freq' and 'data'
-#' @return a data.frame formed by row-binding all the individual 'head's
-#' @seealso \code{\link{addColumns}}, \code{\link{modify}}
-#' @examples
-#' S1 <- list(head=list(target="Orion", ra=1.23, dec=-0.5, dt=as.integer(20)), freq=-5:5, data=rnorm(11))
-#' S2 <- list(head=list(target="SgrB2", ra=5.43, dec=+0.5, dt=as.integer(20)), freq=-5:5, data=rnorm(11))
-#'
-#' getHead(list(S1,S2))
-#'
-#' # will result in
-#'
-#' #   target   ra  dec dt
-#' # 1  Orion 1.23 -0.5 20
-#' # 2  SgrB2 5.43  0.5 20
-#'
-getHead <- function(L) {
-    .Call('Rdrp_getHead', PACKAGE = 'Rdrp', L)
-}
-
 #' Get frequency vectors
 #'
 #' From a list of spectra, get the frequency vectors and return as matrix.
@@ -64,8 +34,11 @@ getFreq <- function(L) {
 #' @seealso \code{\link{velocities}}
 #' @examples
 #' # resample spectrum at particular velocities
+#' \dontrun{
 #' v <- seq(-100,100,by=2)
 #' R <- resample(S, frequencies(S,v))
+#' }
+#' NULL
 frequencies <- function(S, v) {
     .Call('Rdrp_frequencies', PACKAGE = 'Rdrp', S, v)
 }
@@ -128,34 +101,6 @@ getDimension <- function(L) {
 #' lines(A$freq, A$data, lwd=5, col='red')  # draw average spectrum on top
 average <- function(L) {
     .Call('Rdrp_average', PACKAGE = 'Rdrp', L)
-}
-
-#' Modify a header column
-#'
-#' Supply new values for a column of the header
-#' @param L a list of spectra
-#' @param column a string specifying which header column to modify
-#' @param value a vector holding the new values of the header column
-modify <- function(L, column, value) {
-    invisible(.Call('Rdrp_modify', PACKAGE = 'Rdrp', L, column, value))
-}
-
-#' Add header columns
-#'
-#' Add new columns to the header part of the spectra, you may fill these new
-#' columns by using routine 'modify'.
-#' @param L a list of spectra
-#' @param newnames a character vector holding an array of column names to be
-#'        added to the header
-#' @seealso \code{\link{modify}}
-#' @examples
-#' data(salsa)
-#' print(getHead(salsa))
-#' addColumns(salsa, "T.sys")
-#' modify(salsa, "T.sys", rep(300.0, 29))
-#' print(getHead(salsa))    # header should now have additional column T.sys
-addColumns <- function(L, newnames) {
-    invisible(.Call('Rdrp_addColumns', PACKAGE = 'Rdrp', L, newnames))
 }
 
 bar <- function(which) {

@@ -3,12 +3,12 @@
 \alias{modify}
 \title{Modify a header column}
 \usage{
-modify(L, column, value)
+modify(L, colname, value)
 }
 \arguments{
 \item{L}{a list of spectra}
 
-\item{column}{a string specifying which header column to modify}
+\item{colname}{a string specifying which header column to modify}
 
 \item{value}{a vector holding the new values of the header column}
 }

@@ -2,156 +2,6 @@
 
 using namespace Rcpp;
 
-//' Get header data.
-//'
-//' Given a list L, where each list member is itself a list with
-//' components 'head' (which is a list or a dataframe with one row),
-//' 'freq' (a numeric vector) and 'data' (another numeric vector of same
-//' length as freq), return all the 'head'components as a dataframe,
-//' which will have as many rows as the length of the original list.
-//'
-//' It is assumed that all 'head' components have the same number of
-//' members with identical names and types.
-//'
-//' @param L a list of spectra, each with components 'head', 'freq' and 'data'
-//' @return a data.frame formed by row-binding all the individual 'head's
-//' @seealso \code{\link{addColumns}}, \code{\link{modify}}
-//' @examples
-//' S1 <- list(head=list(target="Orion", ra=1.23, dec=-0.5, dt=as.integer(20)), freq=-5:5, data=rnorm(11))
-//' S2 <- list(head=list(target="SgrB2", ra=5.43, dec=+0.5, dt=as.integer(20)), freq=-5:5, data=rnorm(11))
-//'
-//' getHead(list(S1,S2))
-//'
-//' # will result in
-//'
-//' #   target   ra  dec dt
-//' # 1  Orion 1.23 -0.5 20
-//' # 2  SgrB2 5.43  0.5 20
-//'
-// [[Rcpp::export]]
-DataFrame getHead(List L) {
-    static char error[80];
-    NumericVector d;
-    IntegerVector i;
-    CharacterVector c;
-
-    /* the length of our list is the number of spectra */
-    int nSpectra = L.length();
-
-    /* get the first spectrum */
-    List l = L[0];
-
-    /* get the header part, its length is the number of header columns */
-    List h = l[0];
-    int nHeader = h.length();
-
-    /* get header column names */
-    StringVector names = h.names();
-    /* vector to hold column types */
-    IntegerVector types(nHeader);
-
-    /* create a list which will be casted into a dataframe later */
-    List H(nHeader);
-
-    for (int row = 0; row < nSpectra; row++) {
-        /* get spectrum number 'row' */
-        l = L[row];
-        /* get the header part */
-        h = l["head"];
-        /* if this is not the first spectrum we are parsing, make sure we have correct number of columns */
-        if (row > 0 && h.length() != nHeader) {
-            sprintf(error, "header %d has wrong number of columns: %ld <> %d", row, h.length(), nHeader);
-            stop(error);
-        }
-        for (int col = 0; col < nHeader; col++) {
-            SEXP a = h[col];
-            int typ = TYPEOF(a);
-            switch (typ) {
-              case LGLSXP: /* logical header data */
-                if (row == 0) {
-                    H[col] = LogicalVector(nSpectra);
-                    types[col] = LGLSXP;
-                } else {
-                    if (types[col] != typ) {
-                        sprintf(error, "type mismatch in column %d: %d <> %d", col, types[col], typ);
-                        stop(error);
-                    }
-                }
-                c = H[col];
-                c[row] = as<bool>(h[col]);
-                break;
-              case INTSXP: /* integer header data */
-                /* if this is first spectrum, retrieve type and create empty vector for storing the column */
-                if (row == 0) {
-                    H[col] = IntegerVector(nSpectra);
-                    types[col] = INTSXP;
-                } else {
-                    if (types[col] != typ) {
-                        sprintf(error, "type mismatch in column %d: %d <> %d", col, types[col], typ);
-                        stop(error);
-                    }
-                }
-                i = H[col];
-                i[row] = as<int>(h[col]);
-                break;
-              case REALSXP: /* floating point (double) header data */
-                if (row == 0) {
-                    H[col] = NumericVector(nSpectra);
-                    types[col] = REALSXP;
-                } else {
-                    if (types[col] != typ) {
-                        sprintf(error, "type mismatch in column %d: %d <> %d", col, types[col], typ);
-                        stop(error);
-                    }
-                }
-                d = H[col];
-                d[row] = as<double>(h[col]);
-                break;
-              case STRSXP: /* string header data */
-                if (row == 0) {
-                    H[col] = CharacterVector(nSpectra);
-                    types[col] = STRSXP;
-                } else {
-                    if (types[col] != typ) {
-                        sprintf(error, "type mismatch in column %d: %d <> %d", col, types[col], typ);
-                        stop(error);
-                    }
-                }
-                c = H[col];
-                c[row] = as<std::string>(h[col]);
-                break;
-              case VECSXP: /* generic vector header data */
-                if (row == 0) {
-                    H[col] = IntegerVector(nSpectra);
-                    types[col] = VECSXP;
-                } else {
-                    if (types[col] != typ) {
-                        sprintf(error, "type mismatch in column %d: %d <> %d", col, types[col], typ);
-                        stop(error);
-                    }
-                }
-                break;
-              default:
-                sprintf(error, "invalid column data type: %d", typ);
-                warning(error);
-                if (row == 0) {
-                    H[col] = IntegerVector(nSpectra);
-                    types[col] = INTSXP;
-                }
-                i = H[col];
-                i[row] = NA_INTEGER;
-                // sprintf(error, "invalid column data type: %d", typ);
-                // stop(error);
-                break;
-            }
-        }
-    }
-
-    /* So now we have all the headers in list H */
-    H.attr("names") = names;
-    return DataFrame(H);
-}
-
 //' Get frequency vectors
 //'
 //' From a list of spectra, get the frequency vectors and return as matrix.
@@ -202,8 +52,11 @@ NumericMatrix getFreq(List L) {
 //' @seealso \code{\link{velocities}}
 //' @examples
 //' # resample spectrum at particular velocities
+//' \dontrun{
 //' v <- seq(-100,100,by=2)
 //' R <- resample(S, frequencies(S,v))
+//' }
+//' NULL
 // [[Rcpp::export]]
 NumericVector frequencies(List S, NumericVector v) {
     if (!S.inherits("spectrum")) stop("Input must be a spectrum");
@@ -450,82 +303,6 @@ List average(List L) {
     average.attr("class") = "spectrum";
 
     return average;
-}
-
-//' Modify a header column
-//'
-//' Supply new values for a column of the header
-//' @param L a list of spectra
-//' @param column a string specifying which header column to modify
-//' @param value a vector holding the new values of the header column
-// [[Rcpp::export]]
-void modify(List L, std::string column, SEXP value) {
-    static char error[80];
-
-    /* get the first spectrum */
-    List l = L[0];
-    List head = l["head"];
-
-    int nSpectra = L.length();
-    int typ = TYPEOF(value);
-    int n = Rf_length(value);
-    // Rcout << "value of type " << typ << " and length " << n << std::endl;
-    if ((n != 1) && (n != nSpectra)) {
-        sprintf(error, "value should have length 1 or %d", nSpectra);
-        stop(error);
-    }
-
-    GenericVector v(value);
-    for (int i = 0; i < nSpectra; i++) {
-        l = L[i];
-        head = l["head"];
-        if (head.containsElementNamed(column.data())) {
-            if (n == 1) head[column] = v[0];
-            else        head[column] = v[i];
-        }
-    }
-}
-
-//' Add header columns
-//'
-//' Add new columns to the header part of the spectra, you may fill these new
-//' columns by using routine 'modify'.
-//' @param L a list of spectra
-//' @param newnames a character vector holding an array of column names to be
-//'        added to the header
-//' @seealso \code{\link{modify}}
-//' @examples
-//' data(salsa)
-//' print(getHead(salsa))
-//' addColumns(salsa, "T.sys")
-//' modify(salsa, "T.sys", rep(300.0, 29))
-//' print(getHead(salsa))    # header should now have additional column T.sys
-// [[Rcpp::export]]
-void addColumns(List L, CharacterVector newnames) {
-    static char error[80];
-
-    int nColumns = newnames.length();
-    int nSpectra = L.length();
-    List l = L[0];
-    List head = l["head"];
-    StringVector names = head.names();
-    for (int j = 0; j < nColumns; j++) names.push_back(newnames[j]);
-
-    IntegerVector v(nSpectra);
-    for (int i = 0; i < nSpectra; i++) {
-        l = L[i];
-        head = l["head"];
-        int oldsize = head.length();
-        List newhead(oldsize+nColumns);
-        for (int j = 0; j < oldsize; j++) {
-            newhead[j] = head[j];
-        }
-        // for (int j = 0; j < nColumns; j++) {
-        //     newhead[j] = v[i];
-        // }
-        newhead.attr("names") = names;
-        l["head"] = newhead;
-    }
 }
 
 // [[Rcpp::export]]
@@ -1033,7 +810,7 @@ LogicalVector mask(List S, NumericVector limits) {
     for (int j = 0; j < nc; j++) {
         window[j] = false;
         for (int i = 0; i < nw; i++) {
-            if ((x[j] >= limits[i]) && (x[j] <= limits[i+1])) {
+            if ((x[j] >= limits[2*i]) && (x[j] <= limits[2*i+1])) {
                 window[j] = true;
                 break;
             }

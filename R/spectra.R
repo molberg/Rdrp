@@ -37,7 +37,7 @@ plot.spectrum <- function(x, type='l', col='blue', ...) {
     if (exists("system", envir=options)) {
         print(options$system)
         if (options$system == "velocity") {
-            X = velocity(x)
+            X = velocities(x)
         }
     }
     # print(cbind(X,D))

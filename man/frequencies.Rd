@@ -18,8 +18,11 @@ Turn a given velocity vector into a frequency vector.
 }
 \examples{
 # resample spectrum at particular velocities
+\dontrun{
 v <- seq(-100,100,by=2)
 R <- resample(S, frequencies(S,v))
+}
+NULL
 }
 \seealso{
 \code{\link{velocities}}

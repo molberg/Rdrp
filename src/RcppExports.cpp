@@ -17,17 +17,6 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
-// getHead
-DataFrame getHead(List L);
-RcppExport SEXP Rdrp_getHead(SEXP LSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< List >::type L(LSEXP);
-    __result = Rcpp::wrap(getHead(L));
-    return __result;
-END_RCPP
-}
 // getFreq
 NumericMatrix getFreq(List L);
 RcppExport SEXP Rdrp_getFreq(SEXP LSEXP) {
@@ -104,29 +93,6 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< List >::type L(LSEXP);
     __result = Rcpp::wrap(average(L));
     return __result;
-END_RCPP
-}
-// modify
-void modify(List L, std::string column, SEXP value);
-RcppExport SEXP Rdrp_modify(SEXP LSEXP, SEXP columnSEXP, SEXP valueSEXP) {
-BEGIN_RCPP
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< List >::type L(LSEXP);
-    Rcpp::traits::input_parameter< std::string >::type column(columnSEXP);
-    Rcpp::traits::input_parameter< SEXP >::type value(valueSEXP);
-    modify(L, column, value);
-    return R_NilValue;
-END_RCPP
-}
-// addColumns
-void addColumns(List L, CharacterVector newnames);
-RcppExport SEXP Rdrp_addColumns(SEXP LSEXP, SEXP newnamesSEXP) {
-BEGIN_RCPP
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< List >::type L(LSEXP);
-    Rcpp::traits::input_parameter< CharacterVector >::type newnames(newnamesSEXP);
-    addColumns(L, newnames);
-    return R_NilValue;
 END_RCPP
 }
 // bar
