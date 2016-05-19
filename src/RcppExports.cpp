@@ -39,14 +39,26 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
-// velocity
-NumericVector velocity(List S);
-RcppExport SEXP Rdrp_velocity(SEXP SSEXP) {
+// frequencies
+NumericVector frequencies(List S, NumericVector v);
+RcppExport SEXP Rdrp_frequencies(SEXP SSEXP, SEXP vSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< List >::type S(SSEXP);
-    __result = Rcpp::wrap(velocity(S));
+    Rcpp::traits::input_parameter< NumericVector >::type v(vSEXP);
+    __result = Rcpp::wrap(frequencies(S, v));
+    return __result;
+END_RCPP
+}
+// velocities
+NumericVector velocities(List S);
+RcppExport SEXP Rdrp_velocities(SEXP SSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< List >::type S(SSEXP);
+    __result = Rcpp::wrap(velocities(S));
     return __result;
 END_RCPP
 }

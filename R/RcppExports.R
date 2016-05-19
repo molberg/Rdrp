@@ -54,14 +54,31 @@ getFreq <- function(L) {
     .Call('Rdrp_getFreq', PACKAGE = 'Rdrp', L)
 }
 
+#' Construct frequency vector
+#'
+#' Turn a given velocity vector into a frequency vector.
+#'
+#' @param S a single spectrum
+#' @param v a numeric vector holding velocities
+#' @return a numeric vector holding frequencies
+#' @seealso \code{\link{velocities}}
+#' @examples
+#' # resample spectrum at particular velocities
+#' v <- seq(-100,100,by=2)
+#' R <- resample(S, frequencies(S,v))
+frequencies <- function(S, v) {
+    .Call('Rdrp_frequencies', PACKAGE = 'Rdrp', S, v)
+}
+
 #' Construct velocity vector
 #'
 #' Turn the frequency vector into a velocity vector.
 #'
 #' @param S a single spectrum
 #' @return a numeric vector holding velocities
-velocity <- function(S) {
-    .Call('Rdrp_velocity', PACKAGE = 'Rdrp', S)
+#' @seealso \code{\link{frequencies}}
+velocities <- function(S) {
+    .Call('Rdrp_velocities', PACKAGE = 'Rdrp', S)
 }
 
 #' Get velocity vectors
@@ -181,7 +198,7 @@ reverse <- function(S) {
 #' data(salsa)
 #' assign("system","velocity", Rdrp::options)     # work in velocity space
 #' S <- salsa[[1]]               # get the first spectrum
-#' v <- velocity(S)              # get velocity vector
+#' v <- velocities(S)            # get velocity vector
 #' mask <- (v > -20) & (v < 20)  # integrate from -20..20 km/s
 #' area(S, mask)                 # calculate integrated area in K*km/s
 #' # call 'area' for each of the spectra in 'salsa' with parameter 'mask'
@@ -238,10 +255,9 @@ sieve <- function(S, coeffs) {
 #'
 #' @param S a single spectrum
 #' @param f a frequency vector onto which the spectrum should be resampled
-#' @param smooth if TRUE convolve with Gaussian response, if FALSE perform
-#' cubic spline interpolation
+#' @param smooth if TRUE convolve with Gaussian response
 #' @return the resampled spectrum
-resample <- function(S, f, smooth = TRUE) {
+resample <- function(S, f, smooth = FALSE) {
     .Call('Rdrp_resample', PACKAGE = 'Rdrp', S, f, smooth)
 }
 
@@ -264,7 +280,7 @@ rescale <- function(S, factor = 1.0, bias = 0.0) {
 #' in baseline fitting.
 #' @param S a single spectrum
 #' @param limits pairs of values, which each define a window
-#' @return a vector of logical values, one per channel 
+#' @return a vector of logical values, one per channel
 mask <- function(S, limits) {
     .Call('Rdrp_mask', PACKAGE = 'Rdrp', S, limits)
 }

@@ -73,21 +73,27 @@ test_that("resample is working", {
     S <- Rdrp::resample(S, f1, smooth=FALSE)
     expect_equal(S$freq, f1)
     expect_equal(S$data, c(NA, f1[2:8]))
-    # f <- seq(182500,183500)
-    # f0 = 183000
-    # S <- list(head=list(id=1, target="foo", dt=10, T.sys=300, f0=f0), freq=f, data=rnorm(length(f))) # +5.0*exp(-(f-f0)^2/100.0))
-    # class(S) <- "spectrum"
-    # plot(S)
-    # N <- 100
-    # f1 <- seq(182500, 183500, length.out=N)
-    # points(f1, rep(0, N), col='red', pch=3)
-    # S1 <- resample(S, f1)
-    # lines(S1$freq, S1$data, lwd=3, col='green')
-    # S2 <- resample(S, f1, smooth=FALSE)
-    # lines(S2$freq, S2$data, lwd=3, col='red')
-    # r.df <- sqrt((S1$freq[2]-S1$freq[1])/(S$freq[2]-S$freq[1]))
-    # r.rms <- sd(S$data)/sd(S1$data)
-    # percent <- (r.rms-r.df)/r.rms
-    # print(c(r.df, r.rms, percent))
-    # expect_lt(percent, 0.20)
+    if (FALSE) {
+        f <- seq(182500,183500)
+        f0 = 183000
+        S <- list(head=list(id=1, target="foo", dt=10, T.sys=300, f0=f0),
+                  freq=f, data=rnorm(length(f))+5.0*exp(-(f-f0)^2/100.0))
+        class(S) <- "spectrum"
+        plot(S, type='s', xlim=c(182800,183200))
+        N <- 100
+        f1 <- seq(182500, 183500, length.out=N)
+        abline(v=f1, lty=2, col='grey')
+        ## points(f1, rep(0, N), col='red', pch=3)
+        S1 <- resample(S, f1)
+        lines(S1$freq, S1$data, lwd=1, col='green')
+        points(S1$freq, S1$data, col='green')
+        S2 <- resample(S, f1, smooth=FALSE)
+        lines(S2$freq, S2$data, lwd=1, col='red')
+        points(S2$freq, S2$data, col='red')
+        r.df <- sqrt((S1$freq[2]-S1$freq[1])/(S$freq[2]-S$freq[1]))
+        r.rms <- sd(S$data)/sd(S1$data)
+        percent <- (r.rms-r.df)/r.rms
+        print(c(r.df, r.rms, percent))
+        expect_lt(percent, 0.20)
+    }
 })

@@ -22,7 +22,7 @@ area over those region(s).
 data(salsa)
 assign("system","velocity", Rdrp::options)     # work in velocity space
 S <- salsa[[1]]               # get the first spectrum
-v <- velocity(S)              # get velocity vector
+v <- velocities(S)            # get velocity vector
 mask <- (v > -20) & (v < 20)  # integrate from -20..20 km/s
 area(S, mask)                 # calculate integrated area in K*km/s
 # call 'area' for each of the spectra in 'salsa' with parameter 'mask'

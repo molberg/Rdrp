@@ -192,14 +192,55 @@ NumericMatrix getFreq(List L) {
     return F;
 }
 
+//' Construct frequency vector
+//'
+//' Turn a given velocity vector into a frequency vector.
+//'
+//' @param S a single spectrum
+//' @param v a numeric vector holding velocities
+//' @return a numeric vector holding frequencies
+//' @seealso \code{\link{velocities}}
+//' @examples
+//' # resample spectrum at particular velocities
+//' v <- seq(-100,100,by=2)
+//' R <- resample(S, frequencies(S,v))
+// [[Rcpp::export]]
+NumericVector frequencies(List S, NumericVector v) {
+    if (!S.inherits("spectrum")) stop("Input must be a spectrum");
+    List head = S["head"];
+
+    int nc = v.length();
+    NumericVector freq(nc);
+
+    double f0 = 0.0;
+    double vs = 0.0;
+
+    /* initialize vs to mean of frequency vector */
+    for (int i = 0; i < nc; i++) vs += v[i];
+    vs /= nc;
+
+    /* use header variables, when available */
+    if (head.containsElementNamed("f0"))    f0 = as<double>(head["f0"]);
+    if (head.containsElementNamed("v.LSR")) vs = as<double>(head["v.LSR"]);
+    Rcout << "f0 = " << f0 << ", vs = " << vs << std::endl;
+
+    if (f0 == 0.0) stop("zero frequency");
+    /* now do conversion */
+    for (int i = 0; i < nc; i++) {
+        freq[i] = f0*(1.0-(v[i]-vs)/299792.46);
+    }
+    return freq;
+}
+
 //' Construct velocity vector
 //'
 //' Turn the frequency vector into a velocity vector.
 //'
 //' @param S a single spectrum
 //' @return a numeric vector holding velocities
+//' @seealso \code{\link{frequencies}}
 // [[Rcpp::export]]
-NumericVector velocity(List S) {
+NumericVector velocities(List S) {
     if (!S.inherits("spectrum")) stop("Input must be a spectrum");
     List head = S["head"];
 
@@ -249,7 +290,7 @@ NumericMatrix getVelo(List L) {
 
     for (int i = 0; i < nSpectra; i++) {
         List S = L[i];
-        NumericVector v = velocity(S);
+        NumericVector v = velocities(S);
         for (int j = 0; j < nChannels; j++) {
             V(j, i) = v[j];
         }
@@ -668,7 +709,7 @@ bool useVelocity() {
 //' data(salsa)
 //' assign("system","velocity", Rdrp::options)     # work in velocity space
 //' S <- salsa[[1]]               # get the first spectrum
-//' v <- velocity(S)              # get velocity vector
+//' v <- velocities(S)            # get velocity vector
 //' mask <- (v > -20) & (v < 20)  # integrate from -20..20 km/s
 //' area(S, mask)                 # calculate integrated area in K*km/s
 //' # call 'area' for each of the spectra in 'salsa' with parameter 'mask'
@@ -916,13 +957,13 @@ List resample(List S, NumericVector f, bool smooth=false) {
                 sumw = 0.0;
                 w = 0.0;
                 for (i = 0; i < nc; i++) {
-                    Df = fabs(freq1[j] - freq0[i]); 
+                    Df = fabs(freq1[j] - freq0[i]);
                     if (Df < df1) {
                         if (Df < df0) w = 1.0;
                         else          w = (df1-Df)/(df1-df0);
                         sum += data0[i]*w;
                         sumw += w;
-                    } 
+                    }
                 }
                 data1[j] = sum/sumw;
             }
@@ -973,7 +1014,7 @@ List rescale(List S, double factor = 1.0, double bias = 0.0) {
 //' in baseline fitting.
 //' @param S a single spectrum
 //' @param limits pairs of values, which each define a window
-//' @return a vector of logical values, one per channel 
+//' @return a vector of logical values, one per channel
 // [[Rcpp::export]]
 LogicalVector mask(List S, NumericVector limits) {
     int nw = limits.length();
@@ -986,7 +1027,7 @@ LogicalVector mask(List S, NumericVector limits) {
 
     bool flag = useVelocity();
     NumericVector x(clone(freq));
-    if (flag) x = velocity(S);
+    if (flag) x = velocities(S);
 
     LogicalVector window(nc);
     for (int j = 0; j < nc; j++) {

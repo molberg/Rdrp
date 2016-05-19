@@ -19,13 +19,14 @@ lookup <- function(hdr, keyword) {
 readOSO20m <- function(fitsfiles) {
     L <- lapply(fitsfiles,
                 function(filename) {
+                    MHz <- 1.0e6
                     f <- FITSio::readFITS(file=filename, hdu = 1, phdu = 1)
                     even <- seq(2, length(f$hdr), by=2)
                     odd <- even-1
                     hdr <- data.frame(key=f$hdr[odd], value=f$hdr[even], stringsAsFactors=FALSE)
                     data <- as.numeric(f$imDat)
-                    f0 <- f$axDat$crval[1]/1.0e6
-                    f.rest <- as.numeric(lookup(hdr, "RESTFREQ"))/1.0e6
+                    f0 <- f$axDat$crval[1]/MHz
+                    f.rest <- as.numeric(lookup(hdr, "RESTFREQ"))/MHz
                     if (f0 == 0.0 & is.numeric(f.rest)) {
                         f0 <- f.rest
                     }
@@ -33,12 +34,12 @@ readOSO20m <- function(fitsfiles) {
                     Dec <- f$axDat$crval[3]
                     offx <- f$axDat$cdelt[2]
                     offy <- f$axDat$cdelt[3]
-                    freq <- f0+f$axDat$cdelt[1]*(seq(f$axDat$len[1])-f$axDat$crpix[1])/1.0e6
+                    freq <- f0+f$axDat$cdelt[1]*(seq(f$axDat$len[1])-f$axDat$crpix[1])/MHz
                     id <- as.integer(lookup(hdr, "SCAN-NUM"))
                     dt <- as.double(lookup(hdr, "OBSTIME"))
                     target <- lookup(hdr, "OBJECT")
                     #f1 <- as.numeric(as.double(lookup(hdr, "IMAGFREQ")))
-                    df <- as.double(lookup(hdr, "CDELT1"))/1.0e6
+                    df <- as.double(lookup(hdr, "CDELT1"))/MHz
                     if (df < 0.0) {
                         df <- -df
                         freq <- rev(freq)
@@ -83,12 +84,13 @@ readOSO20m <- function(fitsfiles) {
 readSALSA <- function(fitsfiles) {
     L <- lapply(fitsfiles,
                 function(filename) {
+                    MHz <- 1.0e6
                     id <- as.integer(gsub("[^0-9]", "", basename(filename)))
                     f <- FITSio::readFITS(file=filename, hdu = 1, phdu = 1)
                     even <- seq(2, length(f$hdr), by=2)
                     odd <- even-1
                     hdr <- data.frame(key=f$hdr[odd], value=f$hdr[even], stringsAsFactors=FALSE)
-                    freq <- (f$axDat$crval[1]+f$axDat$cdelt[1]*(seq(f$axDat$len[1])-f$axDat$crpix[1]))/1.0e6
+                    freq <- (f$axDat$crval[1]+f$axDat$cdelt[1]*(seq(f$axDat$len[1])-f$axDat$crpix[1]))/MHz
                     bzero <- as.double(lookup(hdr, "BZERO"))
                     if (is.na(bzero)) bzero <- 0.0
                     bscale <- as.double(lookup(hdr, "BSCALE"))
@@ -99,10 +101,10 @@ readSALSA <- function(fitsfiles) {
                     onx <- as.double(lookup(hdr, "CRVAL2"))
                     ony <- as.double(lookup(hdr, "CRVAL3"))
                     dt <- as.double(lookup(hdr, "OBSTIME"))
-                    f1 <- as.double(lookup(hdr, "CRVAL1"))/1.0e6
-                    f0 <- as.double(lookup(hdr, "RESTFREQ"))/1.0e6
+                    f1 <- as.double(lookup(hdr, "CRVAL1"))/MHz
+                    f0 <- as.double(lookup(hdr, "RESTFREQ"))/MHz
                     if (is.na(f0)) f0 <- 1420.40575177
-                    df <- as.double(lookup(hdr, "CDELT1"))/1.0e6
+                    df <- as.double(lookup(hdr, "CDELT1"))/MHz
                     vs <- as.double(lookup(hdr, "VLSR"))
                     if (is.na(vs)) vs <- as.double(lookup(hdr, "VELO-LSR"))
                     tsys <- as.double(lookup(hdr, "TSYS"))

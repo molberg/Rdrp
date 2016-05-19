@@ -3,15 +3,14 @@
 \alias{resample}
 \title{Resample spectrum}
 \usage{
-resample(S, f, smooth = TRUE)
+resample(S, f, smooth = FALSE)
 }
 \arguments{
 \item{S}{a single spectrum}
 
 \item{f}{a frequency vector onto which the spectrum should be resampled}
 
-\item{smooth}{if TRUE convolve with Gaussian response, if FALSE perform
-cubic spline interpolation}
+\item{smooth}{if TRUE convolve with Gaussian response}
 }
 \value{
 the resampled spectrum
