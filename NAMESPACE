@@ -1,6 +1,9 @@
 useDynLib(Rdrp)
 import(RcppArmadillo)
 importFrom(Rcpp, evalCpp)
+importFrom("grDevices", "xy.coords")
+importFrom("graphics", "abline", "grid", "identify", "lines", "matplot", "mtext", "par", "plot")
+importFrom("stats", "lm", "predict", "residuals", "sd")
 
 S3method(print,spectrum)
 S3method(print,spectra)
@@ -18,6 +21,7 @@ export(readClass)
 
 export(getHead)
 export(modify)
+export(markRegion)
 
 export(getFreq)
 export(getVelo)

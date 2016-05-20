@@ -177,7 +177,7 @@ stamp <- function(L) {
 #' @param ... further parameters passed to 'identify'
 #' @return a logical vector, one per channel
 #' @seealso mask
-markregion <- function(S, n = length(x), ...) {
+markRegion <- function(S, n = length(x), ...) {
     xy <- xy.coords(S$freq, S$data); x <- xy$x; y <- xy$y
     sel <- rep(FALSE, length(x)); res <- integer(0)
     while(sum(sel) < n) {
