@@ -167,19 +167,23 @@ stamp <- function(L) {
 
 #' Mark a region
 #'
-#' Use the mouse to mark region(s) of a spectrum to be avoided in baseline
-#' fitting. The number of points to be clicked should be even. The logical
-#' vector returned is of the same type as if mask(S, limits) hade been called
-#' with limits being the x-coordinates of all the clicked points.
+#' Use the mouse to mark region(s) of a spectrum which should be avoided
+#' in baseline fitting. The number of points to be clicked should be
+#' even. The routine will call \code{mask(S, limits)} on exit, with limits
+#' being the x-coordinates of all the clicked points.
 #'
 #' @param S a single spectrum, the one that is currently plotted
-#' @param n maximum number of points to be marked
 #' @param ... further parameters passed to 'identify'
 #' @return a logical vector, one per channel
-#' @seealso mask
-markRegion <- function(S, n = length(x), ...) {
-    xy <- xy.coords(S$freq, S$data); x <- xy$x; y <- xy$y
-    sel <- rep(FALSE, length(x)); res <- integer(0)
+#' @seealso \code{\link{mask}}
+markRegion <- function(S, ...) {
+    x <- S$freq
+    if (get("system", Rdrp::options) == "velocity") x <- velocities(S)
+    xy <- xy.coords(x, S$data)
+    x <- xy$x
+    n <- length(x)
+    y <- xy$y
+    sel <- rep(FALSE, n); res <- integer(0)
     while(sum(sel) < n) {
         ans <- identify(x[!sel], y[!sel], n = 1, plot = FALSE, ...)
         if (!length(ans)) break
@@ -193,9 +197,8 @@ markRegion <- function(S, n = length(x), ...) {
     nw <- length(res)
     if ((nw %% 2) == 1) stop("length of limits must be even")
     W <- matrix(x[res], ncol=2, byrow=TRUE)
-    colnames(W) <- c("from","to")
-    rownames(W) <- NULL
-    print(as.data.frame(W))
+    DF <- data.frame(from=W[,1], to=W[,2])
+    print(DF)
     usr <- par("usr")
     y0 <- usr[3]+0.1*(usr[4]-usr[3])
     mx <- c(x[1], rep(x[res], each=2), x[length(x)])

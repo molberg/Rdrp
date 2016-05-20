@@ -4,12 +4,10 @@
 \alias{markRegion}
 \title{Mark a region}
 \usage{
-markRegion(S, n = length(x), ...)
+markRegion(S, ...)
 }
 \arguments{
 \item{S}{a single spectrum, the one that is currently plotted}
-
-\item{n}{maximum number of points to be marked}
 
 \item{...}{further parameters passed to 'identify'}
 }
@@ -17,12 +15,12 @@ markRegion(S, n = length(x), ...)
 a logical vector, one per channel
 }
 \description{
-Use the mouse to mark region(s) of a spectrum to be avoided in baseline
-fitting. The number of points to be clicked should be even. The logical
-vector returned is of the same type as if mask(S, limits) hade been called
-with limits being the x-coordinates of all the clicked points.
+Use the mouse to mark region(s) of a spectrum which should be avoided
+in baseline fitting. The number of points to be clicked should be
+even. The routine will call \code{mask(S, limits)} on exit, with limits
+being the x-coordinates of all the clicked points.
 }
 \seealso{
-mask
+\code{\link{mask}}
 }
 
