@@ -26,7 +26,7 @@
 #'
 #' @export
 getHead <- function(L) {
-    headers <- do.call(rbind, lapply(L, function(x) { x$head }))
+    headers <- do.call(rbind, lapply(L, function(x) { as.data.frame(x$head) }))
     H <- as.data.frame(headers)
     H
 }
