@@ -45,6 +45,31 @@ plot.spectrum <- function(x, type='l', col='blue', ...) {
     mtext(paste(x$head$id, x$head$target), 3, 1, adj=0.01)
 }
 
+#' Lines method for class spectrum
+#'
+#' Draw a spectrum.
+#' @param x a single spectrum
+#' @param type the type of plot to be used, default is 'l', i.e. line
+#' @param col the colour of the plot, default 'red'
+#' @param ... further arguments to be passed to generic lines function
+#' @examples
+#' \dontrun{
+#' plot(S1, type='s')   # use 'histo' mode to plot spectrum
+#' lines(S2, type='s')  # draw second spectrum on top
+#' }
+#' @export
+lines.spectrum <- function(x, type='l', col='red', ...) {
+    X <- x$freq
+    D <- x$data
+    if (exists("system", envir=options)) {
+        print(options$system)
+        if (options$system == "velocity") {
+            X = velocities(x)
+        }
+    }
+    lines(X, D, type=type, col=col, ...)
+}
+
 #' Plot method for class spectra
 #'
 #' Plot all spectra in a dataset using matplot or a grid of plots.
