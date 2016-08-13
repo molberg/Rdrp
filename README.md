@@ -53,8 +53,9 @@ Here is an example of what a short session may look like:
     linemask <- mask(A, c(-20,20))
     # fit a second order baseline
     bl <- baseline(A, order=2, mask=linemask)
-    plot(A, type='s')                   # plot the average spectrum ...
-    lines(velocities(A), bl, col='red') # ... and fitted baseline
-    A$data <- A$data - bl               # subtract baseline
+    print(bl$residuals)                        # print the residuals of the fit
+    plot(A, type='s')                          # plot the average spectrum 
+    lines(velocities(A), bl$fitted, col='red') # ... and fitted baseline
+    A$data <- A$data - bl$fitted               # subtract the fitted baseline
     plot(A, type='s', xlab="velocity [km/s]", ylab=expression(T[A]))
 ```

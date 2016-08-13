@@ -13,7 +13,7 @@ baseline(S, order = 1, mask = NULL)
 \item{mask}{a channel line mask, fit baseline to channels where mask = FALSE}
 }
 \value{
-the fitted baselines
+a list giving the fitted baseline and the residuals of the fit
 }
 \description{
 For all spectra in a dataset fit a polynomial of given order, using only the
@@ -27,7 +27,8 @@ linemask <- mask(A, limits)            # turn into mask
 bl <- baseline(A, order=3, mask=linemask)  # fit baseline
 plot(A)                                # plot average spectrum
 abline(v=limits, lty=2, col='grey')    # mark line region
-lines(A$freq, bl, col='red')           # draw baseline on top
+print(bl$residuals)                    # print the residuals of the fit
+lines(A$freq, bl$fitted, col='red')    # draw baseline on top
 }
 \seealso{
 \code{\link{mask}}

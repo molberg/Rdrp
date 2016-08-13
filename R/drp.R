@@ -89,7 +89,7 @@ drapply <- function(L, FUN, ..., simplify=TRUE) {
 #' @param S a single spectrum
 #' @param order the order of the polynomial to fit
 #' @param mask a channel line mask, fit baseline to channels where mask = FALSE
-#' @return the fitted baselines
+#' @return a list given the fitted baseline and the residuals of the fit
 #' @seealso \code{\link{mask}}
 #' @examples
 #' data(salsa)
@@ -99,7 +99,8 @@ drapply <- function(L, FUN, ..., simplify=TRUE) {
 #' bl <- baseline(A, order=3, mask=linemask)  # fit baseline
 #' plot(A)                                # plot average spectrum
 #' abline(v=limits, lty=2, col='grey')    # mark line region
-#' lines(A$freq, bl, col='red')           # draw baseline on top
+#' print(bl$residuals)                    # print the residuals of the fit
+#' lines(A$freq, bl$fitted, col='red')    # draw baseline on top
 #' @export
 baseline <- function(S, order=1, mask=NULL) {
     x <- seq(-1, 1, length.out=length(S$data))
