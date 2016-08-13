@@ -35,14 +35,13 @@ plot.spectrum <- function(x, type='l', col='blue', ...) {
     X <- x$freq
     D <- x$data
     if (exists("system", envir=options)) {
-        print(options$system)
         if (options$system == "velocity") {
             X = velocities(x)
         }
     }
     # print(cbind(X,D))
     plot(X, D, type=type, col=col, xlab="", ylab="", ...)
-    mtext(paste(x$head$id, x$head$target), 3, 1, adj=0.01)
+    mtext(paste(x$head$scan, x$head$target, x$head$line), 3, 1, adj=0.01)
 }
 
 #' Lines method for class spectrum

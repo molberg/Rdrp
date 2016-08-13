@@ -656,6 +656,7 @@ int get_class_v1_data(FILE *fp, int curr_nbl, CLASS_INFO *info, SEXP a)
     static char block[CLASS_BLK_SIZE], *sbl = NULL;
     const char *datetime = NULL;
     double restf, fres, LO, lam, bet, rchan; // vres
+    bool spectrum;
     SEXP scan, classattrib;
     SEXP head, freq, data;
     SEXP nam;
@@ -766,10 +767,24 @@ int get_class_v1_data(FILE *fp, int curr_nbl, CLASS_INFO *info, SEXP a)
                 fill_class_header(cobs.sec_cod[k], cobs.sec_adr[k], cobs.sec_len[k],
                                   sbl, cobs.nbl*512, &st[cobs.obsnum]);
             }
-            rchan = (st[cobs.obsnum]).s.rchan;
-            restf = (st[cobs.obsnum]).s.restf;
-            LO = ((st[cobs.obsnum]).s.restf + (st[cobs.obsnum]).s.image)/2.0;
-            fres = (st[cobs.obsnum]).s.fres;
+
+            spectrum = (st[cobs.obsnum].xkind == 0);
+            if (spectrum) {
+              rchan = (st[cobs.obsnum]).s.rchan;
+              restf = (st[cobs.obsnum]).s.restf;
+              LO = ((st[cobs.obsnum]).s.restf + (st[cobs.obsnum]).s.image)/2.0;
+              fres = (st[cobs.obsnum]).s.fres;
+            } else {
+              rchan = (st[cobs.obsnum]).u.rpoin;
+              restf = (st[cobs.obsnum]).u.tref;
+              LO = ((st[cobs.obsnum]).u.freq + (st[cobs.obsnum]).u.cimag)/2.0;
+              fres = (st[cobs.obsnum]).u.tres;
+              /*
+              Rprintf("scan is continuum: %f %f %f %f\n", rchan, restf, LO, fres);
+              Rprintf("scan is continuum: %f %f\n", (st[cobs.obsnum]).u.aref, 
+                                                    (st[cobs.obsnum]).u.apos);
+              */
+            }
             lam = (st[cobs.obsnum]).p.lam;
             bet = (st[cobs.obsnum]).p.bet;
             lam += (st[cobs.obsnum]).p.lamof/cos(bet);

@@ -112,8 +112,9 @@ baseline <- function(S, order=1, mask=NULL) {
     }
     fit <- lm(yb ~ poly(xb, order, raw=TRUE))
     res <- as.numeric(residuals(fit))
-    cat("standard deviation of residuals: ", sd(res, na.rm=TRUE), "\n")
-    bl <- as.numeric(predict(fit, newdata=data.frame(xb=x)))
+    ## cat("standard deviation of residuals: ", sd(res, na.rm=TRUE), "\n")
+    bl <- list(fitted=as.numeric(predict(fit, newdata=data.frame(xb=x))),
+               residuals=sd(res, na.rm=TRUE))
     bl
 }
 
