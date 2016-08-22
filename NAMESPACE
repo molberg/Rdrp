@@ -41,5 +41,3 @@ export(moment)
 export(resample)
 export(rescale)
 export(reverse)
-
-export(options)

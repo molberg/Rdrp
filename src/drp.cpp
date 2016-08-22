@@ -349,6 +349,15 @@ void printStats(const char *cmd, NumericVector d) {
     Rcout << cmd << ":" << min << " " << max << " " << mean << " " << var << std::endl;
 }
 
+bool useVelocity() {
+    bool flag = false;
+    static const SEXP option = Rf_install("system");
+    std::string system = as<std::string>(Rf_GetOption1(option));
+
+    flag = (system == "velocity");
+    return flag;
+}
+
 // Prototype of function working on a single spectrum
 //
 // Does nothing
@@ -359,16 +368,14 @@ List foo(List S) {
     NumericVector freq0 = S["freq"];
     NumericVector data0 = S["data"];
 
-    SEXP o;
-    Environment env = Environment::namespace_env("Rdrp");
-    o = env.get("options");
-    Environment options(o);
-    bool found = options.exists("system");
-
     List head1 = clone(head0);
     NumericVector freq1 = clone(freq0);
     NumericVector data1 = clone(data0);
 
+    bool flag = useVelocity();
+
+    // put code here
+    
     List S1 = List::create(Named("head") = head1, Named("freq") = freq1, Named("data") = data1);
     S1.attr("class") = "spectrum";
     return S1;
@@ -461,19 +468,6 @@ List reverse(List S) {
     return S1;
 }
 
-bool useVelocity() {
-    bool flag = false;
-    Environment env = Environment::namespace_env("Rdrp");
-    SEXP o = env.get("options");
-    Environment options(o);
-    if (options.exists("system")) {
-        std::string system = as<std::string>(options["system"]);
-        flag = (system == "velocity");
-    }
-    // Rcout << "use velocity ? " << flag << std::endl;
-    return flag;
-}
-
 //' Calculate integrated area
 //'
 //' Given a mask defining the spectral areas of interest, return the integrated
@@ -484,7 +478,7 @@ bool useVelocity() {
 //' @return the integrated value
 //' @examples
 //' data(salsa)
-//' assign("system","velocity", Rdrp::options)     # work in velocity space
+//' options(system="velocity")    # work in velocity space
 //' S <- salsa[[1]]               # get the first spectrum
 //' v <- velocities(S)            # get velocity vector
 //' mask <- (v > -20) & (v < 20)  # integrate from -20..20 km/s

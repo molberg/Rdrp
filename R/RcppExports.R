@@ -141,7 +141,7 @@ reverse <- function(S) {
 #' @return the integrated value
 #' @examples
 #' data(salsa)
-#' assign("system","velocity", Rdrp::options)     # work in velocity space
+#' options(system="velocity")    # work in velocity space
 #' S <- salsa[[1]]               # get the first spectrum
 #' v <- velocities(S)            # get velocity vector
 #' mask <- (v > -20) & (v < 20)  # integrate from -20..20 km/s

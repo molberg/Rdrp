@@ -31,7 +31,7 @@
 #' @examples
 #' library(Rdrp)
 #' \dontrun{
-#' assign("system","velocity", Rdrp::options) # work in velocity space
+#' options(system="velocity")      # work in velocity space
 #' # now read some data which e.g. we may have obtained at APEX
 #' L <- readClass("mydata.apex")
 #' H <- getHead(L)

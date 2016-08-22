@@ -40,7 +40,7 @@ Here is an example of what a short session may look like:
     plot(S)             # this will use plot.spectrum(...)
     #
     # a somewhat more realistic session, using data from APEX
-    assign("system","velocity", Rdrp::options) # work in velocity space
+    options(system = "velocity")               # work in velocity space
     L <- readClass("mydata.apex")              # class(L) is 'spectra'
     H <- getHead(L)
     print(H)            # take a look at the header information

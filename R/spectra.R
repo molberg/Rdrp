@@ -34,12 +34,10 @@ print.spectra <- function(x, ...) {
 plot.spectrum <- function(x, type='l', col='blue', ...) {
     X <- x$freq
     D <- x$data
-    if (exists("system", envir=options)) {
-        if (options$system == "velocity") {
-            X = velocities(x)
-        }
+    if (getOption("system") == "velocity") {
+        X = velocities(x)
     }
-    # print(cbind(X,D))
+
     plot(X, D, type=type, col=col, xlab="", ylab="", ...)
     mtext(paste(x$head$scan, x$head$target, x$head$line), 3, 1, adj=0.01)
 }
@@ -60,11 +58,8 @@ plot.spectrum <- function(x, type='l', col='blue', ...) {
 lines.spectrum <- function(x, type='l', col='red', ...) {
     X <- x$freq
     D <- x$data
-    if (exists("system", envir=options)) {
-        print(options$system)
-        if (options$system == "velocity") {
-            X = velocities(x)
-        }
+    if (getOption("system") == "velocity") {
+        X = velocities(x)
     }
     lines(X, D, type=type, col=col, ...)
 }
@@ -86,12 +81,10 @@ plot.spectra <- function(x, type='l', col='blue', ..., grid=NULL) {
     head <- getHead(x)
     freq <- getFreq(x)
     data <- getData(x)
-    if (exists("system", envir=options)) {
-        print(options$system)
-        if (options$system == "velocity") {
-            freq = getVelo(x)
-        }
+    if (getOption("system") == "velocity") {
+        freq = getVelo(x)
     }
+
     if (is.null(grid)) {
         matplot(freq, data, type=type, lty=1, xlab="", ylab="", ...)
     } else {

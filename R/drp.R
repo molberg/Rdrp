@@ -180,7 +180,7 @@ stamp <- function(L) {
 #' @seealso \code{\link{mask}}
 markRegion <- function(S, ...) {
     x <- S$freq
-    if (get("system", Rdrp::options) == "velocity") x <- velocities(S)
+    if (getOption("system") == "velocity") x <- velocities(S)
     xy <- xy.coords(x, S$data)
     x <- xy$x
     n <- length(x)
