@@ -1085,6 +1085,7 @@ void set_classfile_type(const char *file, CLASS_INFO *info)
 {
     int len, record_length = 0;
     FILE *fp;
+    static char msg[80];
     static char type[4], reclen[4];
 
     if (!info) return;
@@ -1093,8 +1094,8 @@ void set_classfile_type(const char *file, CLASS_INFO *info)
 
     fp = fopen(file, "r");                  /* open the file for reading  */
     if (!fp) {                              /* test for failure           */
-        warning("Cannot open file '%s'.\n", file);
-        return;
+	sprintf(msg, "Cannot open file '%s'.", file);
+	error(msg);
     }
 
     len = fread(type, sizeof(char), 4, fp);

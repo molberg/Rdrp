@@ -747,6 +747,7 @@ List resample(List S, NumericVector f, bool smooth=false) {
         }
     }
 
+    if (head1.containsElementNamed("df"))    head1["df"] = DF;
     List S1 = List::create(Named("head") = head1, Named("freq") = freq1, Named("data") = data1);
     S1.attr("class") = "spectrum";
     return S1;

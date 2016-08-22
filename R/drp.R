@@ -89,7 +89,7 @@ drapply <- function(L, FUN, ..., simplify=TRUE) {
 #' @param S a single spectrum
 #' @param order the order of the polynomial to fit
 #' @param mask a channel line mask, fit baseline to channels where mask = FALSE
-#' @return a list given the fitted baseline and the residuals of the fit
+#' @return a list giving the fitted baseline and the residuals of the fit
 #' @seealso \code{\link{mask}}
 #' @examples
 #' data(salsa)
