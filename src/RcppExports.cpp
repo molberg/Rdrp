@@ -95,17 +95,6 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
-// bar
-SEXP bar(StringVector which);
-RcppExport SEXP Rdrp_bar(SEXP whichSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< StringVector >::type which(whichSEXP);
-    __result = Rcpp::wrap(bar(which));
-    return __result;
-END_RCPP
-}
 // foo
 List foo(List S);
 RcppExport SEXP Rdrp_foo(SEXP SSEXP) {

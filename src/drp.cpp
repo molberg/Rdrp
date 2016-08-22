@@ -75,7 +75,7 @@ NumericVector frequencies(List S, NumericVector v) {
     /* use header variables, when available */
     if (head.containsElementNamed("f0"))    f0 = as<double>(head["f0"]);
     if (head.containsElementNamed("v.LSR")) vs = as<double>(head["v.LSR"]);
-    Rcout << "f0 = " << f0 << ", vs = " << vs << std::endl;
+    // Rcout << "f0 = " << f0 << ", vs = " << vs << std::endl;
 
     if (f0 == 0.0) stop("zero frequency");
     /* now do conversion */
@@ -303,33 +303,6 @@ List average(List L) {
     average.attr("class") = "spectrum";
 
     return average;
-}
-
-// [[Rcpp::export]]
-SEXP bar(StringVector which) {
-    SEXP o;
-    Environment env = Environment::namespace_env("Rdrp");
-    o = env.ls(false);
-    Rcout << "type of o = " << TYPEOF(o) << std::endl;
-    StringVector sv(o);
-    for (int i = 0; i < sv.length(); i++) {
-        Rcout << i << ":" << sv[i] << std::endl;
-    }
-
-    bool oflag = env.exists("options");
-    Rcout << "options = " << oflag << std::endl;
-
-    o = env.get("options");
-    Rcout << "type of o = " << TYPEOF(o) << std::endl;
-
-    Environment options(o);
-    // List options = env["options"];
-
-    std::string name = as<std::string>(which[0]);
-    bool found = options.exists(name.data());
-    Rcout << "options = " << found << std::endl;
-    if (found) return wrap(options[name]);
-    else       return R_NilValue;
 }
 
 void printStats(const char *cmd, NumericVector d) {

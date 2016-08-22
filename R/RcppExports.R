@@ -103,10 +103,6 @@ average <- function(L) {
     .Call('Rdrp_average', PACKAGE = 'Rdrp', L)
 }
 
-bar <- function(which) {
-    .Call('Rdrp_bar', PACKAGE = 'Rdrp', which)
-}
-
 foo <- function(S) {
     .Call('Rdrp_foo', PACKAGE = 'Rdrp', S)
 }
