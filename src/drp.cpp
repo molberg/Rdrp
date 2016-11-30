@@ -59,7 +59,7 @@ NumericMatrix getFreq(List L) {
 //' NULL
 // [[Rcpp::export]]
 NumericVector frequencies(List S, NumericVector v) {
-    if (!S.inherits("spectrum")) stop("Input must be a spectrum");
+    if (!S.inherits("spectrum")) stop("input must be a spectrum");
     List head = S["head"];
 
     int nc = v.length();
@@ -94,7 +94,7 @@ NumericVector frequencies(List S, NumericVector v) {
 //' @seealso \code{\link{frequencies}}
 // [[Rcpp::export]]
 NumericVector velocities(List S) {
-    if (!S.inherits("spectrum")) stop("Input must be a spectrum");
+    if (!S.inherits("spectrum")) stop("input must be a spectrum");
     List head = S["head"];
 
     NumericVector freq = S["freq"];
@@ -283,7 +283,13 @@ List average(List L) {
                     i, freq.length(), freq0.length());
             stop(error);
         }
-
+	/* check that both spectra cover the same frequency range */
+	if ((fabs(freq[0]-freq0[0]) > 0.001) ||
+	    (fabs(freq[nChannels-1]-freq0[nChannels-1]) > 0.001)) {
+	    sprintf(error, "frequencies differ: %.3lf - %.3lf vs %.3lf - %.3lf",
+		    freq[0], freq[nChannels-1], freq0[0], freq0[nChannels-1]);
+	    stop(error);
+	}
         NumericVector data = l["data"];
         if (data.length() != data1.length()) {
             sprintf(error, "data vector %d differs in length: %ld <> %ld",
@@ -336,7 +342,7 @@ bool useVelocity() {
 // Does nothing
 // [[Rcpp::export]]
 List foo(List S) {
-    if (!S.inherits("spectrum")) stop("Input must be a spectrum");
+    if (!S.inherits("spectrum")) stop("input must be a spectrum");
     List head0 = S["head"];
     NumericVector freq0 = S["freq"];
     NumericVector data0 = S["data"];
@@ -362,7 +368,7 @@ List foo(List S) {
 //' @return the folded spectrum
 // [[Rcpp::export]]
 List fold(List S, double ft, bool shift = false) {
-    if (!S.inherits("spectrum")) stop("Input must be a spectrum");
+    if (!S.inherits("spectrum")) stop("input must be a spectrum");
     List head0 = S["head"];
     NumericVector freq0 = S["freq"];
     NumericVector data0 = S["data"];
@@ -377,28 +383,28 @@ List fold(List S, double ft, bool shift = false) {
     int i;
 
     if (n > 0) {
-	for (i = 0; i < nc-n; i++) {
-	    data1[i] -= data1[i+n];
-	    data1[i] /= 2.0;
-	}
-	if (shift) {
-	    n /= 2;
-	    for (i = nc-1; i >= n; i--) {
-		data1[i] = data1[i-n];
-	    }
-	}
+        for (i = 0; i < nc-n; i++) {
+            data1[i] -= data1[i+n];
+            data1[i] /= 2.0;
+        }
+        if (shift) {
+            n /= 2;
+            for (i = nc-1; i >= n; i--) {
+                data1[i] = data1[i-n];
+            }
+        }
     } else {
-	n = -n;
-	for (i = nc-1; i >= n; i--) {
-	    data1[i] -= data1[i-n];
-	    data1[i] /= 2.0;
-	}
-	if (shift) {
-	    n /= 2;
-	    for (i = 0; i < nc-n; i++) {
-		data1[i+n] = data1[i];
-	    }
-	}
+        n = -n;
+        for (i = nc-1; i >= n; i--) {
+            data1[i] -= data1[i-n];
+            data1[i] /= 2.0;
+        }
+        if (shift) {
+            n /= 2;
+            for (i = 0; i < nc-n; i++) {
+                data1[i+n] = data1[i];
+            }
+        }
     }
 
     List S1 = List::create(Named("head") = head1, Named("freq") = freq1, Named("data") = data1);
@@ -414,7 +420,7 @@ List fold(List S, double ft, bool shift = false) {
 //' @return the reversed spectrum
 // [[Rcpp::export]]
 List reverse(List S) {
-    if (!S.inherits("spectrum")) stop("Input must be a spectrum");
+    if (!S.inherits("spectrum")) stop("input must be a spectrum");
     List head0 = S["head"];
     List head1 = clone(head0);
     if (head1.containsElementNamed("df")) {
@@ -462,7 +468,7 @@ List reverse(List S) {
 double area(List S, LogicalVector mask) {
     static char error[80];
 
-    if (!S.inherits("spectrum")) stop("Input must be a spectrum");
+    if (!S.inherits("spectrum")) stop("input must be a spectrum");
     List head = S["head"];
     NumericVector freq = S["freq"];
     NumericVector data = S["data"];
@@ -505,7 +511,7 @@ double area(List S, LogicalVector mask) {
 DataFrame moment(List S, LogicalVector mask) {
     static char error[80];
 
-    if (!S.inherits("spectrum")) stop("Input must be a spectrum");
+    if (!S.inherits("spectrum")) stop("input must be a spectrum");
     List head = S["head"];
     NumericVector freq = S["freq"];
     NumericVector data = S["data"];
@@ -560,7 +566,7 @@ DataFrame moment(List S, LogicalVector mask) {
 //' @return the trimmed spectrum
 // [[Rcpp::export]]
 List trim(List S, IntegerVector keep) {
-    if (!S.inherits("spectrum")) stop("Input must be a spectrum");
+    if (!S.inherits("spectrum")) stop("input must be a spectrum");
     List head0 = S["head"];
     NumericVector freq0 = S["freq"];
     NumericVector data0 = S["data"];
@@ -594,7 +600,7 @@ List trim(List S, IntegerVector keep) {
 //' @return the filtered spectrum
 // [[Rcpp::export]]
 List sieve(List S, NumericVector coeffs) {
-    if (!S.inherits("spectrum")) stop("Input must be a spectrum");
+    if (!S.inherits("spectrum")) stop("input must be a spectrum");
 
     List head0 = S["head"];
     NumericVector freq0 = S["freq"];
@@ -654,7 +660,7 @@ List resample(List S, NumericVector f, bool smooth=false) {
     const double A = sqrt(M_PI/a);
     double df, DF, Df, df0, df1, w, sum, sumw;
     int i, j;
-    if (!S.inherits("spectrum")) stop("Input must be a spectrum");
+    if (!S.inherits("spectrum")) stop("input must be a spectrum");
 
     List head0 = S["head"];
     List head1 = clone(head0);
@@ -669,7 +675,7 @@ List resample(List S, NumericVector f, bool smooth=false) {
 
     df = fabs(freq0[1]-freq0[0]);
     DF = fabs(freq1[1]-freq1[0]);
-    if (DF < df) stop("Can't resample to higher resolution");
+    if (DF < df) stop("can't resample to higher resolution");
     df0 = (DF-df)/2.0;
     df1 = (DF+df)/2.0;
 
@@ -731,7 +737,7 @@ List resample(List S, NumericVector f, bool smooth=false) {
 // [[Rcpp::export]]
 List rescale(List S, double factor = 1.0, double bias = 0.0) {
     int i, j;
-    if (!S.inherits("spectrum")) stop("Input must be a spectrum");
+    if (!S.inherits("spectrum")) stop("input must be a spectrum");
 
     List head0 = S["head"];
     NumericVector freq0 = S["freq"];

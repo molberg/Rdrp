@@ -229,7 +229,7 @@ int get_class_v1_file_listing(FILE *fp, CLASS_INFO *info)
     st = (CLASS *)malloc(nst*sizeof(CLASS));
     if (!st) {
         nst = 0;
-        warning("Out of memory: Cannot allocate CLASS file structure.");
+        warning("out of memory: Cannot allocate CLASS file structure.");
         fclose(fp);
         return -1;
     }
@@ -246,7 +246,7 @@ int get_class_v1_file_listing(FILE *fp, CLASS_INFO *info)
     do {
         len = fread(block, sizeof(char), CLASS_BLK_SIZE, fp);
         if (len != CLASS_BLK_SIZE) {
-            warning("Cannot read %d byte block from CLASS file.", CLASS_BLK_SIZE);
+            warning("cannot read %d byte block from CLASS file.", CLASS_BLK_SIZE);
             fclose(fp);
             return -2;
         }
@@ -288,7 +288,7 @@ int get_class_v2_file_listing(FILE *fp, CLASS_INFO *info, int extno, int scan_on
     st = (CLASS *)malloc(nst*sizeof(CLASS));
     if (!st) {
         nst = 0;
-        warning("Out of memory: Cannot allocate CLASS file structure.");
+        warning("out of memory: Cannot allocate CLASS file structure.");
         fclose(fp);
         return -1;
     }
@@ -303,7 +303,7 @@ int get_class_v2_file_listing(FILE *fp, CLASS_INFO *info, int extno, int scan_on
     /* size=4*lex1*lind should hold maximum possible index */
     index = (char *)malloc(isize * sizeof(char));
     if (!index) {
-        warning("Cannot allocate CLASS index of length %d.", isize);
+        warning("cannot allocate CLASS index of length %d.", isize);
         fclose(fp);
         return -1;
     }
@@ -314,7 +314,7 @@ int get_class_v2_file_listing(FILE *fp, CLASS_INFO *info, int extno, int scan_on
     fseek(fp, 4*pos, SEEK_SET);
     len = fread(index, sizeof(char), isize, fp);
     if (len != isize) {
-        warning("Read only %d bytes of %d from CLASS file.", len, isize);
+        warning("read only %d bytes of %d from CLASS file.", len, isize);
         free(index);
 #ifdef ALLOC
         Rprintf("%p -- free\n", index);
@@ -474,7 +474,7 @@ void fill_class_header(int code, int first, int len, char *s, int size, CLASS *c
                 c->c.lcalof, c->c.bcalof, c->c.geolong, c->c.geolat, c->c.alti);
 #endif
     } else {
-        warning("Cannot handle CLASS section code %d yet.Sorry.", code);
+        warning("cannot handle CLASS section code %d yet.Sorry.", code);
     }
 }
 
@@ -547,7 +547,7 @@ FILE *get_classfile_descriptor(const char *file, CLASS_INFO *info)
     rec_size = 4 * info->reclen;
     rec = (char *)malloc(rec_size);
     if (!rec) {
-        warning("Cannot allocate record of size %d.\n", rec_size);
+        warning("cannot allocate record of size %d.\n", rec_size);
         return NULL;
     }
 #ifdef ALLOC
@@ -556,7 +556,7 @@ FILE *get_classfile_descriptor(const char *file, CLASS_INFO *info)
 
     fp = fopen(file, "r");                  /* open the file for reading  */
     if (!fp) {                              /* test for failure           */
-        warning("Cannot open file '%s'.\n", file);
+        warning("cannot open file '%s'.\n", file);
         free(rec);
 #ifdef ALLOC
         Rprintf("%p -- free\n", rec);
@@ -566,7 +566,7 @@ FILE *get_classfile_descriptor(const char *file, CLASS_INFO *info)
 
     len = fread(rec, sizeof(char), CLASS_BLK_SIZE, fp);
     if (len != CLASS_BLK_SIZE) {
-        warning("Cannot read %d byte record from file '%s'.\n", CLASS_BLK_SIZE, file);
+        warning("cannot read %d byte record from file '%s'.\n", CLASS_BLK_SIZE, file);
         fclose(fp);
         free(rec);
 #ifdef ALLOC
@@ -635,7 +635,7 @@ FILE *get_classfile_descriptor(const char *file, CLASS_INFO *info)
         info->type = typeok;
     }
     if (info->nex != 1 && typeok == 1) {
-        warning("Cannot read %d index extensions from file '%s' of type 1.", info->nex, file);
+        warning("cannot read %d index extensions from file '%s' of type 1.", info->nex, file);
         fclose(fp);
         free(rec);
 #ifdef ALLOC
@@ -740,7 +740,7 @@ int get_class_v1_data(FILE *fp, int curr_nbl, CLASS_INFO *info, SEXP a)
 
             sbl = (char *)malloc(cobs.nbl * sizeof(block));
             if (!sbl) {
-                warning("CLASS: Not enough memory to allocate %d blocks.", cobs.nbl);
+                warning("not enough memory to allocate %d blocks.", cobs.nbl);
                 fclose(fp);
                 return -1;
             }
@@ -752,7 +752,7 @@ int get_class_v1_data(FILE *fp, int curr_nbl, CLASS_INFO *info, SEXP a)
             if (cobs.nbl > 1) { /* and the remaining, if any */
                 len = fread(&sbl[512], sizeof(char), (cobs.nbl - 1)*512, fp);
                 if (len != (cobs.nbl - 1)*512) {
-                    warning("CLASS: Read only %d (of %d) bytes.", len, (cobs.nbl - 1)*512);
+                    warning("read only %d (of %d) bytes.", len, (cobs.nbl - 1)*512);
                     free(sbl);
 #ifdef ALLOC
                     Rprintf("%p -- free\n", sbl);
@@ -805,14 +805,17 @@ int get_class_v1_data(FILE *fp, int curr_nbl, CLASS_INFO *info, SEXP a)
             if (nc > 0) {
                 PROTECT(freq = allocVector(REALSXP, nc));
                 PROTECT(data = allocVector(REALSXP, nc));
-                for (k = 0; k < nc; k++) {
-                    if (fres != 0.0) {
-                        REAL(freq)[k] = ((double)(k+1)-rchan)*fres + restf;
-                    } else {
+		if (fres == 0.0) {
+		    for (k = 0; k < nc; k++) {
                         REAL(freq)[k] = (double)(k+1);
+			REAL(data)[k] = (st[cobs.obsnum]).data[k];
                     }
-                    REAL(data)[k] = (st[cobs.obsnum]).data[k];
-                }
+		} else {
+		    for (k = 0; k < nc; k++) {
+                        REAL(freq)[k] = ((double)(k+1)-rchan)*fres + restf;
+			REAL(data)[k] = (st[cobs.obsnum]).data[k];
+		    }
+		}
                 free((st[cobs.obsnum]).data);
 #ifdef ALLOC
                 Rprintf("%p -- free\n", (st[cobs.obsnum]).data);
@@ -955,7 +958,7 @@ int get_class_v2_data(FILE *fp, int nscans, CLASS_INFO *info, int extno, SEXP a,
             section_size = 4*cobs.sec_len[m];
             section = (char *)malloc(section_size * sizeof(char));
             if (!section) {
-                warning("Cannot allocate section (size=%d) for CLASS file.", section_size);
+                warning("cannot allocate section (size=%d) for CLASS file.", section_size);
                 fclose(fp);
                 return -2;
             }
@@ -968,7 +971,7 @@ int get_class_v2_data(FILE *fp, int nscans, CLASS_INFO *info, int extno, SEXP a,
             fseek(fp, secpos*sizeof(char), SEEK_SET);
             len = fread(section, sizeof(char), section_size, fp);
             if (len != section_size) {
-                warning("Cannot read %d word index from %d CLASS file.", len, section_size);
+                warning("cannot read %d word index from %d CLASS file.", len, section_size);
                 free(section);
 #ifdef ALLOC
                 Rprintf("%p -- free\n", section);
@@ -1012,7 +1015,7 @@ int get_class_v2_data(FILE *fp, int nscans, CLASS_INFO *info, int extno, SEXP a,
         datapos = 4*(pos + cobs.adata - 1);
         databl = (char *)malloc(datasize * sizeof(char));
         if (!databl) {
-            warning("Cannot allocate data block (size=%d) for CLASS file.", datasize);
+            warning("cannot allocate data block (size=%d) for CLASS file.", datasize);
             fclose(fp);
             return -3;
         }
@@ -1022,7 +1025,7 @@ int get_class_v2_data(FILE *fp, int nscans, CLASS_INFO *info, int extno, SEXP a,
         fseek(fp, datapos*sizeof(char), SEEK_SET);
         len = fread(databl, sizeof(char), datasize, fp);
         if (len != datasize) {
-            warning("Read only %d of %d bytes data block CLASS file.", len, datasize);
+            warning("read only %d of %d bytes data block CLASS file.", len, datasize);
             free(databl);
 #ifdef ALLOC
             Rprintf("%p -- free\n", databl);
@@ -1034,14 +1037,17 @@ int get_class_v2_data(FILE *fp, int nscans, CLASS_INFO *info, int extno, SEXP a,
         if (nc > 0) {
             PROTECT(freq = allocVector(REALSXP, nc));
             PROTECT(data = allocVector(REALSXP, nc));
-            for (k = 0; k < nc; k++) {
-                if (fres != 0.0) {
-                    REAL(freq)[k] = ((double)(k+1)-rchan)*fres + restf;
-                } else {
-                    REAL(freq)[k] = (double)(k+1);
-                }
-                REAL(data)[k] = (st[ns]).data[k];
-            }
+	    if (fres == 0.0) {
+		for (k = 0; k < nc; k++) {
+		    REAL(freq)[k] = (double)(k+1);
+		    REAL(data)[k] = (st[ns]).data[k];
+		}
+	    } else {
+		for (k = 0; k < nc; k++) {
+		    REAL(freq)[k] = ((double)(k+1)-rchan)*fres + restf;
+		    REAL(data)[k] = (st[ns]).data[k];
+		}
+	    }
             free((st[ns]).data);
 #ifdef ALLOC
             Rprintf("%p -- free\n", (st[ns]).data);
@@ -1076,7 +1082,7 @@ int get_class_v2_data(FILE *fp, int nscans, CLASS_INFO *info, int extno, SEXP a,
         n++;
     }
 #ifdef DEBUG
-    printf("Return get_class_v2_data() at n = %d\n", n);
+    Rprintf("Return get_class_v2_data() at n = %d\n", n);
 #endif
     return ns;
 }
@@ -1094,13 +1100,13 @@ void set_classfile_type(const char *file, CLASS_INFO *info)
 
     fp = fopen(file, "r");                  /* open the file for reading  */
     if (!fp) {                              /* test for failure           */
-	sprintf(msg, "Cannot open file '%s'.", file);
+	sprintf(msg, "cannot open file '%s'.", file);
 	error(msg);
     }
 
     len = fread(type, sizeof(char), 4, fp);
     if (len != 4) {
-        warning("Cannot read %d byte type from file '%s'.\n", 4, file);
+        warning("cannot read %d byte type from file '%s'.\n", 4, file);
         fclose(fp);
         return;
     }
@@ -1112,7 +1118,7 @@ void set_classfile_type(const char *file, CLASS_INFO *info)
         info->type = 2;
         len = fread(reclen, sizeof(char), 4, fp);
         if (len != 4) {
-            warning("Cannot read %d byte reclen from file '%s'.\n", 4, file);
+            warning("cannot read %d byte reclen from file '%s'.\n", 4, file);
             fclose(fp);
             return;
         }
@@ -1126,7 +1132,7 @@ void set_classfile_type(const char *file, CLASS_INFO *info)
     fclose(fp);
 
 #ifdef DEBUG
-    printf("Found CLASS file of type='%s' and record length=%d words.\n", type, record_length);
+    Rprintf("Found CLASS file of type='%s' and record length=%d words.\n", type, record_length);
 #endif
 
     return;
@@ -1156,12 +1162,12 @@ SEXP readClass(SEXP filename)
     info.type = 0;
     set_classfile_type(s, &info);
     if (info.type == 0) {
-        warning("Unknown CLASS file type in %s.", s);
+        warning("unknown CLASS file type in %s.", s);
         return 0;
     }
 
 #ifdef DEBUG
-    printf("File: '%s'  type=%d\n", s, info.type);
+    Rprintf("File: '%s'  type=%d\n", s, info.type);
 #endif
 
     fp = get_classfile_descriptor(s, &info);

@@ -49,7 +49,7 @@ arma::mat fooData(Rcpp::List L)
 SEXP smooft(Rcpp::List S)
 {
     int i, j;
-    if (!S.inherits("spectrum")) Rcpp::stop("Input must be a spectrum");
+    if (!S.inherits("spectrum")) Rcpp::stop("input must be a spectrum");
     arma::vec data = Rcpp::as<arma::vec>(S["data"]);
     int nc = data.size();
     Rcpp::Rcout << "length of data = " << nc << std::endl;
