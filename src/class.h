@@ -1,5 +1,5 @@
 /**************************** XS ********************************************
-Copyright (C) 2000-2015  P. Bergman
+Copyright (C) 2000-2017  P. Bergman
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software

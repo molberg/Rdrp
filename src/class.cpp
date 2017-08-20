@@ -197,7 +197,7 @@ void fill_class_v2_table(CLASS *o, char *i)
     memcpy(&(o->xdred), &i[n],  4); n += 4;
     memcpy(&(o->xoff1), &i[n],  4); n += 4;
     memcpy(&(o->xoff2), &i[n],  4); n += 4;
-    strncpy(o->xtype,   &i[n],  4); n +=  4; o->xtype[4]   = '\0';
+    strncpy(o->xtype,   &i[n],  4); n += 4;  o->xtype[4]   = '\0';
     memcpy(&(o->xkind), &i[n],  4); n += 4;
     memcpy(&(o->xqual), &i[n],  4); n += 4;
     memcpy(&(o->xposa), &i[n],  4); n += 4;
@@ -381,16 +381,28 @@ void fill_class_header(int code, int first, int len, char *s, int size, CLASS *c
         Rprintf("    -2  UT=%f %f   Az,El=%f,%f  time=%f\n", c->g.ut, c->g.st, c->g.az, c->g.el, c->g.time);
 #endif
     } else if (code == -3) { /* Position */
-        strncpy(c->p.source,  &s[n], 12); n += 12; c->p.source[12] = '\0';
-        memcpy(&(c->p.epoch), &s[n],  4); n +=  4;
-        memcpy(&(c->p.lam),   &s[n],  8); n +=  8;
-        memcpy(&(c->p.bet),   &s[n],  8); n +=  8;
-        memcpy(&(c->p.lamof), &s[n],  4); n +=  4;
-        memcpy(&(c->p.betof), &s[n],  4); n +=  4;
-        memcpy(&(c->p.proj),  &s[n],  4); n +=  4;
-        memcpy(&(c->p.sl0p),  &s[n],  8); n +=  8;
-        memcpy(&(c->p.sb0p),  &s[n],  8); n +=  8;
-        memcpy(&(c->p.sk0p),  &s[n],  8); n +=  8;
+        if (len == 17) {
+            strncpy(c->p.source,   &s[n], 12); n += 12; c->p.source[12] = '\0';
+            memcpy(&(c->p.epoch),  &s[n],  4); n +=  4;
+            memcpy(&(c->p.lam),    &s[n],  8); n +=  8;
+            memcpy(&(c->p.bet),    &s[n],  8); n +=  8;
+            memcpy(&(c->p.lamof),  &s[n],  4); n +=  4;
+            memcpy(&(c->p.betof),  &s[n],  4); n +=  4;
+            memcpy(&(c->p.proj),   &s[n],  4); n +=  4;
+            memcpy(&(c->p.sl0p),   &s[n],  8); n +=  8;
+            memcpy(&(c->p.sb0p),   &s[n],  8); n +=  8;
+            memcpy(&(c->p.sk0p),   &s[n],  8); n +=  8;
+        } else {
+            strncpy(c->p.source,   &s[n], 12); n += 12; c->p.source[12] = '\0';
+            memcpy(&(c->p.system), &s[n],  4); n +=  4;
+            memcpy(&(c->p.epoch),  &s[n],  4); n +=  4;
+            memcpy(&(c->p.proj),   &s[n],  4); n +=  4;
+            memcpy(&(c->p.lam),    &s[n],  8); n +=  8;
+            memcpy(&(c->p.bet),    &s[n],  8); n +=  8;
+            memcpy(&(c->p.projang),&s[n],  8); n +=  8;
+            memcpy(&(c->p.lamof),  &s[n],  4); n +=  4;
+            memcpy(&(c->p.betof),  &s[n],  4); n +=  4;
+        }
 
 #ifdef DEBUG
         Rprintf("    -3  '%s' %f Coord:%f,%f (%f,%f) %4d\n", c->p.source,
@@ -652,7 +664,7 @@ FILE *get_classfile_descriptor(const char *file, CLASS_INFO *info)
 
 int get_class_v1_data(FILE *fp, int curr_nbl, CLASS_INFO *info, SEXP a)
 {
-    int k, n, len, nbl, ns, nc;
+    int k, ncount, len, nbl, ns, nc;
     static char block[CLASS_BLK_SIZE], *sbl = NULL;
     const char *datetime = NULL;
     double restf, fres, LO, lam, bet, rchan; // vres
@@ -664,16 +676,16 @@ int get_class_v1_data(FILE *fp, int curr_nbl, CLASS_INFO *info, SEXP a)
 
     CLASS_SECTION cobs;
 
-    n = curr_nbl + 1;
+    ncount = curr_nbl + 1;
     ns = 0;
-    while (n < info->nextbl) {
+    while (ncount < info->nextbl) {
         len = fread(block, sizeof(char), CLASS_BLK_SIZE, fp);
-        nbl = check_block(st, info->first, n+1);
+        nbl = check_block(st, info->first, ncount+1);
         if (nbl) {
             fill_class_v1_obs(&cobs, block);
 #ifdef DEBUG
             Rprintf("%7d %12s %12s %d %d %d %d %d %d %d %d %d (%d %d %d %d | %d %d %d %d | %d %d %d %d)\n",
-                    n,
+                    nbl,
                     st[nbl].xsourc, st[nbl].xline, st[nbl].xkind,
                     cobs.nbl, cobs.bytes, cobs.adr, cobs.nhead, cobs.len, cobs.ientry, cobs.nsec, cobs.obsnum,
                     cobs.sec_cod[0], cobs.sec_cod[1], cobs.sec_cod[2], cobs.sec_cod[3],
@@ -717,7 +729,7 @@ int get_class_v1_data(FILE *fp, int curr_nbl, CLASS_INFO *info, SEXP a)
             PROTECT(tsys = allocVector(REALSXP, 1));      // 11
             PROTECT(utc = allocVector(STRSXP, 1));        // 12
 
-            INTEGER(id)[0] = n;
+            INTEGER(id)[0] = ncount;
             INTEGER(scanno)[0] = st[nbl].xscan;
             trim(st[nbl].xsourc);
             SET_STRING_ELT(target, 0, mkChar(st[nbl].xsourc));
@@ -760,7 +772,7 @@ int get_class_v1_data(FILE *fp, int curr_nbl, CLASS_INFO *info, SEXP a)
                     fclose(fp);
                     return -1;
                 }
-                n += cobs.nbl - 1;
+                ncount += cobs.nbl - 1;
             }
             /* Scan all nsec headers */
             for (k = 0; k < cobs.nsec; k++) {
@@ -840,25 +852,25 @@ int get_class_v1_data(FILE *fp, int curr_nbl, CLASS_INFO *info, SEXP a)
             UNPROTECT(1);
             ns++;
 #ifdef DEBUG
-            Rprintf("Fill class data done for block %d.\n", n);
+            Rprintf("Fill class data done for block %d.\n", ncount);
 #endif
             free(sbl);
 #ifdef ALLOC
             Rprintf("%p -- free\n", sbl);
 #endif
         }
-        n++;
+        ncount++;
     }
 
 #ifdef DEBUG
-    Rprintf("Return get_class_v1_data() at n = %d\n", n);
+    Rprintf("Return get_class_v1_data() at n = %d\n", ns);
 #endif
     return ns;
 }
 
 int get_class_v2_data(FILE *fp, int nscans, CLASS_INFO *info, int extno, SEXP a, int ns0)
 {
-    int k, n, pos, datapos, secpos, len, m, nmax, nbl, nc, ns;
+    int k, ncount, pos, datapos, secpos, len, m, nmax, nbl, nc, ns;
     int section_size, code, length, datasize;
     char block[CLASS_BLK_SIZE];
     char *section, *databl;
@@ -872,21 +884,20 @@ int get_class_v2_data(FILE *fp, int nscans, CLASS_INFO *info, int extno, SEXP a,
     CLASS_SECTION_v2 cobs;
     CLASS *o;
 
-    n = 0;
-    ns = ns0;
-    while (n < nscans) {
+    ncount = ns0;
+    ns = 0;
+    while (ns < nscans) {
         o = &st[ns];
         pos = (o->xbloc - 1)*info->reclen + o->xword - 1;
 #ifdef DEBUG
-        Rprintf("n=%4d  Rec:%d Wor:%d  -> pos=%d words\n", n, o->xbloc, o->xword, pos);
+        Rprintf("n=%4d  Rec:%d Word:%d  -> pos=%d words\n", ns, o->xbloc, o->xword, pos);
 #endif
         fseek(fp, 4*pos, SEEK_SET);
         len = fread(block, sizeof(char), CLASS_BLK_SIZE, fp);
-        //        if (nbl) {
         fill_class_v2_obs(&cobs, block);
 #ifdef DEBUG
         Rprintf("%7d %12s %12s %d %d (%d %d %d %d | %d %d %d %d | %d %d %d %d)\n",
-                n,
+                ns,
                 st[ns].xsourc, st[ns].xline, st[ns].xkind,
                 cobs.nsec,
                 cobs.sec_cod[0], cobs.sec_cod[1], cobs.sec_cod[2], cobs.sec_cod[3],
@@ -930,7 +941,7 @@ int get_class_v2_data(FILE *fp, int nscans, CLASS_INFO *info, int extno, SEXP a,
         PROTECT(tsys = allocVector(REALSXP, 1));      // 11
         PROTECT(utc = allocVector(STRSXP, 1));        // 12
 
-        INTEGER(id)[0] = n;
+        INTEGER(id)[0] = ncount;
         INTEGER(scanno)[0] = st[ns].xscan;
         trim(st[ns].xsourc);
         SET_STRING_ELT(target, 0, mkChar(st[ns].xsourc));
@@ -1068,21 +1079,20 @@ int get_class_v2_data(FILE *fp, int nscans, CLASS_INFO *info, int extno, SEXP a,
         SET_VECTOR_ELT(scan, 2, data);
         UNPROTECT(3);
 
-        SET_VECTOR_ELT(a, ns, scan);
+        SET_VECTOR_ELT(a, ncount, scan);
         UNPROTECT(1);
         ns++;
 #ifdef DEBUG
-        Rprintf("Fill class data done for block %d.\n", n);
+        Rprintf("Fill class data done for block %d.\n", ncount);
 #endif
         free(databl);
 #ifdef ALLOC
         Rprintf("%p -- free\n", databl);
 #endif
-        //        }
-        n++;
+        ncount++;
     }
 #ifdef DEBUG
-    Rprintf("Return get_class_v2_data() at n = %d\n", n);
+    Rprintf("Return get_class_v2_data() at n = %d\n", ns);
 #endif
     return ns;
 }
@@ -1199,11 +1209,12 @@ SEXP readClass(SEXP filename)
             return ret;
         } else if (info.type == 2) {
             nex = info.nex;
-            nspec = 0;
+            ns0 = 0;
             for (m = 0; m < nex; m++) {
-                nspec += get_class_v2_file_listing(fp, &info, m, 0);
+                nspec = get_class_v2_file_listing(fp, &info, m, 0);
+                ns0 += nspec;
             }
-            PROTECT(ret = allocVector(VECSXP, nspec)); // a list with nspec elements
+            PROTECT(ret = allocVector(VECSXP, ns0)); // a list with nspec elements
             ns0 = 0;
             for (m = 0; m < nex; m++) {
                 nspec = get_class_v2_file_listing(fp, &info, m, 1);
