@@ -1578,7 +1578,7 @@ SEXP getClassHeader(SEXP filename)
     SEXP id, scanno, target, line, RA, Dec, f0, fLO, df, vs, dt, tsys, utc;
 
     s = CHAR(STRING_ELT(filename, 0));
-    Rprintf("CLASS filename = %s\n", s);
+    // Rprintf("CLASS filename = %s\n", s);
 
     info.type = 0;
     set_classfile_type(s, &info);
@@ -1693,7 +1693,7 @@ SEXP readClass(SEXP filename, SEXP header = R_NilValue)
     SEXP classattrib, ret, id;
 
     s = CHAR(STRING_ELT(filename, 0));
-    Rprintf("CLASS filename = %s\n", s);
+    // Rprintf("CLASS filename = %s\n", s);
 
     info.type = 0;
     set_classfile_type(s, &info);
@@ -1707,7 +1707,7 @@ SEXP readClass(SEXP filename, SEXP header = R_NilValue)
 #endif
     all = isNull(header);
     if (all) {
-        Rprintf("header is NULL\n");
+        // Rprintf("header is NULL\n");
         PROTECT(header = getClassHeader(filename));
     }
     id = VECTOR_ELT(header, 0);
