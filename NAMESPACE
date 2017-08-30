@@ -17,6 +17,7 @@ export(drapply)
 
 export(readOSO20m)
 export(readSALSA)
+export(getClassHeader)
 export(readClass)
 
 export(getHead)

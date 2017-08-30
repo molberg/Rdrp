@@ -4,18 +4,21 @@
 \alias{readClass}
 \title{Read a GILDAS/CLASS single dish data file}
 \usage{
-readClass(filename)
+readClass(filename, header)
 }
 \arguments{
 \item{filename}{name of the GILDAS file including path to be opened}
+
+\item{header}{a data frame with one row for each scan requested.}
 }
 \value{
-list of length n, where n is the number of scans found
+list of length n, where n is the number of scans.
 }
 \description{
-Given a filename, open the file and scan it for single dish spectra
-or continuum scans. Each encountered scan is returned as a list with
-a head, freq and data section. For continuum scans, the frequency
+Given a filename and a data frame 'header', open the file and scan it
+for single dish spectra or continuum scans.
+For each row in the header frame, return the correspiónding scan as a list
+with a head, freq and data section. For continuum scans, the frequency
 vector will simply be a running index. All the individual lists are
 combined into one major list, which is returned.
 }

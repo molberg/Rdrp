@@ -215,9 +215,10 @@ void list_xdata(int nbl, CLASS *c)
             nbl+1,
             c->xbloc, c->xnum, c->xver, c->xsourc, c->xline, c->xtel,
             c->xdobs, rta(c->xoff1), rta(c->xoff2), c->xscan);
+    return;
 }
 
-int get_class_v1_file_listing(FILE *fp, CLASS_INFO *info)
+int fileListing1(FILE *fp, CLASS_INFO *info)
 {
     int n, k, len, done, nscan;
     static char block[CLASS_BLK_SIZE];
@@ -255,7 +256,7 @@ int get_class_v1_file_listing(FILE *fp, CLASS_INFO *info)
             fill_class_v1_table(&obs, block+k);
             if (obs.xnum > 0 && obs.xnum < nst) {
                 st[obs.xnum] = obs;
-                list_xdata(n, &obs);
+                // list_xdata(n, &obs);
                 nscan++;
             } else {
                 done = 1;
@@ -268,7 +269,7 @@ int get_class_v1_file_listing(FILE *fp, CLASS_INFO *info)
     return nscan;
 }
 
-int get_class_v2_file_listing(FILE *fp, CLASS_INFO *info, int extno, int scan_only)
+int fileListing2(FILE *fp, CLASS_INFO *info, int extno)
 {
     int isize, len, j, nread, pos, extgrowth = 1;
     char *index = NULL, *iptr;
@@ -330,7 +331,7 @@ int get_class_v2_file_listing(FILE *fp, CLASS_INFO *info, int extno, int scan_on
         obs.data = NULL;
         st[j] = obs;
         if (obs.xnum >= 1) {
-            if (!scan_only) list_xdata(j, &obs);
+            // list_xdata(j, &obs);
             nread++;
         }
         /* move pointer to next entry */
@@ -662,19 +663,25 @@ FILE *get_classfile_descriptor(const char *file, CLASS_INFO *info)
     return fp;
 }
 
-int get_class_v1_data(FILE *fp, int curr_nbl, CLASS_INFO *info, SEXP a)
+int getSpectra1(FILE *fp, int curr_nbl, CLASS_INFO *info, SEXP a, int *index, int nrows)
 {
-    int k, ncount, len, nbl, ns, nc;
+    int k, ncount, len, nbl, ns, nc, Hk, Hidx, Hrows;
     static char block[CLASS_BLK_SIZE], *sbl = NULL;
     const char *datetime = NULL;
-    double restf, fres, LO, lam, bet, rchan; // vres
+    double restf, fres, LO, lam, bet, rchan;
     bool spectrum;
     SEXP scan, classattrib;
     SEXP head, freq, data;
     SEXP nam;
     SEXP id, scanno, target, line, RA, Dec, f0, fLO, df, vs, dt, tsys, utc;
+    SEXP Hid;
 
     CLASS_SECTION cobs;
+
+#ifdef DEBUG
+    Rprintf("looking for %d (%d) spectra\n", nrows, Rf_length(a));
+    Rprintf("first = %d, last = %d\n", index[0], index[nrows-1]);
+#endif
 
     ncount = curr_nbl + 1;
     ns = 0;
@@ -793,7 +800,7 @@ int get_class_v1_data(FILE *fp, int curr_nbl, CLASS_INFO *info, SEXP a)
               fres = (st[cobs.obsnum]).u.tres;
               /*
               Rprintf("scan is continuum: %f %f %f %f\n", rchan, restf, LO, fres);
-              Rprintf("scan is continuum: %f %f\n", (st[cobs.obsnum]).u.aref, 
+              Rprintf("scan is continuum: %f %f\n", (st[cobs.obsnum]).u.aref,
                                                     (st[cobs.obsnum]).u.apos);
               */
             }
@@ -848,7 +855,17 @@ int get_class_v1_data(FILE *fp, int curr_nbl, CLASS_INFO *info, SEXP a)
             SET_VECTOR_ELT(scan, 2, data);
             UNPROTECT(3);
 
-            SET_VECTOR_ELT(a, ns, scan);
+            for (Hk = 0; Hk < nrows; Hk++) {
+                Hidx = index[Hk];
+                if (Hidx == ns) {
+#ifdef DEBUG
+                    Rprintf("Hidx %d Hk %d == ns %d\n", Hidx, Hk, ns);
+                    Rprintf("setting element %d of %d\n", Hk, Rf_length(a));
+#endif
+                    SET_VECTOR_ELT(a, Hk, scan);
+                }
+            }
+
             UNPROTECT(1);
             ns++;
 #ifdef DEBUG
@@ -863,14 +880,142 @@ int get_class_v1_data(FILE *fp, int curr_nbl, CLASS_INFO *info, SEXP a)
     }
 
 #ifdef DEBUG
-    Rprintf("Return get_class_v1_data() at n = %d\n", ns);
+    Rprintf("Return getSpectra1() at n = %d\n", ns);
 #endif
     return ns;
 }
 
-int get_class_v2_data(FILE *fp, int nscans, CLASS_INFO *info, int extno, SEXP a, int ns0)
+int fillHeader1(FILE *fp, int curr_nbl, CLASS_INFO *info, SEXP head)
 {
-    int k, ncount, pos, datapos, secpos, len, m, nmax, nbl, nc, ns;
+    int k, ncount, len, nbl, ns, nc;
+    static char block[CLASS_BLK_SIZE], *sbl = NULL;
+    const char *datetime = NULL;
+    double restf, fres, LO, lam, bet, rchan;
+    bool spectrum;
+    SEXP id, scanno, target, line, RA, Dec, f0, fLO, df, vs, dt, tsys, utc;
+
+    CLASS_SECTION cobs;
+
+    ncount = curr_nbl + 1;
+    ns = 0;
+    while (ncount < info->nextbl) {
+        len = fread(block, sizeof(char), CLASS_BLK_SIZE, fp);
+        nbl = check_block(st, info->first, ncount+1);
+        if (nbl) {
+            fill_class_v1_obs(&cobs, block);
+#ifdef DEBUG
+            Rprintf("%7d %12s %12s %d %d %d %d %d %d %d %d %d (%d %d %d %d | %d %d %d %d | %d %d %d %d)\n",
+                    nbl,
+                    st[nbl].xsourc, st[nbl].xline, st[nbl].xkind,
+                    cobs.nbl, cobs.bytes, cobs.adr, cobs.nhead, cobs.len, cobs.ientry, cobs.nsec, cobs.obsnum,
+                    cobs.sec_cod[0], cobs.sec_cod[1], cobs.sec_cod[2], cobs.sec_cod[3],
+                    cobs.sec_adr[0], cobs.sec_adr[1], cobs.sec_adr[2], cobs.sec_adr[3],
+                    cobs.sec_len[0], cobs.sec_len[1], cobs.sec_len[2], cobs.sec_len[3]);
+#endif
+            id = VECTOR_ELT(head, 0);
+            scanno = VECTOR_ELT(head, 1);
+            target = VECTOR_ELT(head, 2);
+            line = VECTOR_ELT(head, 3);
+            RA = VECTOR_ELT(head, 4);
+            Dec = VECTOR_ELT(head, 5);
+            fLO = VECTOR_ELT(head, 6);
+            f0 = VECTOR_ELT(head, 7);
+            df = VECTOR_ELT(head, 8);
+            vs = VECTOR_ELT(head, 9);
+            dt = VECTOR_ELT(head, 10);
+            tsys = VECTOR_ELT(head, 11);
+            utc = VECTOR_ELT(head, 12);
+
+            INTEGER(id)[ns] = ns;
+            INTEGER(scanno)[ns] = st[nbl].xscan;
+            trim(st[nbl].xsourc);
+            SET_STRING_ELT(target, ns, mkChar(st[nbl].xsourc));
+            trim(st[nbl].xline);
+            SET_STRING_ELT(line, ns, mkChar(st[nbl].xline));
+
+            sbl = (char *)malloc(cobs.nbl * sizeof(block));
+            if (!sbl) {
+                warning("not enough memory to allocate %d blocks.", cobs.nbl);
+                fclose(fp);
+                return -1;
+            }
+#ifdef ALLOC
+            Rprintf("%p -- allocated %d blocks of size %ld\n", sbl, cobs.nbl, sizeof(block));
+#endif
+            /* copy the already read block into the sbl */
+            memcpy(sbl, block, 512);
+            if (cobs.nbl > 1) { /* and the remaining, if any */
+                len = fread(&sbl[512], sizeof(char), (cobs.nbl - 1)*512, fp);
+                if (len != (cobs.nbl - 1)*512) {
+                    warning("read only %d (of %d) bytes.", len, (cobs.nbl - 1)*512);
+                    free(sbl);
+#ifdef ALLOC
+                    Rprintf("%p -- free\n", sbl);
+#endif
+                    fclose(fp);
+                    return -1;
+                }
+                ncount += cobs.nbl - 1;
+            }
+            /* Scan all nsec headers */
+            for (k = 0; k < cobs.nsec; k++) {
+                fill_class_header(cobs.sec_cod[k], cobs.sec_adr[k], cobs.sec_len[k],
+                                  sbl, cobs.nbl*512, &st[cobs.obsnum]);
+            }
+
+            spectrum = (st[cobs.obsnum].xkind == 0);
+            if (spectrum) {
+                rchan = (st[cobs.obsnum]).s.rchan;
+                restf = (st[cobs.obsnum]).s.restf;
+                LO = ((st[cobs.obsnum]).s.restf + (st[cobs.obsnum]).s.image)/2.0;
+                fres = (st[cobs.obsnum]).s.fres;
+            } else {
+                rchan = (st[cobs.obsnum]).u.rpoin;
+                restf = (st[cobs.obsnum]).u.tref;
+                LO = ((st[cobs.obsnum]).u.freq + (st[cobs.obsnum]).u.cimag)/2.0;
+                fres = (st[cobs.obsnum]).u.tres;
+                /*
+                  Rprintf("scan is continuum: %f %f %f %f\n", rchan, restf, LO, fres);
+                  Rprintf("scan is continuum: %f %f\n", (st[cobs.obsnum]).u.aref,
+                  (st[cobs.obsnum]).u.apos);
+                */
+            }
+            lam = (st[cobs.obsnum]).p.lam;
+            bet = (st[cobs.obsnum]).p.bet;
+            lam += (st[cobs.obsnum]).p.lamof/cos(bet);
+            bet += (st[cobs.obsnum]).p.betof;
+
+            REAL(RA)[ns] = lam*180.0/M_PI;
+            REAL(Dec)[ns] = bet*180.0/M_PI;
+            REAL(fLO)[ns] = LO;
+            REAL(f0)[ns] = restf;
+            REAL(df)[ns] = fres;
+            REAL(vs)[ns] = (st[cobs.obsnum]).s.voff;
+            REAL(dt)[ns] = (st[cobs.obsnum]).g.time;
+            REAL(tsys)[ns] = (st[cobs.obsnum]).g.tsys;
+            datetime = obstime((st[cobs.obsnum]).xdobs + 60549, (st[cobs.obsnum]).g.ut);
+            SET_STRING_ELT(utc, ns, mkChar(datetime));
+            ns++;
+#ifdef DEBUG
+            Rprintf("Fill class data done for block %d.\n", ncount);
+#endif
+            free(sbl);
+#ifdef ALLOC
+            Rprintf("%p -- free\n", sbl);
+#endif
+        }
+        ncount++;
+    }
+
+#ifdef DEBUG
+    Rprintf("Return fillHeader1() at n = %d\n", ns);
+#endif
+    return ns;
+}
+
+int getSpectra2(FILE *fp, int nscans, CLASS_INFO *info, int extno, SEXP a, int ns0, int *index, int nrows)
+{
+    int k, ncount, pos, datapos, secpos, len, m, nmax, nbl, nc, ns, Hk, Hidx, Hrows;
     int section_size, code, length, datasize;
     char block[CLASS_BLK_SIZE];
     char *section, *databl;
@@ -880,9 +1025,15 @@ int get_class_v2_data(FILE *fp, int nscans, CLASS_INFO *info, int extno, SEXP a,
     SEXP head, freq, data;
     SEXP nam;
     SEXP id, scanno, target, line, RA, Dec, f0, fLO, df, vs, dt, tsys, utc;
+    SEXP Hid;
 
     CLASS_SECTION_v2 cobs;
     CLASS *o;
+
+#ifdef DEBUG
+    Rprintf("looking for %d (%d) spectra\n", nrows, Rf_length(a));
+    Rprintf("first = %d, last = %d\n", index[0], index[nrows-1]);
+#endif
 
     ncount = ns0;
     ns = 0;
@@ -993,7 +1144,7 @@ int get_class_v2_data(FILE *fp, int nscans, CLASS_INFO *info, int extno, SEXP a,
             code = cobs.sec_cod[m];
             length = cobs.sec_len[m];
 #ifdef DEBUG
-            printf("Sect[%d]=%3d at adr %d of length %d.\n", m, code, secpos, section_size);
+            Rprintf("Sect[%d]=%3d at adr %d of length %d.\n", m, code, secpos, section_size);
 #endif
             fill_class_header(code, 1, length, section, section_size, o);
             free(section);
@@ -1079,7 +1230,16 @@ int get_class_v2_data(FILE *fp, int nscans, CLASS_INFO *info, int extno, SEXP a,
         SET_VECTOR_ELT(scan, 2, data);
         UNPROTECT(3);
 
-        SET_VECTOR_ELT(a, ncount, scan);
+        for (Hk = 0; Hk < nrows; Hk++) {
+            Hidx = index[Hk];
+            if (Hidx == ncount) {
+#ifdef DEBUG
+                Rprintf("Hidx %d Hk %d == ncount %d\n", Hidx, Hk, ncount);
+                Rprintf("setting element %d of %d\n", Hk, Rf_length(a));
+#endif
+                SET_VECTOR_ELT(a, Hk, scan);
+            }
+        }
         UNPROTECT(1);
         ns++;
 #ifdef DEBUG
@@ -1092,7 +1252,138 @@ int get_class_v2_data(FILE *fp, int nscans, CLASS_INFO *info, int extno, SEXP a,
         ncount++;
     }
 #ifdef DEBUG
-    Rprintf("Return get_class_v2_data() at n = %d\n", ns);
+    Rprintf("Return getSpectra2() at n = %d\n", ns);
+#endif
+    return ns;
+}
+
+int fillHeader2(FILE *fp, int nscans, CLASS_INFO *info, int extno, SEXP head, int ns0)
+{
+    int k, ncount, pos, datapos, secpos, len, m, nmax, nbl, nc, ns;
+    int section_size, code, length, datasize;
+    char block[CLASS_BLK_SIZE];
+    char *section, *databl;
+    const char *datetime = NULL;
+    double restf, fres, LO, lam, bet, rchan;
+    SEXP id, scanno, target, line, RA, Dec, f0, fLO, df, vs, dt, tsys, utc;
+
+    CLASS_SECTION_v2 cobs;
+    CLASS *o;
+
+    ncount = ns0;
+    ns = 0;
+    while (ns < nscans) {
+        o = &st[ns];
+        pos = (o->xbloc - 1)*info->reclen + o->xword - 1;
+#ifdef DEBUG
+        Rprintf("n=%4d  Rec:%d Word:%d  -> pos=%d words\n", ns, o->xbloc, o->xword, pos);
+#endif
+        fseek(fp, 4*pos, SEEK_SET);
+        len = fread(block, sizeof(char), CLASS_BLK_SIZE, fp);
+        fill_class_v2_obs(&cobs, block);
+#ifdef DEBUG
+        Rprintf("%7d %12s %12s %d %d (%d %d %d %d | %d %d %d %d | %d %d %d %d)\n",
+                ns,
+                st[ns].xsourc, st[ns].xline, st[ns].xkind,
+                cobs.nsec,
+                cobs.sec_cod[0], cobs.sec_cod[1], cobs.sec_cod[2], cobs.sec_cod[3],
+                cobs.sec_adr[0], cobs.sec_adr[1], cobs.sec_adr[2], cobs.sec_adr[3],
+                cobs.sec_len[0], cobs.sec_len[1], cobs.sec_len[2], cobs.sec_len[3]);
+#endif
+
+        id = VECTOR_ELT(head, 0);
+        scanno = VECTOR_ELT(head, 1);
+        target = VECTOR_ELT(head, 2);
+        line = VECTOR_ELT(head, 3);
+        RA = VECTOR_ELT(head, 4);
+        Dec = VECTOR_ELT(head, 5);
+        fLO = VECTOR_ELT(head, 6);
+        f0 = VECTOR_ELT(head, 7);
+        df = VECTOR_ELT(head, 8);
+        vs = VECTOR_ELT(head, 9);
+        dt = VECTOR_ELT(head, 10);
+        tsys = VECTOR_ELT(head, 11);
+        utc = VECTOR_ELT(head, 12);
+
+        INTEGER(id)[ncount] = ncount;
+        INTEGER(scanno)[ncount] = st[ns].xscan;
+        trim(st[ns].xsourc);
+        SET_STRING_ELT(target, ncount, mkChar(st[ns].xsourc));
+        trim(st[ns].xline);
+        SET_STRING_ELT(line, ncount, mkChar(st[ns].xline));
+
+        nmax = cobs.nsec;
+        if (nmax > MAX_CLASS_SECT) nmax = MAX_CLASS_SECT;
+
+        for (m = 0; m < nmax; m++) {
+            section_size = 4*cobs.sec_len[m];
+            section = (char *)malloc(section_size * sizeof(char));
+            if (!section) {
+                warning("cannot allocate section (size=%d) for CLASS file.", section_size);
+                fclose(fp);
+                return -2;
+            }
+#ifdef ALLOC
+            Rprintf("%p -- allocated %d characters for section\n", section, section_size);
+#endif
+            /* For now we read each section separately - to speed up all
+               sections could be read in one go*/
+            secpos = 4*(pos + cobs.sec_adr[m] - 1);
+            fseek(fp, secpos*sizeof(char), SEEK_SET);
+            len = fread(section, sizeof(char), section_size, fp);
+            if (len != section_size) {
+                warning("cannot read %d word index from %d CLASS file.", len, section_size);
+                free(section);
+#ifdef ALLOC
+                Rprintf("%p -- free\n", section);
+#endif
+                fclose(fp);
+                return -2;
+            }
+            code = cobs.sec_cod[m];
+            length = cobs.sec_len[m];
+#ifdef DEBUG
+            printf("Sect[%d]=%3d at adr %d of length %d.\n", m, code, secpos, section_size);
+#endif
+            fill_class_header(code, 1, length, section, section_size, o);
+            free(section);
+#ifdef ALLOC
+            Rprintf("%p -- free\n", section);
+#endif
+        }
+
+        rchan = (st[ns]).s.rchan;
+        restf = (st[ns]).s.restf;
+        LO = ((st[ns]).s.restf + (st[ns]).s.image)/2.0;
+        fres = (st[ns]).s.fres;
+        lam = (st[ns]).p.lam;
+        bet = (st[ns]).p.bet;
+        lam += (st[ns]).p.lamof/cos(bet);
+        bet += (st[ns]).p.betof;
+
+        REAL(RA)[ncount] = lam*180.0/M_PI;
+        REAL(Dec)[ncount] = bet*180.0/M_PI;
+        REAL(fLO)[ncount] = LO;
+        REAL(f0)[ncount] = restf;
+        REAL(df)[ncount] = fres;
+        REAL(vs)[ncount] = (st[ns]).s.voff;
+        REAL(dt)[ncount] = (st[ns]).g.time;
+        REAL(tsys)[ncount] = (st[ns]).g.tsys;
+        datetime = obstime((st[ns]).xdobs + 60549, (st[ns]).g.ut);
+        SET_STRING_ELT(utc, ncount, mkChar(datetime));
+
+        ns++;
+#ifdef DEBUG
+        Rprintf("Fill class data done for block %d.\n", ncount);
+#endif
+        free(databl);
+#ifdef ALLOC
+        Rprintf("%p -- free\n", databl);
+#endif
+        ncount++;
+    }
+#ifdef DEBUG
+    Rprintf("Return fillHeader2() at n = %d\n", ns);
 #endif
     return ns;
 }
@@ -1148,23 +1439,83 @@ void set_classfile_type(const char *file, CLASS_INFO *info)
     return;
 }
 
-//' Read a GILDAS/CLASS single dish data file
+SEXP emptyFrame(int nspec)
+{
+    SEXP frame;
+    SEXP nam;
+    SEXP id, scanno, target, line, RA, Dec, f0, fLO, df, vs, dt, tsys, utc;
+
+    PROTECT(frame = allocVector(VECSXP, 13));
+
+    PROTECT(nam = allocVector(STRSXP, 13)); // names attribute (column names)
+    SET_STRING_ELT(nam, 0, mkChar("id"));
+    SET_STRING_ELT(nam, 1, mkChar("scan"));
+    SET_STRING_ELT(nam, 2, mkChar("target"));
+    SET_STRING_ELT(nam, 3, mkChar("line"));
+    SET_STRING_ELT(nam, 4, mkChar("RA"));
+    SET_STRING_ELT(nam, 5, mkChar("Dec"));
+    SET_STRING_ELT(nam, 6, mkChar("f.LO"));
+    SET_STRING_ELT(nam, 7, mkChar("f0"));
+    SET_STRING_ELT(nam, 8, mkChar("df"));
+    SET_STRING_ELT(nam, 9, mkChar("v.LSR"));
+    SET_STRING_ELT(nam,10, mkChar("dt"));
+    SET_STRING_ELT(nam,11, mkChar("T.sys"));
+    SET_STRING_ELT(nam,12, mkChar("observed.date"));
+    namesgets(frame, nam);
+    UNPROTECT(1);
+
+    PROTECT(id = allocVector(INTSXP, nspec));         // 0
+    PROTECT(scanno = allocVector(INTSXP, nspec));     // 1
+    PROTECT(target = allocVector(STRSXP, nspec));     // 2
+    PROTECT(line = allocVector(STRSXP, nspec));       // 3
+    PROTECT(RA = allocVector(REALSXP, nspec));        // 4
+    PROTECT(Dec = allocVector(REALSXP, nspec));       // 5
+    PROTECT(fLO = allocVector(REALSXP, nspec));       // 6
+    PROTECT(f0 = allocVector(REALSXP, nspec));        // 7
+    PROTECT(df = allocVector(REALSXP, nspec));        // 8
+    PROTECT(vs = allocVector(REALSXP, nspec));        // 9
+    PROTECT(dt = allocVector(REALSXP, nspec));        // 10
+    PROTECT(tsys = allocVector(REALSXP, nspec));      // 11
+    PROTECT(utc = allocVector(STRSXP, nspec));        // 12
+    Rf_setAttrib(frame, R_RowNamesSymbol, id);
+
+    SET_VECTOR_ELT(frame, 0, id);
+    SET_VECTOR_ELT(frame, 1, scanno);
+    SET_VECTOR_ELT(frame, 2, target);
+    SET_VECTOR_ELT(frame, 3, line);
+    SET_VECTOR_ELT(frame, 4, RA);
+    SET_VECTOR_ELT(frame, 5, Dec);
+    SET_VECTOR_ELT(frame, 6, fLO);
+    SET_VECTOR_ELT(frame, 7, f0);
+    SET_VECTOR_ELT(frame, 8, df);
+    SET_VECTOR_ELT(frame, 9, vs);
+    SET_VECTOR_ELT(frame,10, dt);
+    SET_VECTOR_ELT(frame,11, tsys);
+    SET_VECTOR_ELT(frame,12, utc);
+    UNPROTECT(13);
+    UNPROTECT(1);
+
+    Rf_setAttrib(frame, R_ClassSymbol, Rf_mkString("data.frame"));
+    return frame;
+}
+
+//' Get header infromation from a GILDAS/CLASS single dish data file
 //'
 //' Given a filename, open the file and scan it for single dish spectra
-//' or continuum scans. Each encountered scan is returned as a list with
-//' a head, freq and data section. For continuum scans, the frequency
-//' vector will simply be a running index. All the individual lists are
-//' combined into one major list, which is returned.
+//' or continuum scans. A data frame is returned where each row corresponds
+//' to the header information of one scan.
 //' @param filename name of the GILDAS file including path to be opened
-//' @return list of length n, where n is the number of scans found
+//' @return data frame with n rows, where n is the number of scans found
 // [[Rcpp::export]]
-SEXP readClass(SEXP filename)
+SEXP getClassHeader(SEXP filename)
 {
     const char *s;
     int ierr, n, nbl, nspec, nex, m, ns0;
     FILE *fp;
     CLASS_INFO info;
-    SEXP classattrib, ret;
+    SEXP head;
+    SEXP nam;
+    SEXP id, scanno, target, line, RA, Dec, f0, fLO, df, vs, dt, tsys, utc;
 
     s = CHAR(STRING_ELT(filename, 0));
     Rprintf("CLASS filename = %s\n", s);
@@ -1183,7 +1534,120 @@ SEXP readClass(SEXP filename)
     fp = get_classfile_descriptor(s, &info);
     if (fp) {
         if (info.type == 1) {
-            nspec = get_class_v1_file_listing(fp, &info);
+            nspec = fileListing1(fp, &info);
+            if (nspec <= 0) {
+                if (st) free(st);
+#ifdef ALLOC
+                Rprintf("%p -- free\n", st);
+#endif
+                st = NULL;
+                nst = 0;
+                fclose(fp);
+                return R_NilValue;
+            }
+            head = emptyFrame(nspec);
+            n = nspec/4+2; // number of 512 byte block
+            ierr = fillHeader1(fp, n, &info, head);
+            fclose(fp);
+            if (st != NULL) free(st);
+#ifdef ALLOC
+            Rprintf("%p -- free\n", st);
+#endif
+#ifdef DEBUG
+            Rprintf("found %d spectra [type %d]\n", nspec, info.type);
+#endif
+            return head;
+        } else if (info.type == 2) {
+            nex = info.nex;
+            nspec = 0;
+            for (m = 0; m < nex; m++) {
+                ns0 = fileListing2(fp, &info, m);
+                nspec += ns0;
+            }
+            head = emptyFrame(nspec);
+            nspec = 0;
+            for (m = 0; m < nex; m++) {
+                ns0 = fileListing2(fp, &info, m);
+                if (ns0 <= 0) {
+                    if (st) free(st);
+#ifdef ALLOC
+                    Rprintf("%p -- free\n", st);
+#endif
+                    st = NULL;
+                    nst = 0;
+                    fclose(fp);
+                    return R_NilValue;
+                }
+                ierr = fillHeader2(fp, ns0, &info, m, head, nspec);
+                nspec += ns0;
+                if (st != NULL) free(st);
+#ifdef ALLOC
+                Rprintf("%p -- free\n", st);
+#endif
+            }
+            fclose(fp);
+#ifdef DEBUG
+            Rprintf("found %d spectra [type %d]\n", nspec, info.type);
+#endif
+            return head;
+        }
+    } else {
+        return R_NilValue;
+    }
+}
+
+//' Read a GILDAS/CLASS single dish data file
+//'
+//' Given a filename and a data frame 'header', open the file and scan it
+//' for single dish spectra or continuum scans.
+//' For each row in the header frame, return the correspiónding scan as a list
+//' with a head, freq and data section. For continuum scans, the frequency
+//' vector will simply be a running index. All the individual lists are
+//' combined into one major list, which is returned.
+//' @param filename name of the GILDAS file including path to be opened
+//' @param header a data frame with one row for each scan requested.
+//' @return list of length n, where n is the number of scans.
+// [[Rcpp::export]]
+SEXP readClass(SEXP filename, SEXP header)
+{
+    const char *s;
+    int ierr, n, nbl, nspec, nex, m, ns0, nrows;
+    bool all;
+    FILE *fp;
+    CLASS_INFO info;
+    int *index;
+    SEXP classattrib, ret, id;
+
+    s = CHAR(STRING_ELT(filename, 0));
+    Rprintf("CLASS filename = %s\n", s);
+
+    info.type = 0;
+    set_classfile_type(s, &info);
+    if (info.type == 0) {
+        warning("unknown CLASS file type in %s.", s);
+        return 0;
+    }
+
+#ifdef DEBUG
+    Rprintf("File: '%s'  type=%d\n", s, info.type);
+#endif
+    all = isNull(header);
+    if (all) {
+        Rprintf("header is NULL\n");
+        PROTECT(header = getClassHeader(filename));
+    }
+    id = VECTOR_ELT(header, 0);
+    nrows = Rf_length(id);
+    index = INTEGER(id);
+#ifdef DEBUG
+    Rprintf("look-up %d header rows\n", nrows);
+    Rprintf("first = %d, last = %d\n", index[0], index[nrows-1]);
+#endif
+
+    fp = get_classfile_descriptor(s, &info);
+    if (fp) {
+        if (info.type == 1) {
+            nspec = fileListing1(fp, &info);
             if (nspec <= 0) {
                 if (st) free(st);
 #ifdef ALLOC
@@ -1195,29 +1659,33 @@ SEXP readClass(SEXP filename)
                 return R_NilValue;
             }
             n = nspec/4+2; // number of 512 byte block
-            PROTECT(ret = allocVector(VECSXP, nspec)); // a list with nspec elements
-            ierr = get_class_v1_data(fp, n, &info, ret);
+            PROTECT(ret = allocVector(VECSXP, nrows));
+            ierr = getSpectra1(fp, n, &info, ret, index, nrows);
             classattrib = PROTECT(allocVector(STRSXP, 1));
             SET_STRING_ELT(classattrib, 0, mkChar("spectra"));
             setAttrib(ret, R_ClassSymbol, classattrib);
             UNPROTECT(2);
             fclose(fp);
             if (st != NULL) free(st);
+            if (all) UNPROTECT(1);
 #ifdef ALLOC
             Rprintf("%p -- free\n", st);
+#endif
+#ifdef DEBUG
+            Rprintf("found %d spectra\n", nspec);
 #endif
             return ret;
         } else if (info.type == 2) {
             nex = info.nex;
             ns0 = 0;
             for (m = 0; m < nex; m++) {
-                nspec = get_class_v2_file_listing(fp, &info, m, 0);
+                nspec = fileListing2(fp, &info, m);
                 ns0 += nspec;
             }
-            PROTECT(ret = allocVector(VECSXP, ns0)); // a list with nspec elements
+            PROTECT(ret = allocVector(VECSXP, nrows));
             ns0 = 0;
             for (m = 0; m < nex; m++) {
-                nspec = get_class_v2_file_listing(fp, &info, m, 1);
+                nspec = fileListing2(fp, &info, m);
                 if (nspec <= 0) {
                     if (st) free(st);
 #ifdef ALLOC
@@ -1228,7 +1696,7 @@ SEXP readClass(SEXP filename)
                     fclose(fp);
                     return R_NilValue;
                 }
-                ierr = get_class_v2_data(fp, nspec, &info, m, ret, ns0);
+                ierr = getSpectra2(fp, nspec, &info, m, ret, ns0, index, nrows);
                 ns0 += nspec;
                 if (st != NULL) free(st);
 #ifdef ALLOC
@@ -1240,6 +1708,10 @@ SEXP readClass(SEXP filename)
             setAttrib(ret, R_ClassSymbol, classattrib);
             UNPROTECT(2);
             fclose(fp);
+            if (all) UNPROTECT(1);
+#ifdef DEBUG
+            Rprintf("found %d spectra\n", ns0);
+#endif
             return ret;
         }
     } else {
