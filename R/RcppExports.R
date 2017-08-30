@@ -23,7 +23,7 @@ getClassHeader <- function(filename) {
 #' @param filename name of the GILDAS file including path to be opened
 #' @param header a data frame with one row for each scan requested.
 #' @return list of length n, where n is the number of scans.
-readClass <- function(filename, header) {
+readClass <- function(filename, header = NULL) {
     .Call('Rdrp_readClass', PACKAGE = 'Rdrp', filename, header)
 }
 

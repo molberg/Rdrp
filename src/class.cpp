@@ -1499,6 +1499,66 @@ SEXP emptyFrame(int nspec)
     return frame;
 }
 
+typedef struct {
+    int origpos;
+    const char *value;
+} SORT;
+
+int qcmp(const void *x, const void *y) {
+    int res = strcmp(((SORT *)x)->value, ((SORT *)y)->value);
+    if (res != 0)
+        return res;
+    else
+        // they are equal - use original position as tie breaker
+        return (((SORT *)x)->origpos - ((SORT *)y)->origpos);
+}
+
+SEXP sortUniqueStrings(SEXP str)
+{
+    SEXP factor, unique;
+    SORT *sorted;
+    int i, level;
+    int num;
+    const char *ptr;
+
+    num = Rf_length(str);
+    sorted = (SORT *)malloc(num*sizeof(SORT));
+
+    for (i = 0; i < num; i++) {
+        ptr = CHAR(STRING_ELT(str, i));
+        sorted[i].value = ptr;
+        sorted[i].origpos = i;
+    }
+    qsort(sorted, num, sizeof(SORT), qcmp);
+
+    // find number of levels
+    level = 1;
+    for (i = 0; i < num - 1; i++) {
+        if (strcmp(sorted[i].value, sorted[i+1].value) != 0) {
+            level++;
+        }
+    }
+
+    PROTECT(factor = allocVector(INTSXP, num));
+    PROTECT(unique = allocVector(STRSXP, level));
+    level = 0;
+    INTEGER(factor)[0] = level+1;
+    SET_STRING_ELT(unique, 0, mkChar(sorted[0].value));
+    for (i = 0; i < num-1; i++) {
+        if (strcmp(sorted[i].value, sorted[i+1].value) != 0) {
+            level++;
+            SET_STRING_ELT(unique, level, mkChar(sorted[i+1].value));
+        }
+        INTEGER(factor)[i+1] = level+1;
+    }
+    Rf_setAttrib(factor, R_LevelsSymbol, unique);
+    Rf_setAttrib(factor, R_ClassSymbol, Rf_mkString("factor"));
+    free(sorted);
+
+    UNPROTECT(2);
+    return factor;
+}
+
 //' Get header infromation from a GILDAS/CLASS single dish data file
 //'
 //' Given a filename, open the file and scan it for single dish spectra
@@ -1510,10 +1570,10 @@ SEXP emptyFrame(int nspec)
 SEXP getClassHeader(SEXP filename)
 {
     const char *s;
-    int ierr, n, nbl, nspec, nex, m, ns0;
+    int ierr, n, nlev, nspec, nex, m, ns0;
     FILE *fp;
     CLASS_INFO info;
-    SEXP head;
+    SEXP head, column;
     SEXP nam;
     SEXP id, scanno, target, line, RA, Dec, f0, fLO, df, vs, dt, tsys, utc;
 
@@ -1545,7 +1605,7 @@ SEXP getClassHeader(SEXP filename)
                 fclose(fp);
                 return R_NilValue;
             }
-            head = emptyFrame(nspec);
+            PROTECT(head = emptyFrame(nspec));
             n = nspec/4+2; // number of 512 byte block
             ierr = fillHeader1(fp, n, &info, head);
             fclose(fp);
@@ -1556,6 +1616,13 @@ SEXP getClassHeader(SEXP filename)
 #ifdef DEBUG
             Rprintf("found %d spectra [type %d]\n", nspec, info.type);
 #endif
+            column = VECTOR_ELT(head, 2);
+            PROTECT(target = sortUniqueStrings(column));
+            SET_VECTOR_ELT(head, 2, target);
+            column = VECTOR_ELT(head, 3);
+            PROTECT(line = sortUniqueStrings(column));
+            SET_VECTOR_ELT(head, 3, line);
+            UNPROTECT(3);
             return head;
         } else if (info.type == 2) {
             nex = info.nex;
@@ -1564,7 +1631,7 @@ SEXP getClassHeader(SEXP filename)
                 ns0 = fileListing2(fp, &info, m);
                 nspec += ns0;
             }
-            head = emptyFrame(nspec);
+            PROTECT(head = emptyFrame(nspec));
             nspec = 0;
             for (m = 0; m < nex; m++) {
                 ns0 = fileListing2(fp, &info, m);
@@ -1589,6 +1656,13 @@ SEXP getClassHeader(SEXP filename)
 #ifdef DEBUG
             Rprintf("found %d spectra [type %d]\n", nspec, info.type);
 #endif
+            column = VECTOR_ELT(head, 2);
+            PROTECT(target = sortUniqueStrings(column));
+            SET_VECTOR_ELT(head, 2, target);
+            column = VECTOR_ELT(head, 3);
+            PROTECT(line = sortUniqueStrings(column));
+            SET_VECTOR_ELT(head, 3, line);
+            UNPROTECT(3);
             return head;
         }
     } else {
@@ -1608,7 +1682,7 @@ SEXP getClassHeader(SEXP filename)
 //' @param header a data frame with one row for each scan requested.
 //' @return list of length n, where n is the number of scans.
 // [[Rcpp::export]]
-SEXP readClass(SEXP filename, SEXP header)
+SEXP readClass(SEXP filename, SEXP header = R_NilValue)
 {
     const char *s;
     int ierr, n, nbl, nspec, nex, m, ns0, nrows;
