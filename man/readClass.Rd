@@ -4,19 +4,19 @@
 \alias{readClass}
 \title{Read a GILDAS/CLASS single dish data file}
 \usage{
-readClass(filename, header = NULL)
+readClass(filename, H)
 }
 \arguments{
-\item{filename}{name of the CLASS file including path to be opened}
+\item{filename}{name of the GILDAS/CLASS file including path to be opened}
 
-\item{header}{a data frame with one row for each scan requested (optional).}
+\item{H}{a data frame with one row for each scan requested (optional).}
 }
 \value{
 list of length n, where n is the number of scans.
 }
 \description{
-Given a filename of a CLASS data file and a data frame 'header', open the file
-and scan it for single dish spectra or continuum scans.
+Given a filename of a GILDAS/CLASS data file and a data frame 'header',
+open the file and scan it for single dish spectra or continuum scans.
 For each row in the header frame, the corresponding scan will be returned
 as a list with a head, freq and data section. For continuum scans, the
 frequency vector will simply be a running index. All the individual lists are
@@ -25,5 +25,14 @@ and run getHead(L) on the returned list L, you should get your header back.
 If a header is not supplied, it will be constructed on the fly, such that
 all scans present in the CLASS file will be returned. Note that this may
 result in running out of memory for very large (several Gb) files.
+}
+\examples{
+\dontrun{
+filename = "mydata.apex"
+H <- getClassHeader(filename)
+L = readClass(filename)      # return all spectra in file
+H <- H[which(H$target == "RDor" & H$line == "CO (6-5)"),]
+L = readClass(filename, H)   # return only RDor CO (6-5) spectra
+}
 }
 

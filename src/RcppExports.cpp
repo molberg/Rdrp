@@ -18,14 +18,14 @@ BEGIN_RCPP
 END_RCPP
 }
 // readClass
-SEXP readClass(SEXP filename, SEXP header);
-RcppExport SEXP Rdrp_readClass(SEXP filenameSEXP, SEXP headerSEXP) {
+SEXP readClass(SEXP filename, SEXP H);
+RcppExport SEXP Rdrp_readClass(SEXP filenameSEXP, SEXP HSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< SEXP >::type filename(filenameSEXP);
-    Rcpp::traits::input_parameter< SEXP >::type header(headerSEXP);
-    rcpp_result_gen = Rcpp::wrap(readClass(filename, header));
+    Rcpp::traits::input_parameter< SEXP >::type H(HSEXP);
+    rcpp_result_gen = Rcpp::wrap(readClass(filename, H));
     return rcpp_result_gen;
 END_RCPP
 }

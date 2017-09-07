@@ -24,10 +24,10 @@ It is assumed that all 'head' components have the same number of
 members with identical names and types.
 }
 \examples{
-S1 <- list(head=list(target="Orion", ra=1.23, dec=-0.5,
-           dt=as.integer(20)), freq=-5:5, data=rnorm(11))
-S2 <- list(head=list(target="SgrB2", ra=5.43, dec=+0.5,
-           dt=as.integer(20)), freq=-5:5, data=rnorm(11))
+S1 <- list(head=list(target="Orion", ra=1.23, dec=-0.5, dt=as.integer(20)),
+           freq=-5:5, data=rnorm(11))
+S2 <- list(head=list(target="SgrB2", ra=5.43, dec=+0.5, dt=as.integer(20)),
+           freq=-5:5, data=rnorm(11))
 
 getHead(list(S1,S2))
 
