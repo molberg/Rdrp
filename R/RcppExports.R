@@ -14,14 +14,18 @@ getClassHeader <- function(filename) {
 
 #' Read a GILDAS/CLASS single dish data file
 #'
-#' Given a filename and a data frame 'header', open the file and scan it
-#' for single dish spectra or continuum scans.
-#' For each row in the header frame, return the correspiónding scan as a list
-#' with a head, freq and data section. For continuum scans, the frequency
-#' vector will simply be a running index. All the individual lists are
-#' combined into one major list, which is returned.
-#' @param filename name of the GILDAS file including path to be opened
-#' @param header a data frame with one row for each scan requested.
+#' Given a filename of a CLASS data file and a data frame 'header', open the file
+#' and scan it for single dish spectra or continuum scans.
+#' For each row in the header frame, the corresponding scan will be returned
+#' as a list with a head, freq and data section. For continuum scans, the
+#' frequency vector will simply be a running index. All the individual lists are
+#' combined into one major list, which is returned. If you supplied a header
+#' and run getHead(L) on the returned list L, you should get your header back.
+#' If a header is not supplied, it will be constructed on the fly, such that
+#' all scans present in the CLASS file will be returned. Note that this may
+#' result in running out of memory for very large (several Gb) files.
+#' @param filename name of the CLASS file including path to be opened
+#' @param header a data frame with one row for each scan requested (optional).
 #' @return list of length n, where n is the number of scans.
 readClass <- function(filename, header = NULL) {
     .Call('Rdrp_readClass', PACKAGE = 'Rdrp', filename, header)

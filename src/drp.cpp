@@ -504,9 +504,11 @@ double area(List S, LogicalVector mask) {
 //' @examples
 //' data(salsa)
 //' A <- average(salsa)
-//' lmask <- mask(A, c(1420,1421))  # calculate moments between 1420...1421 MHz
+//' # calculate moments between 1420...1421 MHz
+//' lmask <- mask(A, c(1420,1421))
 //' moment(A, mask=lmask)
-//' do.call("rbind", lapply(salsa, moment, lmask)) # do this for individual spectra
+//' # do this for individual spectra
+//' do.call("rbind", lapply(salsa, moment, lmask))
 // [[Rcpp::export]]
 DataFrame moment(List S, LogicalVector mask) {
     static char error[80];

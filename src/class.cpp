@@ -245,6 +245,9 @@ int fileListing1(FILE *fp, CLASS_INFO *info)
     done = 0;
     nscan = 0;
     do {
+#ifdef DEBUG
+        Rprintf("in %s spectrum %d at position %ld\n", __FUNCTION__, nscan+1, ftell(fp));
+#endif
         len = fread(block, sizeof(char), CLASS_BLK_SIZE, fp);
         if (len != CLASS_BLK_SIZE) {
             warning("cannot read %d byte block from CLASS file.", CLASS_BLK_SIZE);
@@ -271,13 +274,16 @@ int fileListing1(FILE *fp, CLASS_INFO *info)
 
 int fileListing2(FILE *fp, CLASS_INFO *info, int extno)
 {
-    int isize, len, j, nread, pos, extgrowth = 1;
+    int isize, len, j, nread, pos, nscan = 0, extgrowth = 1;
     char *index = NULL, *iptr;
     CLASS obs;
 
     if (!fp) return -1;
 
-    for (j = 0; j < extno; j++) extgrowth *= 2;
+    for (j = 0; j < extno; j++) {
+        nscan += info->lex1 * extgrowth;
+        extgrowth *= 2;
+    }
     pos = (info->aex[extno] - 1)*1024;
     isize = 4 * info->lex1 * extgrowth * info->lind;
     nst = info->first * extgrowth;
@@ -313,6 +319,9 @@ int fileListing2(FILE *fp, CLASS_INFO *info, int extno)
 #endif
 
     fseek(fp, 4*pos, SEEK_SET);
+#ifdef DEBUG
+    Rprintf("in %s spectrum %d at position %ld\n", __FUNCTION__, nscan+1, ftell(fp));
+#endif
     len = fread(index, sizeof(char), isize, fp);
     if (len != isize) {
         warning("read only %d bytes of %d from CLASS file.", len, isize);
@@ -514,10 +523,9 @@ int fill_class_v1_data(CLASS_SECTION *cs, char *s, int size, CLASS *c)
     }
 
 #ifdef DEBUG
-    if (ndata > 30)
-        Rprintf("    -D %d %d  %f %f %f %f ... %f %f\n", ndata, n,
-                c->data[0], c->data[10], c->data[20], c->data[30],
-                c->data[ndata-2], c->data[ndata-1]);
+    Rprintf("    -DATA %d %d  %f %f %f %f ... %f %f\n", ndata, n,
+            c->data[0], c->data[1], c->data[2], c->data[3],
+            c->data[ndata-2], c->data[ndata-1]);
 #endif
     return ndata;
 }
@@ -543,10 +551,9 @@ int fill_class_v2_data(CLASS_SECTION_v2 *cs, char *s, int size, CLASS *c)
     }
 
 #ifdef DEBUG
-    if (ndata > 30)
-        Rprintf("    -D2 %d  %f %f %f %f ... %f %f\n", ndata,
-                c->data[0], c->data[10], c->data[20], c->data[30],
-                c->data[ndata-2], c->data[ndata-1]);
+    Rprintf("    -DATA %d  %f %f %f %f ... %f %f\n", ndata,
+            c->data[0], c->data[1], c->data[2], c->data[3],
+            c->data[ndata-2], c->data[ndata-1]);
 #endif
     return ndata;
 }
@@ -577,6 +584,9 @@ FILE *get_classfile_descriptor(const char *file, CLASS_INFO *info)
         return NULL;
     }
 
+#ifdef DEBUG
+        Rprintf("in %s reading at position %ld\n", __FUNCTION__, ftell(fp));
+#endif
     len = fread(rec, sizeof(char), CLASS_BLK_SIZE, fp);
     if (len != CLASS_BLK_SIZE) {
         warning("cannot read %d byte record from file '%s'.\n", CLASS_BLK_SIZE, file);
@@ -686,6 +696,9 @@ int getSpectra1(FILE *fp, int curr_nbl, CLASS_INFO *info, SEXP a, int *index, in
     ncount = curr_nbl + 1;
     ns = 0;
     while (ncount < info->nextbl) {
+#ifdef DEBUG
+        Rprintf("in %s reading at position %ld\n", __FUNCTION__, ftell(fp));
+#endif
         len = fread(block, sizeof(char), CLASS_BLK_SIZE, fp);
         nbl = check_block(st, info->first, ncount+1);
         if (nbl) {
@@ -769,6 +782,9 @@ int getSpectra1(FILE *fp, int curr_nbl, CLASS_INFO *info, SEXP a, int *index, in
             /* copy the already read block into the sbl */
             memcpy(sbl, block, 512);
             if (cobs.nbl > 1) { /* and the remaining, if any */
+#ifdef DEBUG
+        Rprintf("in %s reading at position %ld\n", __FUNCTION__, ftell(fp));
+#endif
                 len = fread(&sbl[512], sizeof(char), (cobs.nbl - 1)*512, fp);
                 if (len != (cobs.nbl - 1)*512) {
                     warning("read only %d (of %d) bytes.", len, (cobs.nbl - 1)*512);
@@ -899,6 +915,9 @@ int fillHeader1(FILE *fp, int curr_nbl, CLASS_INFO *info, SEXP head)
     ncount = curr_nbl + 1;
     ns = 0;
     while (ncount < info->nextbl) {
+#ifdef DEBUG
+        Rprintf("in %s reading at spectrum %d at position %ld\n", __FUNCTION__, ns+1, ftell(fp));
+#endif
         len = fread(block, sizeof(char), CLASS_BLK_SIZE, fp);
         nbl = check_block(st, info->first, ncount+1);
         if (nbl) {
@@ -945,6 +964,9 @@ int fillHeader1(FILE *fp, int curr_nbl, CLASS_INFO *info, SEXP head)
             /* copy the already read block into the sbl */
             memcpy(sbl, block, 512);
             if (cobs.nbl > 1) { /* and the remaining, if any */
+#ifdef DEBUG
+        Rprintf("in %s reading at position %ld\n", __FUNCTION__, ftell(fp));
+#endif
                 len = fread(&sbl[512], sizeof(char), (cobs.nbl - 1)*512, fp);
                 if (len != (cobs.nbl - 1)*512) {
                     warning("read only %d (of %d) bytes.", len, (cobs.nbl - 1)*512);
@@ -1044,6 +1066,9 @@ int getSpectra2(FILE *fp, int nscans, CLASS_INFO *info, int extno, SEXP a, int n
         Rprintf("n=%4d  Rec:%d Word:%d  -> pos=%d words\n", ns, o->xbloc, o->xword, pos);
 #endif
         fseek(fp, 4*pos, SEEK_SET);
+#ifdef DEBUG
+        Rprintf("in %s reading at position %ld\n", __FUNCTION__, ftell(fp));
+#endif
         len = fread(block, sizeof(char), CLASS_BLK_SIZE, fp);
         fill_class_v2_obs(&cobs, block);
 #ifdef DEBUG
@@ -1131,6 +1156,9 @@ int getSpectra2(FILE *fp, int nscans, CLASS_INFO *info, int extno, SEXP a, int n
                sections could be read in one go*/
             secpos = 4*(pos + cobs.sec_adr[m] - 1);
             fseek(fp, secpos*sizeof(char), SEEK_SET);
+#ifdef DEBUG
+            Rprintf("in %s reading section %d at position %ld\n", __FUNCTION__, m, ftell(fp));
+#endif
             len = fread(section, sizeof(char), section_size, fp);
             if (len != section_size) {
                 warning("cannot read %d word index from %d CLASS file.", len, section_size);
@@ -1185,6 +1213,10 @@ int getSpectra2(FILE *fp, int nscans, CLASS_INFO *info, int extno, SEXP a, int n
         Rprintf("%p -- allocated %d characters for datatbl\n", databl, datasize);
 #endif
         fseek(fp, datapos*sizeof(char), SEEK_SET);
+        //        Rprintf("in %s reading data at position %ld\n", __FUNCTION__, ftell(fp));
+#ifdef DEBUG
+        Rprintf("in %s reading data at position %ld\n", __FUNCTION__, ftell(fp));
+#endif
         len = fread(databl, sizeof(char), datasize, fp);
         if (len != datasize) {
             warning("read only %d of %d bytes data block CLASS file.", len, datasize);
@@ -1279,6 +1311,9 @@ int fillHeader2(FILE *fp, int nscans, CLASS_INFO *info, int extno, SEXP head, in
         Rprintf("n=%4d  Rec:%d Word:%d  -> pos=%d words\n", ns, o->xbloc, o->xword, pos);
 #endif
         fseek(fp, 4*pos, SEEK_SET);
+#ifdef DEBUG
+        Rprintf("in %s reading spectrum %d at position %ld\n", __FUNCTION__, ncount+1, ftell(fp));
+#endif
         len = fread(block, sizeof(char), CLASS_BLK_SIZE, fp);
         fill_class_v2_obs(&cobs, block);
 #ifdef DEBUG
@@ -1330,6 +1365,9 @@ int fillHeader2(FILE *fp, int nscans, CLASS_INFO *info, int extno, SEXP head, in
                sections could be read in one go*/
             secpos = 4*(pos + cobs.sec_adr[m] - 1);
             fseek(fp, secpos*sizeof(char), SEEK_SET);
+#ifdef DEBUG
+            Rprintf("in %s reading section %d at position %ld\n", __FUNCTION__, m, ftell(fp));
+#endif
             len = fread(section, sizeof(char), section_size, fp);
             if (len != section_size) {
                 warning("cannot read %d word index from %d CLASS file.", len, section_size);
@@ -1405,6 +1443,9 @@ void set_classfile_type(const char *file, CLASS_INFO *info)
 	error(msg);
     }
 
+#ifdef DEBUG
+        Rprintf("in %s reading at position %ld\n", __FUNCTION__, ftell(fp));
+#endif
     len = fread(type, sizeof(char), 4, fp);
     if (len != 4) {
         warning("cannot read %d byte type from file '%s'.\n", 4, file);
@@ -1417,6 +1458,9 @@ void set_classfile_type(const char *file, CLASS_INFO *info)
         info->reclen = 128;
     } else if (strncmp(type, "2A", 2) == 0) {
         info->type = 2;
+#ifdef DEBUG
+        Rprintf("in %s reading at position %ld\n", __FUNCTION__, ftell(fp));
+#endif
         len = fread(reclen, sizeof(char), 4, fp);
         if (len != 4) {
             warning("cannot read %d byte reclen from file '%s'.\n", 4, file);
@@ -1513,7 +1557,7 @@ int qcmp(const void *x, const void *y) {
         return (((SORT *)x)->origpos - ((SORT *)y)->origpos);
 }
 
-SEXP sortUniqueStrings(SEXP str)
+SEXP makeFactor(SEXP str)
 {
     SEXP factor, unique;
     SORT *sorted;
@@ -1617,10 +1661,10 @@ SEXP getClassHeader(SEXP filename)
             Rprintf("found %d spectra [type %d]\n", nspec, info.type);
 #endif
             column = VECTOR_ELT(head, 2);
-            PROTECT(target = sortUniqueStrings(column));
+            PROTECT(target = makeFactor(column));
             SET_VECTOR_ELT(head, 2, target);
             column = VECTOR_ELT(head, 3);
-            PROTECT(line = sortUniqueStrings(column));
+            PROTECT(line = makeFactor(column));
             SET_VECTOR_ELT(head, 3, line);
             UNPROTECT(3);
             return head;
@@ -1657,10 +1701,10 @@ SEXP getClassHeader(SEXP filename)
             Rprintf("found %d spectra [type %d]\n", nspec, info.type);
 #endif
             column = VECTOR_ELT(head, 2);
-            PROTECT(target = sortUniqueStrings(column));
+            PROTECT(target = makeFactor(column));
             SET_VECTOR_ELT(head, 2, target);
             column = VECTOR_ELT(head, 3);
-            PROTECT(line = sortUniqueStrings(column));
+            PROTECT(line = makeFactor(column));
             SET_VECTOR_ELT(head, 3, line);
             UNPROTECT(3);
             return head;
@@ -1672,14 +1716,18 @@ SEXP getClassHeader(SEXP filename)
 
 //' Read a GILDAS/CLASS single dish data file
 //'
-//' Given a filename and a data frame 'header', open the file and scan it
-//' for single dish spectra or continuum scans.
-//' For each row in the header frame, return the correspiónding scan as a list
-//' with a head, freq and data section. For continuum scans, the frequency
-//' vector will simply be a running index. All the individual lists are
-//' combined into one major list, which is returned.
-//' @param filename name of the GILDAS file including path to be opened
-//' @param header a data frame with one row for each scan requested.
+//' Given a filename of a CLASS data file and a data frame 'header', open the file
+//' and scan it for single dish spectra or continuum scans.
+//' For each row in the header frame, the corresponding scan will be returned
+//' as a list with a head, freq and data section. For continuum scans, the
+//' frequency vector will simply be a running index. All the individual lists are
+//' combined into one major list, which is returned. If you supplied a header
+//' and run getHead(L) on the returned list L, you should get your header back.
+//' If a header is not supplied, it will be constructed on the fly, such that
+//' all scans present in the CLASS file will be returned. Note that this may
+//' result in running out of memory for very large (several Gb) files.
+//' @param filename name of the CLASS file including path to be opened
+//' @param header a data frame with one row for each scan requested (optional).
 //' @return list of length n, where n is the number of scans.
 // [[Rcpp::export]]
 SEXP readClass(SEXP filename, SEXP header = R_NilValue)

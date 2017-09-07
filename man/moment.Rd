@@ -22,9 +22,11 @@ area over those region(s).
 \examples{
 data(salsa)
 A <- average(salsa)
-lmask <- mask(A, c(1420,1421))  # calculate moments between 1420...1421 MHz
+# calculate moments between 1420...1421 MHz
+lmask <- mask(A, c(1420,1421))
 moment(A, mask=lmask)
-do.call("rbind", lapply(salsa, moment, lmask)) # do this for individual spectra
+# do this for individual spectra
+do.call("rbind", lapply(salsa, moment, lmask))
 }
 \seealso{
 \code{\link{area}}
