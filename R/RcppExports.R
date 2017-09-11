@@ -40,7 +40,7 @@ getClassHeader <- function(filename) {
 #' H <- H[which(H$target == "RDor" & H$line == "CO (6-5)"),]
 #' L = readClass(filename, H)   # return only RDor CO (6-5) spectra
 #' }
-readClass <- function(filename, H) {
+readClass <- function(filename, H = NULL) {
     .Call('Rdrp_readClass', PACKAGE = 'Rdrp', filename, H)
 }
 

@@ -14,10 +14,11 @@
 int fileType(const char *filename);
 int qcmp(const void *x, const void *y);
 SEXP makeFactor(SEXP str);
+void makePOSIXct(SEXP &t);
 SEXP emptyFrame(int nspec);
 SEXP makeSpectrum(SEXP head, SEXP freq, SEXP data);
 SEXP getClassHeader(SEXP filename);
-SEXP readClass(SEXP filename, SEXP header = R_NilValue);
+SEXP readClass(SEXP filename, SEXP H);
 
 struct ClassDescriptor {
     int xbloc;
@@ -176,6 +177,9 @@ struct ClassSection2 {
     long int sec_adr[10];
 };
 
+#define BUFSIZE (1024*1024)                  // 1 Mb
+#define MAXCHANNELS (BUFSIZE/sizeof(float))  // 262144
+
 class ClassReader {
  public:
     ClassReader(const char *);
@@ -186,7 +190,7 @@ class ClassReader {
     virtual int  getDirectory() = 0;
     virtual SEXP getSpectrum(int scan, bool headerOnly = false) = 0;
     void dumpRecord();
-    
+
  protected:
     void getRecord();
     int getInt();
@@ -195,30 +199,30 @@ class ClassReader {
     float getFloat();
     double getDouble();
     void fillHeader(char *obsblock, int code, int addr, int len);
-    void fillData(char *obsblock, int nhead, int ndata);
     void trim(unsigned char *ptr);
-    const char *obstime(int mjdn, double utc);
+    double obssecond(int mjdn, double utc);
     double rta(float rad);
     SEXP headRow(int count, int scan,
                  const char *source, const char *mol,
                  double lam, double bet,
                  double LO, double restf, double fres,
                  double voff, double time, double T,
-                 const char *datetime);
+                 double datetime);
+    // const char *datetime);
     SEXP dataVector(int nchan, float *data);
     SEXP freqVector(int nchan, double f0, double ref, double df);
 
     struct ClassDescriptor cdesc;
-    float *m_data;
     int m_type;
     char cfname[256];
     FILE *cfp;
-    char *record;
-    char *dir;
     char *m_ptr;
-    int m_reclen;
+    unsigned int m_reclen;
     int m_nspec;
+    char buffer[BUFSIZE];
 };
+
+#define MAXEXT 10
 
 class Type1Reader : public ClassReader {
 
@@ -234,7 +238,7 @@ class Type1Reader : public ClassReader {
     FileDescriptor1 fdesc;
     Type1Entry centry;
     ClassSection1 csect;
-    int *ext;
+    int ext[MAXEXT];
 };
 
 class Type2Reader : public ClassReader {
@@ -251,7 +255,7 @@ class Type2Reader : public ClassReader {
     FileDescriptor2 fdesc;
     Type2Entry centry;
     ClassSection2 csect;
-    long int *ext;
+    long int ext[MAXEXT];
 };
 
 #endif

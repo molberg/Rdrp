@@ -13,8 +13,8 @@ int fileType(const char *cfname)
     if (!cfp) return -1;
 
     char code[4];
-    int len = fread(code, sizeof(char), 4, cfp);
-    if (len != 4) return -1;
+    size_t len = fread(code, sizeof(char), 4, cfp);
+    if (len != 4) return -2;
 
     code[2] = '\0';
     code[3] = '\0';
@@ -36,7 +36,6 @@ int qcmp(const void *x, const void *y) {
 
 SEXP makeFactor(SEXP str)
 {
-    SEXP factor, unique;
     SORT *sorted;
     int i, level;
     int num;
@@ -44,7 +43,6 @@ SEXP makeFactor(SEXP str)
 
     num = Rf_length(str);
     sorted = (SORT *)malloc(num*sizeof(SORT));
-    // Rprintf("sorted %d strings\n", num);
 
     for (i = 0; i < num; i++) {
         ptr = CHAR(STRING_ELT(str, i));
@@ -61,8 +59,8 @@ SEXP makeFactor(SEXP str)
         }
     }
 
-    PROTECT(factor = allocVector(INTSXP, num));
-    PROTECT(unique = allocVector(STRSXP, level));
+    SEXP factor = PROTECT(allocVector(INTSXP, num));
+    SEXP unique = PROTECT(allocVector(STRSXP, level));
     level = 0;
     INTEGER(factor)[0] = level+1;
     SET_STRING_ELT(unique, 0, mkChar(sorted[0].value));
@@ -81,15 +79,24 @@ SEXP makeFactor(SEXP str)
     return factor;
 }
 
+void makePOSIXct(SEXP &t)
+{
+    SEXP cl = PROTECT(Rf_allocVector(STRSXP, 2));
+    SET_STRING_ELT(cl, 0, Rf_mkChar("POSIXct"));
+    SET_STRING_ELT(cl, 1, Rf_mkChar("POSIXt"));
+    Rf_setAttrib(t, R_ClassSymbol, cl);
+    UNPROTECT(1); // cl
+
+    SEXP tz = PROTECT(allocVector(STRSXP, 1));
+    SET_STRING_ELT(tz, 0, mkChar("UTC"));
+    setAttrib(t, Rf_install("tzone"), tz);
+    UNPROTECT(1); // tz
+}
+
 SEXP emptyFrame(int nspec)
 {
-    SEXP frame;
-    SEXP nam;
-    SEXP id, scanno, target, line, RA, Dec, f0, fLO, df, vs, dt, tsys, utc;
-
-    PROTECT(frame = allocVector(VECSXP, 13));
-
-    PROTECT(nam = allocVector(STRSXP, 13)); // names attribute (column names)
+    SEXP frame = PROTECT(allocVector(VECSXP, 13));
+    SEXP nam = PROTECT(allocVector(STRSXP, 13)); // names attribute (column names)
     SET_STRING_ELT(nam, 0, mkChar("id"));
     SET_STRING_ELT(nam, 1, mkChar("scan"));
     SET_STRING_ELT(nam, 2, mkChar("target"));
@@ -106,19 +113,20 @@ SEXP emptyFrame(int nspec)
     namesgets(frame, nam);
     UNPROTECT(1); // nam
 
-    PROTECT(id = allocVector(INTSXP, nspec));         // 0
-    PROTECT(scanno = allocVector(INTSXP, nspec));     // 1
-    PROTECT(target = allocVector(STRSXP, nspec));     // 2
-    PROTECT(line = allocVector(STRSXP, nspec));       // 3
-    PROTECT(RA = allocVector(REALSXP, nspec));        // 4
-    PROTECT(Dec = allocVector(REALSXP, nspec));       // 5
-    PROTECT(fLO = allocVector(REALSXP, nspec));       // 6
-    PROTECT(f0 = allocVector(REALSXP, nspec));        // 7
-    PROTECT(df = allocVector(REALSXP, nspec));        // 8
-    PROTECT(vs = allocVector(REALSXP, nspec));        // 9
-    PROTECT(dt = allocVector(REALSXP, nspec));        // 10
-    PROTECT(tsys = allocVector(REALSXP, nspec));      // 11
-    PROTECT(utc = allocVector(STRSXP, nspec));        // 12
+    SEXP id = PROTECT(allocVector(INTSXP, nspec));         // 0
+    SEXP scanno = PROTECT(allocVector(INTSXP, nspec));     // 1
+    SEXP target = PROTECT(allocVector(STRSXP, nspec));     // 2
+    SEXP line = PROTECT(allocVector(STRSXP, nspec));       // 3
+    SEXP RA = PROTECT(allocVector(REALSXP, nspec));        // 4
+    SEXP Dec = PROTECT(allocVector(REALSXP, nspec));       // 5
+    SEXP fLO = PROTECT(allocVector(REALSXP, nspec));       // 6
+    SEXP f0 = PROTECT(allocVector(REALSXP, nspec));        // 7
+    SEXP df = PROTECT(allocVector(REALSXP, nspec));        // 8
+    SEXP vs = PROTECT(allocVector(REALSXP, nspec));        // 9
+    SEXP dt = PROTECT(allocVector(REALSXP, nspec));        // 10
+    SEXP tsys = PROTECT(allocVector(REALSXP, nspec));      // 11
+    SEXP utc = PROTECT(allocVector(REALSXP, nspec));        // 12
+    makePOSIXct(utc);
     Rf_setAttrib(frame, R_RowNamesSymbol, id);
 
     SET_VECTOR_ELT(frame, 0, id);
@@ -143,20 +151,16 @@ SEXP emptyFrame(int nspec)
 
 SEXP makeSpectrum(SEXP head, SEXP freq, SEXP data)
 {
-    SEXP S, nam, classattrib;
-    PROTECT(S = allocVector(VECSXP, 3)); // head, freq, data
+    SEXP S = PROTECT(allocVector(VECSXP, 3)); // head, freq, data
 
-    PROTECT(nam = allocVector(STRSXP, 3));
+    SEXP nam = PROTECT(allocVector(STRSXP, 3));
     SET_STRING_ELT(nam, 0, mkChar("head"));
     SET_STRING_ELT(nam, 1, mkChar("freq"));
     SET_STRING_ELT(nam, 2, mkChar("data"));
     namesgets(S, nam);
     UNPROTECT(1); // nam
 
-    PROTECT(classattrib = allocVector(STRSXP, 1));
-    SET_STRING_ELT(classattrib, 0, mkChar("spectrum"));
-    setAttrib(S, R_ClassSymbol, classattrib);
-    UNPROTECT(1); // classattrib
+    setAttrib(S, R_ClassSymbol, Rf_mkString("spectrum"));
 
     SET_VECTOR_ELT(S, 0, head);
     SET_VECTOR_ELT(S, 1, freq);
@@ -190,6 +194,10 @@ SEXP getClassHeader(SEXP filename)
         warning("failed to open file '%s'\n", cfname);
         return R_NilValue;
     }
+    if (type == -2) {
+        warning("failed to determine file type of '%s'\n", cfname);
+        return R_NilValue;
+    }
 
     if ((type != 1) && (type != 2)) {
         warning("unrecognized file type!\n");
@@ -205,27 +213,24 @@ SEXP getClassHeader(SEXP filename)
 #ifdef DEBUG
     Rprintf("%s: number of scans: %d\n", __FUNCTION__, nscans);
 #endif
-    SEXP frame;
-    SEXP id, scanno, target, line, RA, Dec, f0, fLO, df, vs, dt, tsys, utc;
 
-    PROTECT(frame = emptyFrame(nscans));
-    PROTECT(id = VECTOR_ELT(frame, 0));
-    PROTECT(scanno = VECTOR_ELT(frame, 1));
-    PROTECT(target = VECTOR_ELT(frame, 2));
-    PROTECT(line = VECTOR_ELT(frame, 3));
-    PROTECT(RA = VECTOR_ELT(frame, 4));
-    PROTECT(Dec = VECTOR_ELT(frame, 5));
-    PROTECT(fLO = VECTOR_ELT(frame, 6));
-    PROTECT(f0 = VECTOR_ELT(frame, 7));
-    PROTECT(df = VECTOR_ELT(frame, 8));
-    PROTECT(vs = VECTOR_ELT(frame, 9));
-    PROTECT(dt = VECTOR_ELT(frame, 10));
-    PROTECT(tsys = VECTOR_ELT(frame, 11));
-    PROTECT(utc = VECTOR_ELT(frame, 12));
+    SEXP frame = PROTECT(emptyFrame(nscans));
+    SEXP id = PROTECT(VECTOR_ELT(frame, 0));
+    SEXP scanno = PROTECT(VECTOR_ELT(frame, 1));
+    SEXP target = PROTECT(VECTOR_ELT(frame, 2));
+    SEXP line = PROTECT(VECTOR_ELT(frame, 3));
+    SEXP RA = PROTECT(VECTOR_ELT(frame, 4));
+    SEXP Dec = PROTECT(VECTOR_ELT(frame, 5));
+    SEXP fLO = PROTECT(VECTOR_ELT(frame, 6));
+    SEXP f0 = PROTECT(VECTOR_ELT(frame, 7));
+    SEXP df = PROTECT(VECTOR_ELT(frame, 8));
+    SEXP vs = PROTECT(VECTOR_ELT(frame, 9));
+    SEXP dt = PROTECT(VECTOR_ELT(frame, 10));
+    SEXP tsys = PROTECT(VECTOR_ELT(frame, 11));
+    SEXP utc = PROTECT(VECTOR_ELT(frame, 12));
 
     for (int iscan = 0; iscan < nscans; iscan++) {
-        SEXP S;
-        PROTECT(S = reader->getSpectrum(iscan+1, true));
+        SEXP S = PROTECT(reader->getSpectrum(iscan+1, true));
 
         INTEGER(id)[iscan] = INTEGER(VECTOR_ELT(S, 0))[0];
         INTEGER(scanno)[iscan] = INTEGER(VECTOR_ELT(S, 1))[0];
@@ -239,21 +244,21 @@ SEXP getClassHeader(SEXP filename)
         REAL(vs)[iscan] = REAL(VECTOR_ELT(S, 9))[0];
         REAL(dt)[iscan] = REAL(VECTOR_ELT(S, 10))[0];
         REAL(tsys)[iscan] = REAL(VECTOR_ELT(S, 11))[0];
-        SET_STRING_ELT(utc, iscan, mkChar(CHAR(STRING_ELT(VECTOR_ELT(S, 12), 0))));
+        REAL(utc)[iscan] = REAL(VECTOR_ELT(S, 12))[0];
 
         UNPROTECT(1); // S
     }
     UNPROTECT(13); // id, scanno, target, line, RA, Dec, f0, fLO, df, vs, dt, tsys, utc;
 
-    SEXP column = VECTOR_ELT(frame, 2);
-    PROTECT(target = makeFactor(column));
+    SEXP column = PROTECT(VECTOR_ELT(frame, 2));
+    target = PROTECT(makeFactor(column));
     SET_VECTOR_ELT(frame, 2, target);
-    UNPROTECT(1); // target
+    UNPROTECT(2); // target, column
 
-    column = VECTOR_ELT(frame, 3);
-    PROTECT(line = makeFactor(column));
+    column = PROTECT(VECTOR_ELT(frame, 3));
+    line = PROTECT(makeFactor(column));
     SET_VECTOR_ELT(frame, 3, line);
-    UNPROTECT(1); // line
+    UNPROTECT(2); // line, column
 
     UNPROTECT(1); // frame
     delete reader;
@@ -285,7 +290,7 @@ SEXP getClassHeader(SEXP filename)
 //' L = readClass(filename, H)   # return only RDor CO (6-5) spectra
 //' }
 // [[Rcpp::export]]
-SEXP readClass(SEXP filename, SEXP H)
+SEXP readClass(SEXP filename, SEXP H = R_NilValue)
 {
     ClassReader *reader = 0;
 
@@ -296,6 +301,10 @@ SEXP readClass(SEXP filename, SEXP H)
         warning("failed to open file '%s'\n", cfname);
         return R_NilValue;
     }
+    if (type == -2) {
+        warning("failed to determine file type of '%s'\n", cfname);
+        return R_NilValue;
+    }
 
     if ((type != 1) && (type != 2)) {
         warning("unrecognized file type!\n");
@@ -304,42 +313,38 @@ SEXP readClass(SEXP filename, SEXP H)
     if (type == 1) reader = new Type1Reader(cfname);
     if (type == 2) reader = new Type2Reader(cfname);
 
-    SEXP head;
-    bool all = isNull(H);
-    if (all) {
-        Rprintf("retrieving all spectra ...\n");
-        PROTECT(head = getClassHeader(filename));
-    } else {
-        head = H;
-    }
-
     reader->open();
     reader->getFileDescriptor();
 
-    int nscans = reader->getDirectory();
-#ifdef DEBUG
-    Rprintf("%s: number of scans: %d\n", __FUNCTION__, nscans);
-#endif
     SEXP id;
-    PROTECT(id = VECTOR_ELT(head, 0));
+    bool all = isNull(H);
+    int *index;
+    if (all) {
+        Rprintf("retrieving all spectra ...\n");
+        int nscans = reader->getDirectory();
+#ifdef DEBUG
+        Rprintf("%s: number of scans: %d\n", __FUNCTION__, nscans);
+#endif
+        id = PROTECT(allocVector(INTSXP, nscans));
+        index = INTEGER(id);
+        for (int i = 0; i < nscans; i++) {
+            index[i] = i+1;
+        }
+    } else {
+        id = PROTECT(VECTOR_ELT(H, 0));
+        index = INTEGER(id);
+    }
+
     int nrows = Rf_length(id);
-    int *index = INTEGER(id);
 #ifdef DEBUG
     Rprintf("%s: look-up %d header rows, first = %d, last = %d\n",
             __FUNCTION__, nrows, index[0], index[nrows-1]);
 #endif
-    if (all) UNPROTECT(1); // head
-
-    SEXP classattrib, spectra;
-    PROTECT(spectra = allocVector(VECSXP, nrows));
-    PROTECT(classattrib = allocVector(STRSXP, 1));
-    SET_STRING_ELT(classattrib, 0, mkChar("spectra"));
-    setAttrib(spectra, R_ClassSymbol, classattrib);
-    UNPROTECT(1); // classattrib
+    SEXP spectra = PROTECT(allocVector(VECSXP, nrows));
+    setAttrib(spectra, R_ClassSymbol, Rf_mkString("spectra"));
 
     for (int i = 0; i < nrows; i++) {
-        SEXP S;
-        PROTECT(S = reader->getSpectrum(index[i], false));
+        SEXP S = PROTECT(reader->getSpectrum(index[i], false));
         SET_VECTOR_ELT(spectra, i, S);
         UNPROTECT(1); // S
     }
@@ -353,7 +358,6 @@ SEXP readClass(SEXP filename, SEXP H)
 ClassReader::ClassReader(const char *filename)
 {
     strncpy(cfname, filename, 255);
-    record = 0;
     m_reclen = 0;
     m_nspec = 0;
 }
@@ -375,7 +379,7 @@ bool ClassReader::open()
 void ClassReader::getRecord()
 {
     if (m_reclen == 0) return;
-    int len = fread(record, sizeof(int), m_reclen, cfp);
+    size_t len = fread(buffer, sizeof(int), m_reclen, cfp);
     if (feof(cfp)) return;
 
     if (len != m_reclen) {
@@ -425,7 +429,8 @@ void ClassReader::dumpRecord()
     const int wpl = 8;
 
     if (m_reclen == 0) return;
-    for (int i = 0; i < m_reclen; i++) {
+    m_ptr = buffer;
+    for (unsigned int i = 0; i < m_reclen; i++) {
         word = getInt();
         Rprintf("[%03d] %10d ", i, word);
         if ((i % wpl) == (wpl-1)) Rprintf("\n");
@@ -452,36 +457,13 @@ void ClassReader::trim(unsigned char *input)
     }
 }
 
-const char *ClassReader::obstime(int mjdn, double utc)
+double ClassReader::obssecond(int mjdn, double utc)
 {
-    static char datetime[32];
-    long int jdn, j, g, dg, c, dc, b, db, a, da, y, m , d;
-    int year, month, day, hour, min, sec;
-    double ip;
+    const long int Jan01of1970 = 40587;
+    double elapsed = 86400.0*(mjdn - Jan01of1970);
+    elapsed += utc*3600.0*12.0/M_PI;
 
-    jdn =  mjdn + 2400001;
-
-    j = jdn + 32044;
-    g = j / 146097;          dg = j % 146097;
-    c = dg / 36524;          dc = dg - c * 36524;
-    b = dc / 1461;           db = dc % 1461;
-    a = ((db/365 + 1)*3)/4 ; da = db - a*365;
-    y = g*400 + c*100 + b*4 + a;
-    m = (da*5 + 308)/153 - 2;
-    d = da - ((m+4)*153)/5 + 122;
-    year = y - 4800 + (m+2)/12;
-    month = ((m+2) % 12) + 1;
-    day = d + 1;
-    utc *= 12.0/M_PI;
-    utc = modf(utc, &ip);
-    hour  = (int)ip;
-    utc = modf(60.0*utc, &ip);
-    min = (int)ip;
-    utc = modf(60.0*utc, &ip);
-    sec = (int)ip;
-
-    sprintf(datetime, "%04d-%02d-%02d %02d:%02d:%02d", year, month, day, hour, min, sec);
-    return datetime;
+    return elapsed;
 }
 
 double ClassReader::rta(float rad)
@@ -490,15 +472,13 @@ double ClassReader::rta(float rad)
     return (double)rad * RADTOSEC;
 }
 
-SEXP ClassReader::headRow(int count, int scan, const char *source, const char *mol, double lam, double bet,
-                          double LO, double restf, double fres, double voff, double time, double T,
-                          const char *datetime)
+SEXP ClassReader::headRow(int count, int scan, const char *source, const char *mol,
+                          double lam, double bet,
+                          double LO, double restf, double fres, double voff,
+                          double time, double T, double datetime)
 {
-    SEXP head, nam;
-    SEXP id, scanno, target, line, RA, Dec, f0, fLO, df, vs, dt, tsys, utc;
-
-    PROTECT(head = allocVector(VECSXP, 13));
-    PROTECT(nam = allocVector(STRSXP, 13)); // names attribute (column names)
+    SEXP head = PROTECT(allocVector(VECSXP, 13));
+    SEXP nam = PROTECT(allocVector(STRSXP, 13)); // names attribute (column names)
     SET_STRING_ELT(nam, 0, mkChar("id"));
     SET_STRING_ELT(nam, 1, mkChar("scan"));
     SET_STRING_ELT(nam, 2, mkChar("target"));
@@ -515,19 +495,21 @@ SEXP ClassReader::headRow(int count, int scan, const char *source, const char *m
     namesgets(head, nam);
     UNPROTECT(1); // nam
 
-    PROTECT(id = allocVector(INTSXP, 1));         // 0
-    PROTECT(scanno = allocVector(INTSXP, 1));     // 1
-    PROTECT(target = allocVector(STRSXP, 1));     // 2
-    PROTECT(line = allocVector(STRSXP, 1));       // 3
-    PROTECT(RA = allocVector(REALSXP, 1));        // 4
-    PROTECT(Dec = allocVector(REALSXP, 1));       // 5
-    PROTECT(fLO = allocVector(REALSXP, 1));       // 6
-    PROTECT(f0 = allocVector(REALSXP, 1));        // 7
-    PROTECT(df = allocVector(REALSXP, 1));        // 8
-    PROTECT(vs = allocVector(REALSXP, 1));        // 9
-    PROTECT(dt = allocVector(REALSXP, 1));        // 10
-    PROTECT(tsys = allocVector(REALSXP, 1));      // 11
-    PROTECT(utc = allocVector(STRSXP, 1));        // 12
+    SEXP id = PROTECT(allocVector(INTSXP, 1));         // 0
+    SEXP scanno = PROTECT(allocVector(INTSXP, 1));     // 1
+    SEXP target = PROTECT(allocVector(STRSXP, 1));     // 2
+    SEXP line = PROTECT(allocVector(STRSXP, 1));       // 3
+    SEXP RA = PROTECT(allocVector(REALSXP, 1));        // 4
+    SEXP Dec = PROTECT(allocVector(REALSXP, 1));       // 5
+    SEXP fLO = PROTECT(allocVector(REALSXP, 1));       // 6
+    SEXP f0 = PROTECT(allocVector(REALSXP, 1));        // 7
+    SEXP df = PROTECT(allocVector(REALSXP, 1));        // 8
+    SEXP vs = PROTECT(allocVector(REALSXP, 1));        // 9
+    SEXP dt = PROTECT(allocVector(REALSXP, 1));        // 10
+    SEXP tsys = PROTECT(allocVector(REALSXP, 1));      // 11
+    // SEXP utc = PROTECT(allocVector(STRSXP, 1));        // 12
+    SEXP utc = PROTECT(allocVector(REALSXP, 1));        // 12
+    makePOSIXct(utc);
 
     INTEGER(id)[0] = count;
     INTEGER(scanno)[0] = scan;
@@ -541,7 +523,8 @@ SEXP ClassReader::headRow(int count, int scan, const char *source, const char *m
     REAL(vs)[0] = voff;
     REAL(dt)[0] = time;
     REAL(tsys)[0] = T;
-    SET_STRING_ELT(utc, 0, mkChar(datetime));
+    REAL(utc)[0] = datetime;
+    // SET_STRING_ELT(utc, 0, mkChar(datetime));
     SET_VECTOR_ELT(head, 0, id);
     SET_VECTOR_ELT(head, 1, scanno);
     SET_VECTOR_ELT(head, 2, target);
@@ -562,10 +545,9 @@ SEXP ClassReader::headRow(int count, int scan, const char *source, const char *m
 
 SEXP ClassReader::dataVector(int nchan, float *s)
 {
-    SEXP data;
-
-    PROTECT(data = allocVector(REALSXP, nchan));
-    for (int k = 0; k < nchan; k++) REAL(data)[k] = s[k];
+    m_ptr = (char *)s;
+    SEXP data = PROTECT(allocVector(REALSXP, nchan));
+    for (int k = 0; k < nchan; k++) REAL(data)[k] = getFloat();
     UNPROTECT(1); // data
 
     return data;
@@ -573,9 +555,7 @@ SEXP ClassReader::dataVector(int nchan, float *s)
 
 SEXP ClassReader::freqVector(int nchan, double f0, double ref, double df)
 {
-    SEXP freq;
-
-    PROTECT(freq = allocVector(REALSXP, nchan));
+    SEXP freq = PROTECT(allocVector(REALSXP, nchan));
     if (df == 0.0) {
         for (int k = 0; k < nchan; k++) REAL(freq)[k] = (double)(k+1);
     } else {
@@ -597,7 +577,6 @@ void ClassReader::getChar(unsigned char *dst, int len)
 void ClassReader::fillHeader(char *obsblock, int code, int addr, int len)
 {
     int noff = (addr-1)*4;
-    // Rprintf("section %d at %d, length %d\n", code, noff, len);
     m_ptr = obsblock + noff;
     if (code == -2) { /* General */
         cdesc.ut = getDouble();
@@ -724,28 +703,12 @@ void ClassReader::fillHeader(char *obsblock, int code, int addr, int len)
     }
 }
 
-void ClassReader::fillData(char *obsblock, int nhead, int ndata)
-{
-    int noff = 4*(nhead-1);
-    m_ptr = obsblock + noff;
-
-    for (int i = 0; i < ndata; i++) {
-        m_data[i] = getFloat();
-    }
-#ifdef DEBUG
-    Rprintf("    -DATA %d  %f %f %f %f ... %f %f\n", ndata,
-           m_data[0], m_data[1], m_data[2], m_data[3], m_data[ndata-2], m_data[ndata-1]);
-#endif
-}
-
 Type1Reader::Type1Reader(const char *filename) : ClassReader(filename)
 {
 }
 
 Type1Reader::~Type1Reader()
 {
-    delete[] ext;
-    delete[] record;
 }
 
 void Type1Reader::getFileDescriptor()
@@ -753,11 +716,10 @@ void Type1Reader::getFileDescriptor()
     m_type = 1;
 
     m_reclen = 128;
-    record = new char [m_reclen*4];
 
     fseek(cfp, 0L, SEEK_SET);
     getRecord();
-    m_ptr = record;
+    m_ptr = buffer;
 
     getChar(fdesc.code, 4);
 
@@ -771,7 +733,9 @@ void Type1Reader::getFileDescriptor()
     fdesc.xnext = getInt();
 
     int nex = fdesc.nex;
-    ext = new int [nex];
+    if (nex > MAXEXT) {
+        warning("number of extensions too large!");
+    }
     for (int i = 0; i < nex; i++) {
         ext[i] = getInt();
 #ifdef DEBUG
@@ -796,7 +760,7 @@ int Type1Reader::getDirectory()
 #endif
         getRecord();
         for (int k = 0; k < 4; k++) {
-            m_ptr = record + k*m_reclen;
+            m_ptr = buffer + k*m_reclen;
             centry.xblock = getInt();
             centry.xnum = getInt();
             centry.xver = getInt();
@@ -840,7 +804,7 @@ SEXP Type1Reader::getSpectrum(int scan, bool headerOnly)
     fseek(cfp, 4*(pos+nrec*m_reclen), SEEK_SET);
     getRecord();
 
-    m_ptr = record + k*m_reclen;
+    m_ptr = buffer + k*m_reclen;
     centry.xblock = getInt();
     centry.xnum = getInt();
     centry.xver = getInt();
@@ -861,7 +825,7 @@ SEXP Type1Reader::getSpectrum(int scan, bool headerOnly)
     pos = (centry.xblock-1)*m_reclen;
     fseek(cfp, 4*pos, SEEK_SET);
     getRecord();
-    m_ptr = record;
+    m_ptr = buffer;
 
     getChar(csect.ident, 4);
     csect.nbl = getInt();
@@ -885,15 +849,20 @@ SEXP Type1Reader::getSpectrum(int scan, bool headerOnly)
            csect.sec_adr[0], csect.sec_adr[1], csect.sec_adr[2], csect.sec_adr[3],
            csect.sec_len[0], csect.sec_len[1], csect.sec_len[2], csect.sec_len[3]);
 #endif
-    char *obsblock = new char [csect.nbl*m_reclen*4];
-    memcpy(obsblock, record, 4*m_reclen);
-    for (int i = 1; i < csect.nbl; i++) {
-        getRecord();
-        memcpy(obsblock+i*4*m_reclen, record, 4*m_reclen);
+    unsigned int size = csect.nbl*m_reclen*4;
+    if (size > sizeof(buffer)) {
+        warning("buffer too small!");
+    }
+    if (csect.nbl > 1) {
+        size -= 4*m_reclen;
+        size_t len = fread(buffer+4*m_reclen, sizeof(char), size, cfp);
+        if (len != size) {
+            warning("failed to read obsblock (%ld != %ld)!", len, size);
+        }
     }
 
     for (int i = 0; i < nsec; i++) {
-        fillHeader(obsblock, csect.sec_cod[i], csect.sec_adr[i], csect.sec_len[i]);
+        fillHeader(buffer, csect.sec_cod[i], csect.sec_adr[i], csect.sec_len[i]);
     }
 
     bool spectrum = (centry.xkind == 0);
@@ -914,32 +883,30 @@ SEXP Type1Reader::getSpectrum(int scan, bool headerOnly)
     double bet = cdesc.bet;
     lam += cdesc.lamof/cos(bet);
     bet += cdesc.betof;
-    const char *datetime = obstime(centry.xdobs + 60549, cdesc.ut);
-    SEXP head;
-    PROTECT(head = headRow(scan, centry.xscan,
-                           (const char *)centry.xsourc, (const char *)centry.xline,
-                           lam*180.0/M_PI, bet*180.0/M_PI, LO, restf, fres,
-                           cdesc.voff, cdesc.time, cdesc.tsys, datetime));
+    double datetime = obssecond(centry.xdobs + 60549, cdesc.ut);
+    // const char *datetime = obstime(centry.xdobs + 60549, cdesc.ut);
+    SEXP head = PROTECT(headRow(scan, centry.xscan,
+                                (const char *)centry.xsourc, (const char *)centry.xline,
+                                lam*180.0/M_PI, bet*180.0/M_PI, LO, restf, fres,
+                                cdesc.voff, cdesc.time, cdesc.tsys, datetime));
     if (headerOnly) {
-        delete [] obsblock;
         UNPROTECT(1); // head
         return head;
     }
 
-    SEXP data, freq;
     int ndata = 0;
     if (spectrum) ndata = cdesc.nchan;
     else          ndata = cdesc.npoin;
 
-    m_data = new float[ndata];
-    fillData(obsblock, csect.nhead, ndata);
-    PROTECT(data = dataVector(ndata, m_data));
-    PROTECT(freq = freqVector(ndata, restf, rchan, fres));
-    delete [] obsblock;
-    delete [] m_data;
+    if (ndata > (int)MAXCHANNELS) {
+        Rprintf("maximum number of channels exceeded: %d %d\n", ndata, MAXCHANNELS);
+    }
 
-    SEXP S;
-    PROTECT(S = makeSpectrum(head, freq, data));
+    float *s = (float *)(buffer+4*(csect.nhead-1));
+    SEXP data = PROTECT(dataVector(ndata, s));
+    SEXP freq = PROTECT(freqVector(ndata, restf, rchan, fres));
+
+    SEXP S = PROTECT(makeSpectrum(head, freq, data));
     UNPROTECT(4); // head, freq, data, S
 
     return S;
@@ -951,13 +918,11 @@ Type2Reader::Type2Reader(const char *filename) : ClassReader(filename)
 
 Type2Reader::~Type2Reader()
 {
-    delete[] ext;
-    delete[] record;
 }
 
 void Type2Reader::getFileDescriptor()
 {
-    int len = 0;
+    size_t len = 0;
     m_type = 2;
 
     fseek(cfp, 0L, SEEK_SET);
@@ -967,7 +932,6 @@ void Type2Reader::getFileDescriptor()
         warning("failed to read record length\n");
     }
     m_reclen = fdesc.reclen;
-    record = new char [m_reclen*4];
 
 #ifdef DEBUG
     Rprintf("type=%d, reclen=%d\n", m_type, m_reclen);
@@ -975,7 +939,7 @@ void Type2Reader::getFileDescriptor()
 
     fseek(cfp, 0L, SEEK_SET);
     getRecord();
-    m_ptr = record+4*sizeof(char)+sizeof(int);
+    m_ptr = buffer+4*sizeof(char)+sizeof(int);
 
     fdesc.kind  = getInt();
     fdesc.vind  = getInt();
@@ -1000,7 +964,9 @@ void Type2Reader::getFileDescriptor()
     }
 
     int nex = fdesc.nex;
-    ext = new long int [nex];
+    if (nex > MAXEXT) {
+        warning("number of extensions too large!");
+    }
     unsigned int size = m_reclen;
     for (int i = 0; i < nex; i++) {
         ext[i] = getLong();
@@ -1021,24 +987,22 @@ int Type2Reader::getDirectory()
     int nspec = 0;
     for (int iext = 0; iext < fdesc.nex; iext++) {
         int nst = fdesc.lex1*growth;
-        int isize = nst*fdesc.lind;
+        unsigned int isize = nst*fdesc.lind;
         long pos = (ext[iext]-1)*1024;
-
-        dir = new char [4*isize];
 
         fseek(cfp, 4*pos, SEEK_SET);
 #ifdef DEBUG
         Rprintf("in %s extension %d spectrum %d at position %ld\n", __FUNCTION__, iext, nspec+1, ftell(cfp));
 #endif
-        int len = fread(dir, sizeof(int), isize, cfp);
+        size_t len = fread(buffer, sizeof(int), isize, cfp);
         if (len != isize) {
             warning("failed to read directory information\n");
             return 0;
         }
-        m_ptr = dir;
+        m_ptr = buffer;
 
         for (int k = 0; k < nst; k++) {
-            m_ptr = dir + k*4*fdesc.lind;
+            m_ptr = buffer + k*4*fdesc.lind;
             centry.xblock = getLong();
             centry.xword = getInt();
             centry.xnum = getLong();
@@ -1066,7 +1030,6 @@ int Type2Reader::getDirectory()
 #endif
             }
         }
-        delete [] dir;
         if (fdesc.gex == 20) growth *= 2;
     }
     m_nspec = nspec;
@@ -1075,9 +1038,9 @@ int Type2Reader::getDirectory()
 
 SEXP Type2Reader::getSpectrum(int scan, bool headerOnly)
 {
-    int len = 0;
+    size_t len = 0;
     int iext = 0;
-    int isize = 0;
+    unsigned int isize = 0;
     int jent = 0;
 
     int growth = 1;
@@ -1102,16 +1065,14 @@ SEXP Type2Reader::getSpectrum(int scan, bool headerOnly)
     Rprintf("in %s spectrum %d at position %ld in extension %d entry %d at word %d\n",
             __FUNCTION__, scan, pos, iext, jent, startword);
 #endif
-    dir = new char [4*isize];
-
     fseek(cfp, 4*pos, SEEK_SET);
-    len = fread(dir, sizeof(int), isize, cfp);
+    len = fread(buffer, sizeof(int), isize, cfp);
     if (len != isize) {
         warning("failed to read entry descriptor\n");
         return R_NilValue;
     }
 
-    m_ptr = dir + 4*startword;
+    m_ptr = buffer + 4*startword;
     centry.xblock = getLong();
     centry.xword = getInt();
     centry.xnum = getLong();
@@ -1130,7 +1091,6 @@ SEXP Type2Reader::getSpectrum(int scan, bool headerOnly)
     centry.xposa = getInt();
     centry.xscan = getLong();
     centry.xsubs = getInt();
-    delete [] dir;
 
     pos = (centry.xblock-1)*m_reclen+centry.xword-1;
 
@@ -1140,7 +1100,7 @@ SEXP Type2Reader::getSpectrum(int scan, bool headerOnly)
             __FUNCTION__, scan, centry.xblock, centry.xword, ftell(cfp), 4*pos);
 #endif
     getRecord();
-    m_ptr = record;
+    m_ptr = buffer;
 
     getChar(csect.ident, 4);
     csect.version = getInt();
@@ -1165,9 +1125,8 @@ SEXP Type2Reader::getSpectrum(int scan, bool headerOnly)
 #endif
 
     for (int i = 0; i < nsec; i++) {
-        int isize = csect.sec_len[i];
-        int size = 4*isize;
-        char *section = new char [size];
+        unsigned int isize = csect.sec_len[i];
+        unsigned int size = 4*isize;
         long secpos = 4*(pos + csect.sec_adr[i]-1);
 #ifdef DEBUG
         Rprintf("in %s reading section %d at position %ld (%ld,%ld)\n",
@@ -1178,17 +1137,16 @@ SEXP Type2Reader::getSpectrum(int scan, bool headerOnly)
             warning("failure to position section %d (%ld)\n", i, secpos);
             break;
         }
-        len = fread(section, sizeof(char), size, cfp);
+        len = fread(buffer, sizeof(char), size, cfp);
         if (len != size) {
             warning("failed to read section %d (%d != %d)\n", i, size, len);
             break;
         }
-        m_ptr = section;
+        m_ptr = buffer;
 #ifdef DEBUG
         Rprintf("Sect[%d]=%3d at adr %d of length %d.\n", i, csect.sec_cod[i], secpos, size);
 #endif
-        fillHeader(section, csect.sec_cod[i], 1, csect.sec_len[i]);
-        delete [] section;
+        fillHeader(buffer, csect.sec_cod[i], 1, csect.sec_len[i]);
     }
 
     bool spectrum = (centry.xkind == 0);
@@ -1209,21 +1167,22 @@ SEXP Type2Reader::getSpectrum(int scan, bool headerOnly)
     double bet = cdesc.bet;
     lam += cdesc.lamof/cos(bet);
     bet += cdesc.betof;
-    const char *datetime = obstime(centry.xdobs + 60549, cdesc.ut);
-    SEXP head;
-    PROTECT(head = headRow(scan, centry.xscan,
-                           (const char *)centry.xsourc, (const char *)centry.xline,
-                           lam*180.0/M_PI, bet*180.0/M_PI, LO, restf, fres,
-                           cdesc.voff, cdesc.time, cdesc.tsys, datetime));
+    double datetime = obssecond(centry.xdobs + 60549, cdesc.ut);
+    // const char *datetime = obstime(centry.xdobs + 60549, cdesc.ut);
+    SEXP head = PROTECT(headRow(scan, centry.xscan,
+                                (const char *)centry.xsourc, (const char *)centry.xline,
+                                lam*180.0/M_PI, bet*180.0/M_PI, LO, restf, fres,
+                                cdesc.voff, cdesc.time, cdesc.tsys, datetime));
     if (headerOnly) {
         UNPROTECT(1); // head
         return head;
     }
 
-    SEXP data, freq;
     isize = csect.ldata;
-    int size = 4*isize;
-    char *datatbl = new char [size];
+    char *datatbl = buffer;
+    if (4*isize > sizeof(buffer)) {
+        warning("buffer too small!");
+    }
     long datapos = 4*(pos + csect.adata-1);
     fseek(cfp, datapos, SEEK_SET);
 #ifdef DEBUG
@@ -1239,15 +1198,15 @@ SEXP Type2Reader::getSpectrum(int scan, bool headerOnly)
     if (spectrum) ndata = cdesc.nchan;
     else          ndata = cdesc.npoin;
 
-    m_data = new float [ndata];
-    fillData(datatbl, 1, ndata);
-    PROTECT(data = dataVector(ndata, m_data));
-    PROTECT(freq = freqVector(ndata, restf, rchan, fres));
-    delete [] datatbl;
-    delete [] m_data;
+    if (ndata > (int)MAXCHANNELS) {
+        Rprintf("maximum number of channels exceeded: %d %d\n", ndata, MAXCHANNELS);
+    }
 
-    SEXP S;
-    PROTECT(S = makeSpectrum(head, freq, data));
+    float *s = (float *)(datatbl);
+    SEXP data = PROTECT(dataVector(ndata, s));
+    SEXP freq = PROTECT(freqVector(ndata, restf, rchan, fres));
+
+    SEXP S = PROTECT(makeSpectrum(head, freq, data));
     UNPROTECT(4); // head, freq, data, S
 
     return S;

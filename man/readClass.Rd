@@ -4,7 +4,7 @@
 \alias{readClass}
 \title{Read a GILDAS/CLASS single dish data file}
 \usage{
-readClass(filename, H)
+readClass(filename, H = NULL)
 }
 \arguments{
 \item{filename}{name of the GILDAS/CLASS file including path to be opened}
