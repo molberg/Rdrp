@@ -745,6 +745,27 @@ void Type1Reader::getFileDescriptor()
     return;
 }
 
+void  Type1Reader::getEntry(int k)
+{
+    m_ptr = buffer + k*m_reclen;
+    centry.xblock = getInt();
+    centry.xnum = getInt();
+    centry.xver = getInt();
+    getChar(centry.xsourc, 12);
+    getChar(centry.xline,  12);
+    getChar(centry.xtel,   12);
+
+    centry.xdobs = getInt();
+    centry.xdred = getInt();
+    centry.xoff1 = getFloat();
+    centry.xoff2 = getFloat();
+    getChar(centry.xtype, 4);
+    centry.xkind = getInt();
+    centry.xqual = getInt();
+    centry.xscan = getInt();
+    centry.xposa = getInt();
+}
+
 int Type1Reader::getDirectory()
 {
     int nst = fdesc.xnext;
@@ -760,23 +781,7 @@ int Type1Reader::getDirectory()
 #endif
         getRecord();
         for (int k = 0; k < 4; k++) {
-            m_ptr = buffer + k*m_reclen;
-            centry.xblock = getInt();
-            centry.xnum = getInt();
-            centry.xver = getInt();
-            getChar(centry.xsourc, 12);
-            getChar(centry.xline,  12);
-            getChar(centry.xtel,   12);
-
-            centry.xdobs = getInt();
-            centry.xdred = getInt();
-            centry.xoff1 = getFloat();
-            centry.xoff2 = getFloat();
-            getChar(centry.xtype, 4);
-            centry.xkind = getInt();
-            centry.xqual = getInt();
-            centry.xscan = getInt();
-            centry.xposa = getInt();
+            getEntry(k);
             if (centry.xnum > 0 && centry.xnum < nst) {
                 nspec++;
 #ifdef DEBUG
@@ -803,24 +808,7 @@ SEXP Type1Reader::getSpectrum(int scan, bool headerOnly)
 
     fseek(cfp, 4*(pos+nrec*m_reclen), SEEK_SET);
     getRecord();
-
-    m_ptr = buffer + k*m_reclen;
-    centry.xblock = getInt();
-    centry.xnum = getInt();
-    centry.xver = getInt();
-    getChar(centry.xsourc, 12);
-    getChar(centry.xline,  12);
-    getChar(centry.xtel,   12);
-
-    centry.xdobs = getInt();
-    centry.xdred = getInt();
-    centry.xoff1 = getFloat();
-    centry.xoff2 = getFloat();
-    getChar(centry.xtype, 4);
-    centry.xkind = getInt();
-    centry.xqual = getInt();
-    centry.xscan = getInt();
-    centry.xposa = getInt();
+    getEntry(k);
 
     pos = (centry.xblock-1)*m_reclen;
     fseek(cfp, 4*pos, SEEK_SET);
@@ -980,6 +968,29 @@ void Type2Reader::getFileDescriptor()
     return;
 }
 
+void Type2Reader::getEntry(int k)
+{
+    m_ptr = buffer + k*4*fdesc.lind;
+    centry.xblock = getLong();
+    centry.xword = getInt();
+    centry.xnum = getLong();
+    centry.xver = getInt();
+    getChar(centry.xsourc, 12);
+    getChar(centry.xline,  12);
+    getChar(centry.xtel,   12);
+
+    centry.xdobs = getInt();
+    centry.xdred = getInt();
+    centry.xoff1 = getFloat();
+    centry.xoff2 = getFloat();
+    getChar(centry.xtype, 4);
+    centry.xkind = getInt();
+    centry.xqual = getInt();
+    centry.xposa = getInt();
+    centry.xscan = getLong();
+    centry.xsubs = getInt();
+}
+
 int Type2Reader::getDirectory()
 {
     int growth = 1;
@@ -1002,25 +1013,7 @@ int Type2Reader::getDirectory()
         m_ptr = buffer;
 
         for (int k = 0; k < nst; k++) {
-            m_ptr = buffer + k*4*fdesc.lind;
-            centry.xblock = getLong();
-            centry.xword = getInt();
-            centry.xnum = getLong();
-            centry.xver = getInt();
-            getChar(centry.xsourc, 12);
-            getChar(centry.xline,  12);
-            getChar(centry.xtel,   12);
-
-            centry.xdobs = getInt();
-            centry.xdred = getInt();
-            centry.xoff1 = getFloat();
-            centry.xoff2 = getFloat();
-            getChar(centry.xtype, 4);
-            centry.xkind = getInt();
-            centry.xqual = getInt();
-            centry.xposa = getInt();
-            centry.xscan = getLong();
-            centry.xsubs = getInt();
+            getEntry(k);
             if (centry.xnum >= 1) {
                 nspec++;
 #ifdef DEBUG
@@ -1059,7 +1052,7 @@ SEXP Type2Reader::getSpectrum(int scan, bool headerOnly)
         if (nspec == scan) break;
         if (fdesc.gex == 20) growth *= 2;
     }
-    int startword = jent*fdesc.lind;
+
     long pos = (ext[iext]-1)*m_reclen;
 #ifdef DEBUG
     Rprintf("in %s spectrum %d at position %ld in extension %d entry %d at word %d\n",
@@ -1072,26 +1065,7 @@ SEXP Type2Reader::getSpectrum(int scan, bool headerOnly)
         return R_NilValue;
     }
 
-    m_ptr = buffer + 4*startword;
-    centry.xblock = getLong();
-    centry.xword = getInt();
-    centry.xnum = getLong();
-    centry.xver = getInt();
-    getChar(centry.xsourc, 12);
-    getChar(centry.xline,  12);
-    getChar(centry.xtel,   12);
-
-    centry.xdobs = getInt();
-    centry.xdred = getInt();
-    centry.xoff1 = getFloat();
-    centry.xoff2 = getFloat();
-    getChar(centry.xtype, 4);
-    centry.xkind = getInt();
-    centry.xqual = getInt();
-    centry.xposa = getInt();
-    centry.xscan = getLong();
-    centry.xsubs = getInt();
-
+    getEntry(jent);
     pos = (centry.xblock-1)*m_reclen+centry.xword-1;
 
     fseek(cfp, 4*pos, SEEK_SET);

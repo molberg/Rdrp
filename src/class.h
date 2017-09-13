@@ -187,6 +187,7 @@ class ClassReader {
 
     bool open();
     virtual void getFileDescriptor() = 0;
+    virtual void  getEntry(int k) = 0;
     virtual int  getDirectory() = 0;
     virtual SEXP getSpectrum(int scan, bool headerOnly = false) = 0;
     void dumpRecord();
@@ -231,6 +232,7 @@ class Type1Reader : public ClassReader {
     ~Type1Reader();
 
     void getFileDescriptor();
+    void  getEntry(int k);
     int  getDirectory();
     SEXP getSpectrum(int scan, bool headerOnly = false);
 
@@ -248,6 +250,7 @@ class Type2Reader : public ClassReader {
     ~Type2Reader();
 
     void getFileDescriptor();
+    void  getEntry(int k);
     int  getDirectory();
     SEXP getSpectrum(int scan, bool headerOnly = false);
 
