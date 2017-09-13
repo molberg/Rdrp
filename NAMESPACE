@@ -1,5 +1,4 @@
 useDynLib(Rdrp)
-import(RcppArmadillo)
 importFrom(Rcpp, evalCpp)
 importFrom("grDevices", "xy.coords")
 importFrom("graphics", "abline", "grid", "identify", "lines", "matplot", "mtext", "par", "plot")

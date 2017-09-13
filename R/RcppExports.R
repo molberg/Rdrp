@@ -258,15 +258,3 @@ mask <- function(S, limits) {
     .Call('Rdrp_mask', PACKAGE = 'Rdrp', S, limits)
 }
 
-getZeros <- function(n) {
-    .Call('Rdrp_getZeros', PACKAGE = 'Rdrp', n)
-}
-
-fooData <- function(L) {
-    .Call('Rdrp_fooData', PACKAGE = 'Rdrp', L)
-}
-
-smooft <- function(S) {
-    .Call('Rdrp_smooft', PACKAGE = 'Rdrp', S)
-}
-
