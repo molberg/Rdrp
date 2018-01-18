@@ -2091,39 +2091,42 @@ void makePOSIXct(SEXP &t);
 
 SEXP OdinHead(Scan *s)
 {
-    SEXP head = PROTECT(allocVector(VECSXP, 14));
-    SEXP nam = PROTECT(allocVector(STRSXP, 14)); // names attribute (column names)
-    SET_STRING_ELT(nam, 0, mkChar("id"));
-    SET_STRING_ELT(nam, 1, mkChar("scan"));
-    SET_STRING_ELT(nam, 2, mkChar("target"));
-    SET_STRING_ELT(nam, 3, mkChar("line"));
-    SET_STRING_ELT(nam, 4, mkChar("RA"));
-    SET_STRING_ELT(nam, 5, mkChar("Dec"));
-    SET_STRING_ELT(nam, 6, mkChar("f.LO"));
-    SET_STRING_ELT(nam, 7, mkChar("f0"));
-    SET_STRING_ELT(nam, 8, mkChar("df"));
-    SET_STRING_ELT(nam, 9, mkChar("v.LSR"));
-    SET_STRING_ELT(nam,10, mkChar("dt"));
-    SET_STRING_ELT(nam,11, mkChar("T.sys"));
-    SET_STRING_ELT(nam,12, mkChar("orbit"));
-    SET_STRING_ELT(nam,13, mkChar("observed.date"));
+    SEXP head = PROTECT(allocVector(VECSXP, 15));
+    SEXP nam = PROTECT(allocVector(STRSXP, 15)); // names attribute (column names)
+    int col = 0;
+    SET_STRING_ELT(nam, col, mkChar("id"));              col++;
+    SET_STRING_ELT(nam, col, mkChar("scan"));            col++;
+    SET_STRING_ELT(nam, col, mkChar("target"));          col++;
+    SET_STRING_ELT(nam, col, mkChar("line"));            col++;
+    SET_STRING_ELT(nam, col, mkChar("RA"));              col++;
+    SET_STRING_ELT(nam, col, mkChar("Dec"));             col++;
+    SET_STRING_ELT(nam, col, mkChar("f.LO"));            col++;
+    SET_STRING_ELT(nam, col, mkChar("f0"));              col++;
+    SET_STRING_ELT(nam, col, mkChar("df"));              col++;
+    SET_STRING_ELT(nam, col, mkChar("v0"));              col++;
+    SET_STRING_ELT(nam, col, mkChar("v.LSR"));           col++;
+    SET_STRING_ELT(nam, col, mkChar("dt"));              col++;
+    SET_STRING_ELT(nam, col, mkChar("T.sys"));           col++;
+    SET_STRING_ELT(nam, col, mkChar("orbit"));           col++;
+    SET_STRING_ELT(nam, col, mkChar("observed.date"));   col++;
     namesgets(head, nam);
     UNPROTECT(1); // nam
 
-    SEXP id = PROTECT(allocVector(INTSXP, 1));         // 0
-    SEXP scanno = PROTECT(allocVector(INTSXP, 1));     // 1
-    SEXP target = PROTECT(allocVector(STRSXP, 1));     // 2
-    SEXP line = PROTECT(allocVector(STRSXP, 1));       // 3
-    SEXP RA = PROTECT(allocVector(REALSXP, 1));        // 4
-    SEXP Dec = PROTECT(allocVector(REALSXP, 1));       // 5
-    SEXP fLO = PROTECT(allocVector(REALSXP, 1));       // 6
-    SEXP f0 = PROTECT(allocVector(REALSXP, 1));        // 7
-    SEXP df = PROTECT(allocVector(REALSXP, 1));        // 8
-    SEXP vs = PROTECT(allocVector(REALSXP, 1));        // 9
-    SEXP dt = PROTECT(allocVector(REALSXP, 1));        // 10
-    SEXP tsys = PROTECT(allocVector(REALSXP, 1));      // 11
-    SEXP orbit = PROTECT(allocVector(REALSXP, 1));     // 12
-    SEXP utc = PROTECT(allocVector(REALSXP, 1));       // 13
+    SEXP id = PROTECT(allocVector(INTSXP, 1));
+    SEXP scanno = PROTECT(allocVector(INTSXP, 1));
+    SEXP target = PROTECT(allocVector(STRSXP, 1));
+    SEXP line = PROTECT(allocVector(STRSXP, 1));
+    SEXP RA = PROTECT(allocVector(REALSXP, 1));
+    SEXP Dec = PROTECT(allocVector(REALSXP, 1));
+    SEXP fLO = PROTECT(allocVector(REALSXP, 1));
+    SEXP f0 = PROTECT(allocVector(REALSXP, 1));
+    SEXP df = PROTECT(allocVector(REALSXP, 1));
+    SEXP v0 = PROTECT(allocVector(REALSXP, 1));
+    SEXP vs = PROTECT(allocVector(REALSXP, 1));
+    SEXP dt = PROTECT(allocVector(REALSXP, 1));
+    SEXP tsys = PROTECT(allocVector(REALSXP, 1));
+    SEXP orbit = PROTECT(allocVector(REALSXP, 1));
+    SEXP utc = PROTECT(allocVector(REALSXP, 1));
     makePOSIXct(utc);
 
     INTEGER(id)[0] = s->STW;
@@ -2135,27 +2138,30 @@ SEXP OdinHead(Scan *s)
     REAL(fLO)[0] = s->LOFreq/MHZ;
     REAL(f0)[0] = s->RestFreq/MHZ;
     REAL(df)[0] = s->FreqRes/MHZ;
+    REAL(v0)[0] = s->VSource/KMS;
     REAL(vs)[0] = s->Vlsr/KMS;
     REAL(dt)[0] = s->IntTime;
     REAL(tsys)[0] = s->Tsys;
     REAL(orbit)[0] = s->Orbit;
     REAL(utc)[0] = (s->MJD-40587.0)*86400.0;
-    // SET_STRING_ELT(utc, 0, mkChar(datetime));
-    SET_VECTOR_ELT(head, 0, id);
-    SET_VECTOR_ELT(head, 1, scanno);
-    SET_VECTOR_ELT(head, 2, target);
-    SET_VECTOR_ELT(head, 3, line);
-    SET_VECTOR_ELT(head, 4, RA);
-    SET_VECTOR_ELT(head, 5, Dec);
-    SET_VECTOR_ELT(head, 6, fLO);
-    SET_VECTOR_ELT(head, 7, f0);
-    SET_VECTOR_ELT(head, 8, df);
-    SET_VECTOR_ELT(head, 9, vs);
-    SET_VECTOR_ELT(head,10, dt);
-    SET_VECTOR_ELT(head,11, tsys);
-    SET_VECTOR_ELT(head,12, orbit);
-    SET_VECTOR_ELT(head,13, utc);
-    UNPROTECT(14); // id, scanno, target, line, RA, Dec, fLO, f0, df, vs, dt, tsys, orbit, utc
+
+    col = 0;
+    SET_VECTOR_ELT(head, col, id);       col++;
+    SET_VECTOR_ELT(head, col, scanno);   col++;
+    SET_VECTOR_ELT(head, col, target);   col++;
+    SET_VECTOR_ELT(head, col, line);     col++;
+    SET_VECTOR_ELT(head, col, RA);       col++;
+    SET_VECTOR_ELT(head, col, Dec);      col++;
+    SET_VECTOR_ELT(head, col, fLO);      col++;
+    SET_VECTOR_ELT(head, col, f0);       col++;
+    SET_VECTOR_ELT(head, col, df);       col++;
+    SET_VECTOR_ELT(head, col, v0);       col++;
+    SET_VECTOR_ELT(head, col, vs);       col++;
+    SET_VECTOR_ELT(head, col, dt);       col++;
+    SET_VECTOR_ELT(head, col, tsys);     col++;
+    SET_VECTOR_ELT(head, col, orbit);    col++;
+    SET_VECTOR_ELT(head, col, utc);      col++;
+    UNPROTECT(col);
     UNPROTECT(1);  // head
     return head;
 }
