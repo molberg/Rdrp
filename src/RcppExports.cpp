@@ -7,7 +7,7 @@ using namespace Rcpp;
 
 // getClassHeader
 SEXP getClassHeader(SEXP filename);
-RcppExport SEXP Rdrp_getClassHeader(SEXP filenameSEXP) {
+RcppExport SEXP _Rdrp_getClassHeader(SEXP filenameSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -18,7 +18,7 @@ END_RCPP
 }
 // readClass
 SEXP readClass(SEXP filename, SEXP H);
-RcppExport SEXP Rdrp_readClass(SEXP filenameSEXP, SEXP HSEXP) {
+RcppExport SEXP _Rdrp_readClass(SEXP filenameSEXP, SEXP HSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -30,7 +30,7 @@ END_RCPP
 }
 // getFreq
 NumericMatrix getFreq(List L);
-RcppExport SEXP Rdrp_getFreq(SEXP LSEXP) {
+RcppExport SEXP _Rdrp_getFreq(SEXP LSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -41,7 +41,7 @@ END_RCPP
 }
 // frequencies
 NumericVector frequencies(List S, NumericVector v);
-RcppExport SEXP Rdrp_frequencies(SEXP SSEXP, SEXP vSEXP) {
+RcppExport SEXP _Rdrp_frequencies(SEXP SSEXP, SEXP vSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -53,7 +53,7 @@ END_RCPP
 }
 // velocities
 NumericVector velocities(List S);
-RcppExport SEXP Rdrp_velocities(SEXP SSEXP) {
+RcppExport SEXP _Rdrp_velocities(SEXP SSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -64,7 +64,7 @@ END_RCPP
 }
 // getVelo
 NumericMatrix getVelo(List L);
-RcppExport SEXP Rdrp_getVelo(SEXP LSEXP) {
+RcppExport SEXP _Rdrp_getVelo(SEXP LSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -75,7 +75,7 @@ END_RCPP
 }
 // getData
 NumericMatrix getData(List L);
-RcppExport SEXP Rdrp_getData(SEXP LSEXP) {
+RcppExport SEXP _Rdrp_getData(SEXP LSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -86,7 +86,7 @@ END_RCPP
 }
 // getDimension
 IntegerVector getDimension(List L);
-RcppExport SEXP Rdrp_getDimension(SEXP LSEXP) {
+RcppExport SEXP _Rdrp_getDimension(SEXP LSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -97,7 +97,7 @@ END_RCPP
 }
 // average
 List average(List L);
-RcppExport SEXP Rdrp_average(SEXP LSEXP) {
+RcppExport SEXP _Rdrp_average(SEXP LSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -108,7 +108,7 @@ END_RCPP
 }
 // foo
 List foo(List S);
-RcppExport SEXP Rdrp_foo(SEXP SSEXP) {
+RcppExport SEXP _Rdrp_foo(SEXP SSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -119,7 +119,7 @@ END_RCPP
 }
 // fold
 List fold(List S, double ft, bool shift);
-RcppExport SEXP Rdrp_fold(SEXP SSEXP, SEXP ftSEXP, SEXP shiftSEXP) {
+RcppExport SEXP _Rdrp_fold(SEXP SSEXP, SEXP ftSEXP, SEXP shiftSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -132,7 +132,7 @@ END_RCPP
 }
 // reverse
 List reverse(List S);
-RcppExport SEXP Rdrp_reverse(SEXP SSEXP) {
+RcppExport SEXP _Rdrp_reverse(SEXP SSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -143,7 +143,7 @@ END_RCPP
 }
 // area
 double area(List S, LogicalVector mask);
-RcppExport SEXP Rdrp_area(SEXP SSEXP, SEXP maskSEXP) {
+RcppExport SEXP _Rdrp_area(SEXP SSEXP, SEXP maskSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -155,7 +155,7 @@ END_RCPP
 }
 // moment
 DataFrame moment(List S, LogicalVector mask);
-RcppExport SEXP Rdrp_moment(SEXP SSEXP, SEXP maskSEXP) {
+RcppExport SEXP _Rdrp_moment(SEXP SSEXP, SEXP maskSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -167,7 +167,7 @@ END_RCPP
 }
 // trim
 List trim(List S, IntegerVector keep);
-RcppExport SEXP Rdrp_trim(SEXP SSEXP, SEXP keepSEXP) {
+RcppExport SEXP _Rdrp_trim(SEXP SSEXP, SEXP keepSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -179,7 +179,7 @@ END_RCPP
 }
 // sieve
 List sieve(List S, NumericVector coeffs);
-RcppExport SEXP Rdrp_sieve(SEXP SSEXP, SEXP coeffsSEXP) {
+RcppExport SEXP _Rdrp_sieve(SEXP SSEXP, SEXP coeffsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -191,7 +191,7 @@ END_RCPP
 }
 // resample
 List resample(List S, NumericVector f, bool smooth);
-RcppExport SEXP Rdrp_resample(SEXP SSEXP, SEXP fSEXP, SEXP smoothSEXP) {
+RcppExport SEXP _Rdrp_resample(SEXP SSEXP, SEXP fSEXP, SEXP smoothSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -204,7 +204,7 @@ END_RCPP
 }
 // rescale
 List rescale(List S, double factor, double bias);
-RcppExport SEXP Rdrp_rescale(SEXP SSEXP, SEXP factorSEXP, SEXP biasSEXP) {
+RcppExport SEXP _Rdrp_rescale(SEXP SSEXP, SEXP factorSEXP, SEXP biasSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -217,7 +217,7 @@ END_RCPP
 }
 // mask
 LogicalVector mask(List S, NumericVector limits);
-RcppExport SEXP Rdrp_mask(SEXP SSEXP, SEXP limitsSEXP) {
+RcppExport SEXP _Rdrp_mask(SEXP SSEXP, SEXP limitsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -226,4 +226,44 @@ BEGIN_RCPP
     rcpp_result_gen = Rcpp::wrap(mask(S, limits));
     return rcpp_result_gen;
 END_RCPP
+}
+// getOdinSpectrum
+SEXP getOdinSpectrum(SEXP filename);
+RcppExport SEXP _Rdrp_getOdinSpectrum(SEXP filenameSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type filename(filenameSEXP);
+    rcpp_result_gen = Rcpp::wrap(getOdinSpectrum(filename));
+    return rcpp_result_gen;
+END_RCPP
+}
+
+static const R_CallMethodDef CallEntries[] = {
+    {"_Rdrp_getClassHeader", (DL_FUNC) &_Rdrp_getClassHeader, 1},
+    {"_Rdrp_readClass", (DL_FUNC) &_Rdrp_readClass, 2},
+    {"_Rdrp_getFreq", (DL_FUNC) &_Rdrp_getFreq, 1},
+    {"_Rdrp_frequencies", (DL_FUNC) &_Rdrp_frequencies, 2},
+    {"_Rdrp_velocities", (DL_FUNC) &_Rdrp_velocities, 1},
+    {"_Rdrp_getVelo", (DL_FUNC) &_Rdrp_getVelo, 1},
+    {"_Rdrp_getData", (DL_FUNC) &_Rdrp_getData, 1},
+    {"_Rdrp_getDimension", (DL_FUNC) &_Rdrp_getDimension, 1},
+    {"_Rdrp_average", (DL_FUNC) &_Rdrp_average, 1},
+    {"_Rdrp_foo", (DL_FUNC) &_Rdrp_foo, 1},
+    {"_Rdrp_fold", (DL_FUNC) &_Rdrp_fold, 3},
+    {"_Rdrp_reverse", (DL_FUNC) &_Rdrp_reverse, 1},
+    {"_Rdrp_area", (DL_FUNC) &_Rdrp_area, 2},
+    {"_Rdrp_moment", (DL_FUNC) &_Rdrp_moment, 2},
+    {"_Rdrp_trim", (DL_FUNC) &_Rdrp_trim, 2},
+    {"_Rdrp_sieve", (DL_FUNC) &_Rdrp_sieve, 2},
+    {"_Rdrp_resample", (DL_FUNC) &_Rdrp_resample, 3},
+    {"_Rdrp_rescale", (DL_FUNC) &_Rdrp_rescale, 3},
+    {"_Rdrp_mask", (DL_FUNC) &_Rdrp_mask, 2},
+    {"_Rdrp_getOdinSpectrum", (DL_FUNC) &_Rdrp_getOdinSpectrum, 1},
+    {NULL, NULL, 0}
+};
+
+RcppExport void R_init_Rdrp(DllInfo *dll) {
+    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+    R_useDynamicSymbols(dll, FALSE);
 }

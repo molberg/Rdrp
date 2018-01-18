@@ -18,6 +18,7 @@ export(readOSO20m)
 export(readSALSA)
 export(getClassHeader)
 export(readClass)
+export(getOdinSpectrum)
 
 export(getHead)
 export(modify)
