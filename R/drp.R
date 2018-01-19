@@ -133,6 +133,7 @@ baseline <- function(S, order=1, mask=NULL) {
 #' @param lon a numeric vector with longitudinal values, e.g. RA
 #' @param lat a numeric vector with latitudinal values, e.g. Dec
 #' @param ... further arguments to be passed on to generic function plot
+#' @export
 positions <- function(lon, lat, ...) {
     proj <- cos(mean(lat, na.rm=TRUE)*pi/180)
     plot(lon, lat, type='p', asp=1/proj, ...)
@@ -180,6 +181,7 @@ stamp <- function(L) {
 #' @param ... further parameters passed to 'identify'
 #' @return a logical vector, one per channel
 #' @seealso \code{\link{mask}}
+#' @export
 markRegion <- function(S, ...) {
     x <- S$freq
     if (getOption("system") == "velocity") x <- velocities(S)
