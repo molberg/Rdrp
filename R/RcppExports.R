@@ -13,6 +13,7 @@
 #' H <- getClassHeader(filename)
 #' print(H)           # print the resulting data frame
 #' print(summary(H))  # print a summary
+#' @export
 getClassHeader <- function(filename) {
     .Call('_Rdrp_getClassHeader', PACKAGE = 'Rdrp', filename)
 }
@@ -40,6 +41,7 @@ getClassHeader <- function(filename) {
 #' H <- H[which(H$target == "RDor" & H$line == "CO (6-5)"),]
 #' L = readClass(filename, H)   # return only RDor CO (6-5) spectra
 #' }
+#' @export
 readClass <- function(filename, H = NULL) {
     .Call('_Rdrp_readClass', PACKAGE = 'Rdrp', filename, H)
 }
@@ -50,6 +52,7 @@ readClass <- function(filename, H = NULL) {
 #' @param L a list of spectra, each with components 'head', 'freq' and 'data'
 #' @return a matrix having all the frequency vectors as columns
 #' @seealso \code{\link{getVelo}}
+#' @export
 getFreq <- function(L) {
     .Call('_Rdrp_getFreq', PACKAGE = 'Rdrp', L)
 }
@@ -69,6 +72,7 @@ getFreq <- function(L) {
 #' R <- resample(S, frequencies(S,v))
 #' }
 #' NULL
+#' @export
 frequencies <- function(S, v) {
     .Call('_Rdrp_frequencies', PACKAGE = 'Rdrp', S, v)
 }
@@ -80,6 +84,7 @@ frequencies <- function(S, v) {
 #' @param S a single spectrum
 #' @return a numeric vector holding velocities
 #' @seealso \code{\link{frequencies}}
+#' @export
 velocities <- function(S) {
     .Call('_Rdrp_velocities', PACKAGE = 'Rdrp', S)
 }
@@ -90,6 +95,7 @@ velocities <- function(S) {
 #' @param L a list of spectra, each with components 'head', 'freq' and 'data'
 #' @return a matrix having all the velcity vectors as columns
 #' @seealso \code{\link{getFreq}}
+#' @export
 getVelo <- function(L) {
     .Call('_Rdrp_getVelo', PACKAGE = 'Rdrp', L)
 }
@@ -104,6 +110,7 @@ getVelo <- function(L) {
 #' data(salsa)
 #' D <- getData(salsa)
 #' image(D)             # show data matrix as color image
+#' @export
 getData <- function(L) {
     .Call('_Rdrp_getData', PACKAGE = 'Rdrp', L)
 }
@@ -113,6 +120,7 @@ getData <- function(L) {
 #' From a list of spectra, get the dimensions of the data.
 #' @param L a list of spectra, each with components 'head', 'freq' and 'data'
 #' @return a two component integer vector (nChannels, nSpectra)
+#' @export
 getDimension <- function(L) {
     .Call('_Rdrp_getDimension', PACKAGE = 'Rdrp', L)
 }
@@ -129,6 +137,7 @@ getDimension <- function(L) {
 #' A <- average(salsa)
 #' plot(salsa)                              # plot individual spectra
 #' lines(A$freq, A$data, lwd=5, col='red')  # draw average spectrum on top
+#' @export
 average <- function(L) {
     .Call('_Rdrp_average', PACKAGE = 'Rdrp', L)
 }
@@ -143,6 +152,7 @@ foo <- function(S) {
 #' @param ft frequency requency throw in Mhz
 #' @param shift if TRUE, assume symmetric switching around true, centre frequency
 #' @return the folded spectrum
+#' @export
 fold <- function(S, ft, shift = FALSE) {
     .Call('_Rdrp_fold', PACKAGE = 'Rdrp', S, ft, shift)
 }
@@ -153,6 +163,7 @@ fold <- function(S, ft, shift = FALSE) {
 #' vector around.
 #' @param S a single spectrum
 #' @return the reversed spectrum
+#' @export
 reverse <- function(S) {
     .Call('_Rdrp_reverse', PACKAGE = 'Rdrp', S)
 }
@@ -174,6 +185,7 @@ reverse <- function(S) {
 #' area(S, mask)                 # calculate integrated area in K*km/s
 #' # call 'area' for each of the spectra in 'salsa' with parameter 'mask'
 #' sapply(salsa, FUN=area, mask)
+#' @export
 area <- function(S, mask) {
     .Call('_Rdrp_area', PACKAGE = 'Rdrp', S, mask)
 }
@@ -195,6 +207,7 @@ area <- function(S, mask) {
 #' moment(A, mask=lmask)
 #' # do this for individual spectra
 #' do.call("rbind", lapply(salsa, moment, lmask))
+#' @export
 moment <- function(S, mask) {
     .Call('_Rdrp_moment', PACKAGE = 'Rdrp', S, mask)
 }
@@ -207,6 +220,7 @@ moment <- function(S, mask) {
 #' @param S a single spectrum
 #' @param keep a vector holding the channel numbers to keep
 #' @return the trimmed spectrum
+#' @export
 trim <- function(S, keep) {
     .Call('_Rdrp_trim', PACKAGE = 'Rdrp', S, keep)
 }
@@ -218,6 +232,7 @@ trim <- function(S, keep) {
 #' @param S a single spectrum
 #' @param coeffs a numeric vector with an odd number of filter coefficients
 #' @return the filtered spectrum
+#' @export
 sieve <- function(S, coeffs) {
     .Call('_Rdrp_sieve', PACKAGE = 'Rdrp', S, coeffs)
 }
@@ -230,6 +245,7 @@ sieve <- function(S, coeffs) {
 #' @param f a frequency vector onto which the spectrum should be resampled
 #' @param smooth if TRUE convolve with Gaussian response
 #' @return the resampled spectrum
+#' @export
 resample <- function(S, f, smooth = FALSE) {
     .Call('_Rdrp_resample', PACKAGE = 'Rdrp', S, f, smooth)
 }
@@ -242,6 +258,7 @@ resample <- function(S, f, smooth = FALSE) {
 #' @param factor a numeric value by which to scale the whole spectrum
 #' @param bias a numeric value to add to all channels
 #' @return the rescaled spectrum, out = in * factor + bias
+#' @export
 rescale <- function(S, factor = 1.0, bias = 0.0) {
     .Call('_Rdrp_rescale', PACKAGE = 'Rdrp', S, factor, bias)
 }
@@ -254,6 +271,7 @@ rescale <- function(S, factor = 1.0, bias = 0.0) {
 #' @param S a single spectrum
 #' @param limits pairs of values, which each define a window
 #' @return a vector of logical values, one per channel
+#' @export
 mask <- function(S, limits) {
     .Call('_Rdrp_mask', PACKAGE = 'Rdrp', S, limits)
 }
@@ -272,6 +290,7 @@ mask <- function(S, limits) {
 #' H <- getHead(L)
 #' print(H)
 #' }
+#' @export
 getOdinSpectrum <- function(filename) {
     .Call('_Rdrp_getOdinSpectrum', PACKAGE = 'Rdrp', filename)
 }

@@ -61,6 +61,8 @@
 #' @docType package
 #' @name Rdrp-package
 #' @author Michael Olberg, \email{michael.olberg@@chalmers.se}
+#' @useDynLib Rdrp
+#' @importFrom Rcpp evalCpp
 NULL
 
 ## NULL

@@ -8,6 +8,7 @@ using namespace Rcpp;
 //' @param L a list of spectra, each with components 'head', 'freq' and 'data'
 //' @return a matrix having all the frequency vectors as columns
 //' @seealso \code{\link{getVelo}}
+//' @export
 // [[Rcpp::export]]
 NumericMatrix getFreq(List L) {
     static char error[80];
@@ -57,6 +58,7 @@ NumericMatrix getFreq(List L) {
 //' R <- resample(S, frequencies(S,v))
 //' }
 //' NULL
+//' @export
 // [[Rcpp::export]]
 NumericVector frequencies(List S, NumericVector v) {
     if (!S.inherits("spectrum")) stop("input must be a spectrum");
@@ -92,6 +94,7 @@ NumericVector frequencies(List S, NumericVector v) {
 //' @param S a single spectrum
 //' @return a numeric vector holding velocities
 //' @seealso \code{\link{frequencies}}
+//' @export
 // [[Rcpp::export]]
 NumericVector velocities(List S) {
     if (!S.inherits("spectrum")) stop("input must be a spectrum");
@@ -131,6 +134,7 @@ NumericVector velocities(List S) {
 //' @param L a list of spectra, each with components 'head', 'freq' and 'data'
 //' @return a matrix having all the velcity vectors as columns
 //' @seealso \code{\link{getFreq}}
+//' @export
 // [[Rcpp::export]]
 NumericMatrix getVelo(List L) {
     static char error[80];
@@ -161,6 +165,7 @@ NumericMatrix getVelo(List L) {
 //' data(salsa)
 //' D <- getData(salsa)
 //' image(D)             # show data matrix as color image
+//' @export
 // [[Rcpp::export]]
 NumericMatrix getData(List L) {
     static char error[80];
@@ -200,6 +205,7 @@ NumericMatrix getData(List L) {
 //' From a list of spectra, get the dimensions of the data.
 //' @param L a list of spectra, each with components 'head', 'freq' and 'data'
 //' @return a two component integer vector (nChannels, nSpectra)
+//' @export
 // [[Rcpp::export]]
 IntegerVector getDimension(List L) {
     IntegerVector dim(2);
@@ -229,6 +235,7 @@ IntegerVector getDimension(List L) {
 //' A <- average(salsa)
 //' plot(salsa)                              # plot individual spectra
 //' lines(A$freq, A$data, lwd=5, col='red')  # draw average spectrum on top
+//' @export
 // [[Rcpp::export]]
 List average(List L) {
     static char error[80];
@@ -366,6 +373,7 @@ List foo(List S) {
 //' @param ft frequency requency throw in Mhz
 //' @param shift if TRUE, assume symmetric switching around true, centre frequency
 //' @return the folded spectrum
+//' @export
 // [[Rcpp::export]]
 List fold(List S, double ft, bool shift = false) {
     if (!S.inherits("spectrum")) stop("input must be a spectrum");
@@ -418,6 +426,7 @@ List fold(List S, double ft, bool shift = false) {
 //' vector around.
 //' @param S a single spectrum
 //' @return the reversed spectrum
+//' @export
 // [[Rcpp::export]]
 List reverse(List S) {
     if (!S.inherits("spectrum")) stop("input must be a spectrum");
@@ -464,6 +473,7 @@ List reverse(List S) {
 //' area(S, mask)                 # calculate integrated area in K*km/s
 //' # call 'area' for each of the spectra in 'salsa' with parameter 'mask'
 //' sapply(salsa, FUN=area, mask)
+//' @export
 // [[Rcpp::export]]
 double area(List S, LogicalVector mask) {
     static char error[80];
@@ -509,6 +519,7 @@ double area(List S, LogicalVector mask) {
 //' moment(A, mask=lmask)
 //' # do this for individual spectra
 //' do.call("rbind", lapply(salsa, moment, lmask))
+//' @export
 // [[Rcpp::export]]
 DataFrame moment(List S, LogicalVector mask) {
     static char error[80];
@@ -566,6 +577,7 @@ DataFrame moment(List S, LogicalVector mask) {
 //' @param S a single spectrum
 //' @param keep a vector holding the channel numbers to keep
 //' @return the trimmed spectrum
+//' @export
 // [[Rcpp::export]]
 List trim(List S, IntegerVector keep) {
     if (!S.inherits("spectrum")) stop("input must be a spectrum");
@@ -600,6 +612,7 @@ List trim(List S, IntegerVector keep) {
 //' @param S a single spectrum
 //' @param coeffs a numeric vector with an odd number of filter coefficients
 //' @return the filtered spectrum
+//' @export
 // [[Rcpp::export]]
 List sieve(List S, NumericVector coeffs) {
     if (!S.inherits("spectrum")) stop("input must be a spectrum");
@@ -654,6 +667,7 @@ List sieve(List S, NumericVector coeffs) {
 //' @param f a frequency vector onto which the spectrum should be resampled
 //' @param smooth if TRUE convolve with Gaussian response
 //' @return the resampled spectrum
+//' @export
 // [[Rcpp::export]]
 List resample(List S, NumericVector f, bool smooth=false) {
     // We will use a Gaussian filter below with a noise bandwidth given by the
@@ -736,6 +750,7 @@ List resample(List S, NumericVector f, bool smooth=false) {
 //' @param factor a numeric value by which to scale the whole spectrum
 //' @param bias a numeric value to add to all channels
 //' @return the rescaled spectrum, out = in * factor + bias
+//' @export
 // [[Rcpp::export]]
 List rescale(List S, double factor = 1.0, double bias = 0.0) {
     int i, j;
@@ -768,6 +783,7 @@ List rescale(List S, double factor = 1.0, double bias = 0.0) {
 //' @param S a single spectrum
 //' @param limits pairs of values, which each define a window
 //' @return a vector of logical values, one per channel
+//' @export
 // [[Rcpp::export]]
 LogicalVector mask(List S, NumericVector limits) {
     int nw = limits.length();

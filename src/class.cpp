@@ -182,6 +182,7 @@ SEXP makeSpectrum(SEXP head, SEXP freq, SEXP data)
 //' H <- getClassHeader(filename)
 //' print(H)           # print the resulting data frame
 //' print(summary(H))  # print a summary
+//' @export
 // [[Rcpp::export]]
 SEXP getClassHeader(SEXP filename)
 {
@@ -289,6 +290,7 @@ SEXP getClassHeader(SEXP filename)
 //' H <- H[which(H$target == "RDor" & H$line == "CO (6-5)"),]
 //' L = readClass(filename, H)   # return only RDor CO (6-5) spectra
 //' }
+//' @export
 // [[Rcpp::export]]
 SEXP readClass(SEXP filename, SEXP H = R_NilValue)
 {

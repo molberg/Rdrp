@@ -113,11 +113,10 @@ baseline <- function(S, order=1, mask=NULL) {
         xb <- x
         yb <- S$data
     }
-    fit <- lm(yb ~ poly(xb, order, raw=TRUE))
-    res <- as.numeric(residuals(fit))
-    ## cat("standard deviation of residuals: ", sd(res, na.rm=TRUE), "\n")
-    bl <- list(fitted=as.numeric(predict(fit, newdata=data.frame(xb=x))),
-               residuals=sd(res, na.rm=TRUE))
+    fit <- stats::lm(yb ~ poly(xb, order, raw=TRUE))
+    res <- as.numeric(stats::residuals(fit))
+    bl <- list(fitted=as.numeric(stats::predict(fit, newdata=data.frame(xb=x))),
+               residuals=stats::sd(res, na.rm=TRUE))
     bl
 }
 
@@ -136,8 +135,8 @@ baseline <- function(S, order=1, mask=NULL) {
 #' @export
 positions <- function(lon, lat, ...) {
     proj <- cos(mean(lat, na.rm=TRUE)*pi/180)
-    plot(lon, lat, type='p', asp=1/proj, ...)
-    grid()
+    graphics::plot(lon, lat, type='p', asp=1/proj, ...)
+    graphics::grid()
 }
 
 #' Plot a grid of spectra
@@ -149,7 +148,7 @@ positions <- function(lon, lat, ...) {
 #' @param L a list of spectra
 #' @export
 stamp <- function(L) {
-    op <- par(mar=c(0.0,0.0,0.0,0.0), oma=c(3,3,3,3))
+    op <- graphics::par(mar=c(0.0,0.0,0.0,0.0), oma=c(3,3,3,3))
     ns <- length(L)
     nx <- floor(sqrt(ns))
     ny <- nx
@@ -159,15 +158,15 @@ stamp <- function(L) {
     freq <- getFreq(L)
     data <- getData(L)
 
-    par(mfrow=c(ny, nx))
+    graphics::par(mfrow=c(ny, nx))
     ymin=min(data, na.rm=TRUE)
     ymax=max(data, na.rm=TRUE)
     for (i in seq(ns)) {
-        plot(freq[,i], data[,i], type='l', col='blue',
-             ylim=c(ymin,ymax), xaxt='n', yaxt='n', xlab="", ylab="")
+        graphics::plot(freq[,i], data[,i], type='l', col='blue',
+                       ylim=c(ymin,ymax), xaxt='n', yaxt='n', xlab="", ylab="")
     }
-    par(mfrow=c(1, 1))
-    par(op)
+    graphics::par(mfrow=c(1, 1))
+    graphics::par(op)
 }
 
 #' Mark a region
@@ -185,17 +184,17 @@ stamp <- function(L) {
 markRegion <- function(S, ...) {
     x <- S$freq
     if (getOption("system") == "velocity") x <- velocities(S)
-    xy <- xy.coords(x, S$data)
+    xy <- grDevices::xy.coords(x, S$data)
     x <- xy$x
     n <- length(x)
     y <- xy$y
     sel <- rep(FALSE, n); res <- integer(0)
     while(sum(sel) < n) {
-        ans <- identify(x[!sel], y[!sel], n = 1, plot = FALSE, ...)
+        ans <- graphics::identify(x[!sel], y[!sel], n = 1, plot = FALSE, ...)
         if (!length(ans)) break
         ans <- which(!sel)[ans]
         ## points(x[ans], y[ans], pch = pch)
-        abline(v=x[ans], lty=2, col='grey')
+        graphics::abline(v=x[ans], lty=2, col='grey')
         sel[ans] <- TRUE
         res <- c(res, ans)
     }
@@ -205,11 +204,11 @@ markRegion <- function(S, ...) {
     W <- matrix(x[res], ncol=2, byrow=TRUE)
     DF <- data.frame(from=W[,1], to=W[,2])
     print(DF)
-    usr <- par("usr")
+    usr <- graphics::par("usr")
     y0 <- usr[3]+0.1*(usr[4]-usr[3])
     mx <- c(x[1], rep(x[res], each=2), x[length(x)])
     my <- c(rep(rep(c(0,1), nw/2), each=2), 0, 0)
-    lines(mx, y0+0.1*my*(usr[4]-usr[3]), type='s', col='red')
+    graphics::lines(mx, y0+0.1*my*(usr[4]-usr[3]), type='s', col='red')
     M <- mask(S, x[res])
     M
 }

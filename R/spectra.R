@@ -38,8 +38,8 @@ plot.spectrum <- function(x, type='l', col='blue', ...) {
         X = velocities(x)
     }
 
-    plot(X, D, type=type, col=col, xlab="", ylab="", ...)
-    mtext(paste(x$head$scan, x$head$target, x$head$line), 3, 1, adj=0.01)
+    graphics::plot(X, D, type=type, col=col, xlab="", ylab="", ...)
+    graphics::mtext(paste(x$head$scan, x$head$target, x$head$line), 3, 1, adj=0.01)
 }
 
 #' Lines method for class spectrum
@@ -61,7 +61,7 @@ lines.spectrum <- function(x, type='l', col='red', ...) {
     if (getOption("system") == "velocity") {
         X = velocities(x)
     }
-    lines(X, D, type=type, col=col, ...)
+    graphics::lines(X, D, type=type, col=col, ...)
 }
 
 #' Plot method for class spectra
@@ -86,13 +86,14 @@ plot.spectra <- function(x, type='l', col='blue', ..., grid=NULL) {
     }
 
     if (is.null(grid)) {
-        matplot(freq, data, type=type, lty=1, xlab="", ylab="", ...)
+        graphics::matplot(freq, data, type=type, lty=1, xlab="", ylab="", ...)
     } else {
-        oldpar <- par(mfrow=grid, mar=c(0,0,0,0), oma=c(2,2,2,2))
+        oldpar <- graphics::par(mfrow=grid, mar=c(0,0,0,0), oma=c(2,2,2,2))
         for (i in seq(nrow(head))) {
-            plot(freq[,i], data[,i], type=type, col=col, xaxt='n', yaxt='n', xlab="", ylab="", ...)
+            graphics::plot(freq[,i], data[,i], type=type, col=col,
+                           xaxt='n', yaxt='n', xlab="", ylab="", ...)
             # mtext(head$target[i], 3, -2, adj=0.02)
         }
-        par(oldpar)
+        graphics::par(oldpar)
     }
 }
