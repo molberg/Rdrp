@@ -1999,11 +1999,16 @@ void makePOSIXct(SEXP &t);
 
 SEXP OdinHead(Scan *s)
 {
-    SEXP head = PROTECT(allocVector(VECSXP, 15));
-    SEXP nam = PROTECT(allocVector(STRSXP, 15)); // names attribute (column names)
+    static const char *frontends[] = {"495","549","555","572","119","SPLIT"};
+    static const char *backends[] = {"AC1","AC2","AOS"};
+
+    SEXP head = PROTECT(allocVector(VECSXP, 17));
+    SEXP nam = PROTECT(allocVector(STRSXP, 17)); // names attribute (column names)
     int col = 0;
     SET_STRING_ELT(nam, col, mkChar("id"));              col++;
     SET_STRING_ELT(nam, col, mkChar("scan"));            col++;
+    SET_STRING_ELT(nam, col, mkChar("fe"));              col++;
+    SET_STRING_ELT(nam, col, mkChar("be"));              col++;
     SET_STRING_ELT(nam, col, mkChar("target"));          col++;
     SET_STRING_ELT(nam, col, mkChar("line"));            col++;
     SET_STRING_ELT(nam, col, mkChar("RA"));              col++;
@@ -2022,6 +2027,8 @@ SEXP OdinHead(Scan *s)
 
     SEXP id = PROTECT(allocVector(INTSXP, 1));
     SEXP scanno = PROTECT(allocVector(INTSXP, 1));
+    SEXP frontend = PROTECT(allocVector(STRSXP, 1));
+    SEXP backend = PROTECT(allocVector(STRSXP, 1));
     SEXP target = PROTECT(allocVector(STRSXP, 1));
     SEXP line = PROTECT(allocVector(STRSXP, 1));
     SEXP RA = PROTECT(allocVector(REALSXP, 1));
@@ -2039,6 +2046,8 @@ SEXP OdinHead(Scan *s)
 
     INTEGER(id)[0] = s->STW;
     INTEGER(scanno)[0] = 1;
+    if (s->Frontend >= 1 && s->Frontend <= 6) SET_STRING_ELT(frontend, 0, mkChar(frontends[s->Frontend]));
+    if (s->Backend  >= 1 && s->Backend  <= 3) SET_STRING_ELT(backend, 0, mkChar(frontends[s->Backend]));
     SET_STRING_ELT(target, 0, mkChar(s->Source));
     SET_STRING_ELT(line, 0, mkChar("unknown"));
     REAL(RA)[0] = s->RA2000;
@@ -2056,6 +2065,8 @@ SEXP OdinHead(Scan *s)
     col = 0;
     SET_VECTOR_ELT(head, col, id);       col++;
     SET_VECTOR_ELT(head, col, scanno);   col++;
+    SET_VECTOR_ELT(head, col, frontend); col++;
+    SET_VECTOR_ELT(head, col, backend);  col++;
     SET_VECTOR_ELT(head, col, target);   col++;
     SET_VECTOR_ELT(head, col, line);     col++;
     SET_VECTOR_ELT(head, col, RA);       col++;
@@ -2119,6 +2130,7 @@ SEXP OdinFreq(Scan *s)
 //' H <- getHead(L)
 //' print(H)
 //' }
+//' @export
 // [[Rcpp::export]]
 SEXP getOdinSpectrum(SEXP filename)
 {
