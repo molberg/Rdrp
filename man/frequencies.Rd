@@ -28,4 +28,3 @@ NULL
 \seealso{
 \code{\link{velocities}}
 }
-

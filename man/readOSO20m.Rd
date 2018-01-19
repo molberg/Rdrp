@@ -16,4 +16,3 @@ a list of lists with components head, freq and data
 Take a FITS file for a single spectrum from the OSO 20m and return a spectrum
 (i.e. a list consisting of header, frequency and data vectors).
 }
-

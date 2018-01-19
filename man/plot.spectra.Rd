@@ -25,4 +25,3 @@ data(salsa)
 plot(salsa)
 plot(salsa, grid=c(29,1))
 }
-

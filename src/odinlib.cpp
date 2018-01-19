@@ -24,7 +24,7 @@
 #include "aclib.h"
 
 /*
-  Get two unsigned shorts from level 0 file 
+  Get two unsigned shorts from level 0 file
   and return as unsigned long in a machine independent manner.
 */
 uint32_t LongWord(uint16_t word[])
@@ -49,7 +49,7 @@ int STWreset(char *level0)
         if (!isxdigit(ptr[i])) return 0;
     }
     if (ptr[8] != '.') return 0;
-  
+
     c = toupper(ptr[0]);
     if (isdigit(c)) rst = c - '0';
     else            rst = c - 'A' + 10;
@@ -63,7 +63,7 @@ void STWrange(FILE *pdcfile, uint32_t *STW0, uint32_t *STW1)
     uint16_t user;
     int n;
     uint32_t offset, where;
-  
+
     *STW0 = 0L;
     *STW1 = 0L;
 
@@ -109,7 +109,7 @@ void STWrange(FILE *pdcfile, uint32_t *STW0, uint32_t *STW1)
         return;
     }
     *STW1 = LongWord(word+1);
-  
+
     fseek(pdcfile, where, SEEK_SET);
 
     return;
@@ -147,7 +147,7 @@ char *angle(double rad, int sys)
     d  = centis;
     sprintf (str, "%3d:%02d:%02d.%1d", d, m, s, ds);
     if (sign)   str[0] = '-';
-    if (d < 10) str[1] = '0'; 
+    if (d < 10) str[1] = '0';
     str[STRSIZE-1] = '\0';
 
     return (str);
@@ -209,18 +209,18 @@ void PrintScan(Scan *s)
     printf(" Bandwidth      %8.3f MHz    ", fabs(s->FreqRes)/MHZ * s->Channels);
     printf(" Tcal  %6.1f K\n", s->Tcal);
     printf("Sky frequency  %10.3f GHz  ", s->SkyFreq/1.0e9);
-    printf(" Vel. resolution %7.1f km/s   ", 
+    printf(" Vel. resolution %7.1f km/s   ",
            LIGHTSPEED*fabs(s->FreqRes/s->SkyFreq)/KMS);
     printf(" Tsys  %6.1f K\n", s->Tsys);
     printf("Freq. resolution %8.4f MHz  ", s->FreqRes/MHZ);
     printf(" Vlsr (telescope) %6.1f km/s   ", s->Vlsr/KMS);
     printf(" SBpath%6.1f u\n", s->SBpath/1.0e-6);
-    if (s->Backend == AOS) 
-        printf("Fit: %6.1fe6 %5.2f %5.2f Hz   ", 
+    if (s->Backend == AOS)
+        printf("Fit: %6.1fe6 %5.2f %5.2f Hz   ",
                s->FreqCal[0]/MHZ,
                s->FreqCal[2], s->FreqCal[3]);
-    else 
-        printf("SSB   %4.0f %4.0f %4.0f %4.0f MHz  ", 
+    else
+        printf("SSB   %4.0f %4.0f %4.0f %4.0f MHz  ",
                s->FreqCal[0]/MHZ, s->FreqCal[1]/MHZ,
                s->FreqCal[2]/MHZ, s->FreqCal[3]/MHZ);
     printf(" Vgeo (telescope) %6.1f km/s   ", s->Vgeo/KMS);
@@ -331,7 +331,7 @@ void InitHead(Scan *s)
       case AC2:
         /* This should already have been set when reading level 0 data */
         if (s->FreqRes == 0.0) {
-            warning("zero frequency resolution"); 
+            warning("zero frequency resolution");
             switch (s->IntMode) {
               case AC_LOWRES:
                 s->FreqRes = MHZ;
@@ -350,7 +350,7 @@ void InitHead(Scan *s)
             break;
         }
     }
-  
+
     memset(s->Source, 0, SOURCENAMELEN);
 }
 
@@ -422,14 +422,14 @@ void copyscan(Scan *s, Scan *t)
     memcpy((void *)s, (void *)t, sizeof(Scan));
 }
 
-/* 
+/*
  * Reverse sequence of channels
  */
 static void reverse(float data[], int n)
 {
     int i, j;
     float swap;
- 
+
     for (i = 0, j = n-1; i < n/2; i++, j--) {
         swap    = data[i];
         data[i] = data[j];
@@ -437,14 +437,14 @@ static void reverse(float data[], int n)
     }
 }
 
-/* 
+/*
  * swap two bands
  */
 static void swapbands(float band1[], float band2[], int n)
 {
     int i;
     float swap;
- 
+
     for (i = 0; i < n; i++) {
         swap     = band1[i];
         band1[i] = band2[i];
@@ -479,7 +479,7 @@ int cleanmode(int *seq)
 }
 
 /*
- * Translate the old way of storing the correlator mode 
+ * Translate the old way of storing the correlator mode
  * into the new one.
  */
 int newMode(Scan *s)
@@ -489,7 +489,7 @@ int newMode(Scan *s)
 
     /* Makes only sense for AC1 or AC2 */
     if ((s->Backend != AC1) && (s->Backend != AC2)) return 0;
-    
+
     /* Check if this has already been done. */
     if (s->IntMode & ADC_SEQ) {
         warning("this is a new mode already");
@@ -586,9 +586,9 @@ int newMode(Scan *s)
 
 /*
  * For correlator spectra taken via the power combiner, or for spectra with
- * a non-contiguous frequency band, split the spectrum into two halfs 
- * and return one of them. 
- * If the parameter 'upper' is true, replace spectrum with upper half, 
+ * a non-contiguous frequency band, split the spectrum into two halfs
+ * and return one of them.
+ * If the parameter 'upper' is true, replace spectrum with upper half,
  * else with lower half.
  * Returns 1 on success, 0 on failure.
  */
@@ -672,7 +672,7 @@ int splitcorr(Scan *s, int upper)
  *  For correlator spectra, this routine will return a spectrum where all
  *  channels not belonging to the selected band have been dropped. This is
  *  meant to aid in reducing data one band at a time. The spectrum must
- *  not have been frequency sorted, yet. 
+ *  not have been frequency sorted, yet.
  *  Returns 1 on success, 0 on failure.
  */
 int getband(Scan *s, int n, int dsb)
@@ -728,7 +728,7 @@ int getband(Scan *s, int n, int dsb)
                     s->FreqCal[0] = s->FreqCal[adc/2] + df*CenterCh(s);
                 }
             }
-            printf("get band %d (%d), %d channels, df = %e\n", 
+            printf("get band %d (%d), %d channels, df = %e\n",
                    n, dsb, s->Channels, df);
             s->FreqCal[1] = df;
             s->FreqCal[2] = 0.0;
@@ -756,7 +756,7 @@ int getband(Scan *s, int n, int dsb)
 
 
 /*
- * this routine will sort frequencies for a spectrum, possibly dropping 
+ * this routine will sort frequencies for a spectrum, possibly dropping
  * channels in overlapping bands for a correlator spectrum.
  *
  * usage:
@@ -874,7 +874,7 @@ int drop(Scan *s, double *f)
     /* this may be needed for new mode descriptions */
     for (j = 0; j < nbands; j++) {
         if (f[j*m] > f[(j+1)*m-1]) {
-            /* warning("turning band %d (%6.1f-%6.1f) around\n", 
+            /* warning("turning band %d (%6.1f-%6.1f) around\n",
                         j+1, f[j*m]/MHZ, f[(j+1)*m-1]/MHZ); */
             dp = &s->data[j*m];
             fp = &f[j*m];
@@ -969,7 +969,7 @@ int drop(Scan *s, double *f)
                 }
             }
         }
-    
+
         j = 0;
         while (j < n) {
             if (f[j] == 0.0) {
@@ -982,9 +982,9 @@ int drop(Scan *s, double *f)
                     s->data[i-m] = s->data[i];
                 }
                 n -= m;
-            } 
+            }
             j++;
-        } 
+        }
 
         j = 1;
         while (j < n) {
@@ -1074,7 +1074,7 @@ int freqcmp(const void *x1, const void *x2)
  * }
  *
  * 'freqsort' will call routine 'frequency' first.
- * The function will return the (probably new) number of channels 
+ * The function will return the (probably new) number of channels
  * or 0 in case of an error.
  */
 int freqsort(Scan *s, double *f)
@@ -1117,14 +1117,14 @@ int freqsort(Scan *s, double *f)
     if (mode & ADC_SEQ) {
         /* for the two correlators test for split mode */
         if (mode & ADC_SPLIT) split = 1;
-        /* In split mode test for lower or upper half */ 
+        /* In split mode test for lower or upper half */
         if (split) upper = mode & ADC_UPPER;
         /* keep lowest 4 bits only for the switch statement below */
         mode &= 0x000f;
     } else {
         /* for the two correlators test for split mode */
         if (mode & AC_SPLIT) split = 1;
-        /* In split mode test for lower or upper half */ 
+        /* In split mode test for lower or upper half */
         if (split) upper = mode & AC_UPPER;
         /* keep lowest 4 bits only for the switch statement below */
         mode &= 0x000f;
@@ -1135,7 +1135,7 @@ int freqsort(Scan *s, double *f)
         xaxis[i].freq = f[i];
     }
 
-    /* 
+    /*
        We set up a weight for each channel which will allow us to decide
        which channels to keep from two bands which overlap.
        The weights as a function of channel number look like this: /\/\/\/\
@@ -1284,7 +1284,7 @@ int freqsort(Scan *s, double *f)
     return m;
 }
 
-/* 
+/*
  * A vector big enough to hold channel values for one spectrum.
  * It will be used by routines below this point.
  */
@@ -1310,7 +1310,7 @@ void redres(Scan *s, double *f, double df)
         sig = (f[i]-f[i-1])/(f[i+1]-f[i-1]);
         p = sig*data[i-1]+2.0;
         data[i] = (sig-1.0)/p;
-        u[i] = (s->data[i+1]-s->data[i])/(f[i+1]-f[i]) 
+        u[i] = (s->data[i+1]-s->data[i])/(f[i+1]-f[i])
             - (s->data[i]-s->data[i-1])/(f[i]-f[i-1]);
         u[i] = (6.0*u[i]/(f[i+1]-f[i-1])-sig*u[i-1])/p;
     }
@@ -1320,7 +1320,7 @@ void redres(Scan *s, double *f, double df)
     for (i = n-2; i >= 0; i--) data[i] = data[i]*data[i+1]+u[i];
 
     for (i = 0; i < n; i++) u[i] = s->data[i];
-  
+
     rf = f[CenterCh(s)];
     k = 0;
     for (i = 0; i < n; i++) {
@@ -1331,7 +1331,7 @@ void redres(Scan *s, double *f, double df)
         }
         q = f[k];
         while (p > f[k+1]) k++;
-    
+
         h = f[k+1] - f[k];
         a = (f[k+1] - p)/h;
         b = (p - f[k])/h;
@@ -1345,7 +1345,7 @@ void redres(Scan *s, double *f, double df)
     s->Quality |= ILINEAR;
 }
 
-static void adjust(float d[], double f[], double df, 
+static void adjust(float d[], double f[], double df,
                    int b1, int b2, int n, int nbands)
 {
     int j, k, m, i, i1, i2, order, nmin = 20;
@@ -1416,7 +1416,7 @@ static void adjust(float d[], double f[], double df,
             bias += c1[0]-c2[0]+(c1[1]-c2[1])*X;
         }
         bias /= (float)n;
-        printf("adjust: overlap of band %d and %d: %d channels (%f)\n", 
+        printf("adjust: overlap of band %d and %d: %d channels (%f)\n",
                b1, b2, n, bias);
         for (i = b1*m; i < (b1+1)*m; i++) d[i] -= bias;
     } else if ((f1max >= f2min) && (f1max <= f2max)) {
@@ -1540,7 +1540,7 @@ int readODINscan(const char *name, Scan *s)
 {
     FILE *sc;
     int l, m, retval = 0;
-  
+
     sc = fopen (name, "r");
     if (sc != NULL) {
         l = 0;
@@ -1612,7 +1612,7 @@ int readODINscan(const char *name, Scan *s)
         } else {
             warning("can't read header of '%s' (%d)", name, errno);
         }
-        
+
         fclose (sc);
         Rprintf("scan read from file '%s'\n", name);
     } else {
@@ -1626,7 +1626,7 @@ int writeODINscan(char *name, Scan *s)
 {
     FILE *sc;
     int l, m, retval = 0;
-  
+
     sc = fopen (name, "w");
     if (sc != NULL) {
         l = 0;
@@ -1703,7 +1703,7 @@ int writeODINscan(char *name, Scan *s)
     return retval;
 }
 
-/* 
+/*
    Analyse the correlator mode by calculating a sequence of 16 integers
    whose meaning is a follows:
 
@@ -1727,14 +1727,14 @@ int *GetACSequence(int mode)
     static int ssb[8] = { 1, -1, 1, -1, -1, 1, -1, 1 };
     int i, m;
 
-    /* 
-       To indicate the new way of storing the mode, 
+    /*
+       To indicate the new way of storing the mode,
        they are stored with the ADC_SEQ bit set.
     */
     if (!(mode & ADC_SEQ)) return NULL;
 
     mode = (mode & 0xff);
-    
+
     m = -1;
     /* reset our sequence */
     for (i = 0; i < 16; i++) seq[i] = 0;
@@ -1745,7 +1745,7 @@ int *GetACSequence(int mode)
     /*  	else                 printf("0"); */
     /*      } */
     /*      printf("\n"); */
-    
+
     for (i = 0; i < 8; i++) {
 	if (mode & 1) m = i;   /* if bit is set, ADC is used */
 	seq[2*m]++;            /* count chips                */
@@ -1774,7 +1774,7 @@ int *GetACSequence(int mode)
  *     ...
  * }
  *
- * on return, the array f will be filled with the IF frequency values in Hz 
+ * on return, the array f will be filled with the IF frequency values in Hz
  * for all channels present in the spectrum. The return value of the function
  * will be the number of channels in the spectrum, or 0 in case of an error.
  */
@@ -1797,11 +1797,11 @@ int frequency(Scan *s, double f[])
     if (backend == AC1 || backend == AC2) {
         if (mode & ADC_SEQ) {
             if (mode & ADC_SPLIT) split = 1;
-            /* In split mode test for lower or upper half */ 
+            /* In split mode test for lower or upper half */
             if (split) upper = mode & ADC_UPPER;
         } else {
             if (mode & AC_SPLIT) split = 1;
-            /* In split mode test for lower or upper half */ 
+            /* In split mode test for lower or upper half */
             if (split) upper = mode & AC_UPPER;
         }
     }
@@ -1856,7 +1856,7 @@ int frequency(Scan *s, double f[])
                     printf("newadc: adc[%d] LO[%d] %3d:%3d %10.3f %6.3f\n",
                            adc, adc/2, m, m+k, LO[adc/2], df/MHZ);
                     */
-                    for (j = 0; j < k; j++) 
+                    for (j = 0; j < k; j++)
                         f[m+j] = LO[adc/2] + (double)j*df;
                     m += k;
                 }
@@ -1870,23 +1870,23 @@ int frequency(Scan *s, double f[])
               case AC_YHIRES:
                 df = MHZ/8.0;
                 if (split) return 0; /* not possible in XHIRES mode       */
-                for (j = 0; j < n; j++) 
+                for (j = 0; j < n; j++)
                     f[j] = LO[0] + (double)j*df;
                 break;
               case AC_HIRES:
                 df = MHZ/4.0;
                 if (split) {
                     if (upper) {
-                        for (j = 0; j < n; j++) 
+                        for (j = 0; j < n; j++)
                             f[j] = LO[1] - (double)(n-1-j)*df;
                     } else {
-                        for (j = 0; j < n; j++) 
+                        for (j = 0; j < n; j++)
                             f[j] = LO[0] + (double)j*df;
                     }
                 } else {
-                    for (j = 0; j < n/2; j++) 
+                    for (j = 0; j < n/2; j++)
                         f[j    ] = LO[0] + (double)j*df;
-                    for (j = 0; j < n/2; j++) 
+                    for (j = 0; j < n/2; j++)
                         f[j+n/2] = LO[1] - (double)(n/2-1-j)*df;
                 }
                 break;
@@ -1894,24 +1894,24 @@ int frequency(Scan *s, double f[])
                 df = MHZ/2.0;
                 if (split) {
                     if (upper) {
-                        for (j = 0; j < n/2; j++) 
+                        for (j = 0; j < n/2; j++)
                             f[j    ] = LO[3] - (double)(n/2-1-j)*df;
-                        for (j = 0; j < n/2; j++) 
+                        for (j = 0; j < n/2; j++)
                             f[j+n/2] = LO[2] + (double)j*df;
                     } else {
-                        for (j = 0; j < n/2; j++) 
+                        for (j = 0; j < n/2; j++)
                             f[j    ] = LO[1] - (double)(n/2-1-j)*df;
-                        for (j = 0; j < n/2; j++) 
+                        for (j = 0; j < n/2; j++)
                             f[j+n/2] = LO[0] + (double)j*df;
                     }
                 } else {
-                    for (j = 0; j < n/4; j++) 
+                    for (j = 0; j < n/4; j++)
                         f[j+0*n/4] = LO[1] - (double)(n/4-1-j)*df;
-                    for (j = 0; j < n/4; j++) 
+                    for (j = 0; j < n/4; j++)
                         f[j+1*n/4] = LO[0] + (double)j*df;
-                    for (j = 0; j < n/4; j++) 
+                    for (j = 0; j < n/4; j++)
                         f[j+2*n/4] = LO[3] - (double)(n/4-1-j)*df;
-                    for (j = 0; j < n/4; j++) 
+                    for (j = 0; j < n/4; j++)
                         f[j+3*n/4] = LO[2] + (double)j*df;
                 }
                 break;
@@ -1919,40 +1919,40 @@ int frequency(Scan *s, double f[])
                 df = MHZ;
                 if (split) {
                     if (upper) {
-                        for (j = 0; j < n/4; j++) 
+                        for (j = 0; j < n/4; j++)
                             f[j+0*n/4] = LO[2] - (double)(n/4-1-j)*df;
-                        for (j = 0; j < n/4; j++) 
+                        for (j = 0; j < n/4; j++)
                             f[j+1*n/4] = LO[2] + (double)j*df;
-                        for (j = 0; j < n/4; j++) 
+                        for (j = 0; j < n/4; j++)
                             f[j+2*n/4] = LO[3] - (double)(n/4-1-j)*df;
-                        for (j = 0; j < n/4; j++) 
+                        for (j = 0; j < n/4; j++)
                             f[j+3*n/4] = LO[3] + (double)j*df;
                     } else {
-                        for (j = 0; j < n/4; j++) 
+                        for (j = 0; j < n/4; j++)
                             f[j+0*n/4] = LO[0] - (double)(n/4-1-j)*df;
-                        for (j = 0; j < n/4; j++) 
+                        for (j = 0; j < n/4; j++)
                             f[j+1*n/4] = LO[0] + (double)j*df;
-                        for (j = 0; j < n/4; j++) 
+                        for (j = 0; j < n/4; j++)
                             f[j+2*n/4] = LO[1] - (double)(n/4-1-j)*df;
-                        for (j = 0; j < n/4; j++) 
+                        for (j = 0; j < n/4; j++)
                             f[j+3*n/4] = LO[1] + (double)j*df;
                     }
                 } else {
-                    for (j = 0; j < n/8; j++) 
+                    for (j = 0; j < n/8; j++)
                         f[j+0*n/8] = LO[0] - (double)(n/8-1-j)*df;
-                    for (j = 0; j < n/8; j++) 
+                    for (j = 0; j < n/8; j++)
                         f[j+1*n/8] = LO[0] + (double)j*df;
-                    for (j = 0; j < n/8; j++) 
+                    for (j = 0; j < n/8; j++)
                         f[j+2*n/8] = LO[1] - (double)(n/8-1-j)*df;
-                    for (j = 0; j < n/8; j++) 
+                    for (j = 0; j < n/8; j++)
                         f[j+3*n/8] = LO[1] + (double)j*df;
-                    for (j = 0; j < n/8; j++) 
+                    for (j = 0; j < n/8; j++)
                         f[j+4*n/8] = LO[2] - (double)(n/8-1-j)*df;
-                    for (j = 0; j < n/8; j++) 
+                    for (j = 0; j < n/8; j++)
                         f[j+5*n/8] = LO[2] + (double)j*df;
-                    for (j = 0; j < n/8; j++) 
+                    for (j = 0; j < n/8; j++)
                         f[j+6*n/8] = LO[3] - (double)(n/8-1-j)*df;
-                    for (j = 0; j < n/8; j++) 
+                    for (j = 0; j < n/8; j++)
                         f[j+7*n/8] = LO[3] + (double)j*df;
                 }
                 break;
@@ -2089,11 +2089,11 @@ SEXP OdinData(Scan *s)
 SEXP OdinFreq(Scan *s)
 {
     int nchan = s->Channels;
-    
+
     SEXP freq = PROTECT(allocVector(REALSXP, nchan));
     double *f = REAL(freq);
     int n = frequency(s, f);
-    
+
     if (s->SkyFreq >= s->LOFreq) {
 	for (int k = 0; k < n; k++) f[k] = (s->LOFreq + f[k])/MHZ;
     } else {
@@ -2109,13 +2109,16 @@ SEXP OdinFreq(Scan *s)
 //'
 //' Take a file name of a singular Odin scan in binary format and return a spectrum
 //' (i.e. a list consisting of header, frequency and data vectors).
-//' @param filenam file name) including path of the binary file to read
+//' @param filename file name including path of the binary file to read
 //' @return a list with components head, freq and data
 //' @examples
-//' filename = "AOS.278372EA.AVE"
-//' s <- getOdinSpectrum(filename)
-//' print(s$head)      # print spectrum header
-//' plot(s)            # plot the spectrum
+//' \dontrun{
+//' filenames = system("ls datadir/*.SPE", intern=TRUE)
+//' L <- lapply(filenames, getOdinSpectrum)
+//' class(L) <- "spectra"
+//' H <- getHead(L)
+//' print(H)
+//' }
 // [[Rcpp::export]]
 SEXP getOdinSpectrum(SEXP filename)
 {

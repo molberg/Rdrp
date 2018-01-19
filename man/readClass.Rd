@@ -35,4 +35,3 @@ H <- H[which(H$target == "RDor" & H$line == "CO (6-5)"),]
 L = readClass(filename, H)   # return only RDor CO (6-5) spectra
 }
 }
-

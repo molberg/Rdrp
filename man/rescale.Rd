@@ -19,4 +19,3 @@ the rescaled spectrum, out = in * factor + bias
 \description{
 Add bias and/or scale by factor.
 }
-

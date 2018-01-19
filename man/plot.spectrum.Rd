@@ -23,4 +23,3 @@ Plot a single spectrum.
 plot(S, type='s')   # use 'histo' mode to plot spectrum
 }
 }
-

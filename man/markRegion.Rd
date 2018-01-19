@@ -23,4 +23,3 @@ being the x-coordinates of all the clicked points.
 \seealso{
 \code{\link{mask}}
 }
-

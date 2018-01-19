@@ -19,4 +19,3 @@ For a given set of frequency (or velocity) windows, construct a
 matrix of logical values, defining the areas which should not be used
 in baseline fitting.
 }
-

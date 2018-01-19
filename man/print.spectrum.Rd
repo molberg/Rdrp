@@ -14,4 +14,3 @@
 \description{
 Simply print the header part of the spectrum.
 }
-

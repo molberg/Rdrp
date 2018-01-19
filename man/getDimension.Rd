@@ -15,4 +15,3 @@ a two component integer vector (nChannels, nSpectra)
 \description{
 From a list of spectra, get the dimensions of the data.
 }
-

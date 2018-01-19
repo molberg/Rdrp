@@ -19,4 +19,3 @@ the folded spectrum
 \description{
 Fold a frequency switched spectrum
 }
-

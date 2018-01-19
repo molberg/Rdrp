@@ -16,4 +16,3 @@ the reversed spectrum
 Reverse the order of the channels, i.e. turn both the frequency and data
 vector around.
 }
-

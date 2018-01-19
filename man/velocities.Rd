@@ -18,4 +18,3 @@ Turn the frequency vector into a velocity vector.
 \seealso{
 \code{\link{frequencies}}
 }
-

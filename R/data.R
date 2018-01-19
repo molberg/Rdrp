@@ -5,4 +5,5 @@
 #' @format A list with 29 elements, each of class "spectrum"
 #' @docType data
 #' @name salsa
-"salsa"
+#' @keywords data
+NULL

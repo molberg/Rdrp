@@ -23,4 +23,3 @@ image(D)             # show data matrix as color image
 \seealso{
 \code{\link{getFreq}}, \code{\link{getVelo}}
 }
-

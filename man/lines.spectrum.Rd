@@ -24,4 +24,3 @@ plot(S1, type='s')   # use 'histo' mode to plot spectrum
 lines(S2, type='s')  # draw second spectrum on top
 }
 }
-

@@ -14,4 +14,3 @@
 \description{
 Simply print the header (data.frame) part of the spectra.
 }
-

@@ -5,11 +5,7 @@
 \alias{salsa}
 \title{Some 21cm spectra taken with the Onsala SALSA student telescope.}
 \format{A list with 29 elements, each of class "spectrum"}
-\usage{
-salsa
-}
 \description{
 Spectra at 1421 MHz towards various galactic longitudes.
 }
-\keyword{datasets}
-
+\keyword{data}

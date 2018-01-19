@@ -41,4 +41,3 @@ getHead(list(S1,S2))
 \seealso{
 \code{\link{modify}}
 }
-

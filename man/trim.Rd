@@ -18,4 +18,3 @@ the trimmed spectrum
 Given a single spectrum and a vector of channel numbers, trim the spectrum such that
 only the given channels are kept in the frequency and data vectors.
 }
-

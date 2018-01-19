@@ -19,4 +19,3 @@ the resampled spectrum
 \description{
 Perform resampling (cubic spline interpolation) on a single spectrum.
 }
-

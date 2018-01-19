@@ -22,4 +22,3 @@ A <- average(salsa)
 plot(salsa)                              # plot individual spectra
 lines(A$freq, A$data, lwd=5, col='red')  # draw average spectrum on top
 }
-

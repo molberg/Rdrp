@@ -31,4 +31,3 @@ do.call("rbind", lapply(salsa, moment, lmask))
 \seealso{
 \code{\link{area}}
 }
-

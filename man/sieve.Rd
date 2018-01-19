@@ -17,4 +17,3 @@ the filtered spectrum
 \description{
 Perform filtering on a single spectrum.
 }
-

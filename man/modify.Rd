@@ -16,4 +16,3 @@ modify(L, colname, value)
 \description{
 Supply new values for a column of the header
 }
-

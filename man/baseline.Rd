@@ -34,4 +34,3 @@ lines(A$freq, bl$fitted, col='red')    # draw baseline on top
 \seealso{
 \code{\link{mask}}
 }
-

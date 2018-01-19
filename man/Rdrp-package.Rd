@@ -69,4 +69,3 @@ plot(S, type='s', col='red')
 \author{
 Michael Olberg, \email{michael.olberg@chalmers.se}
 }
-

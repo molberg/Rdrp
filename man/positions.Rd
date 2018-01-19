@@ -18,4 +18,3 @@ Given two vectors lon and lat, which describe the longitudinal and
 latitudinal coordinates of individual spectra, produce a scatter plot
 taking into account projection effects.
 }
-

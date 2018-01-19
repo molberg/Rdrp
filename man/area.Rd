@@ -29,4 +29,3 @@ area(S, mask)                 # calculate integrated area in K*km/s
 # call 'area' for each of the spectra in 'salsa' with parameter 'mask'
 sapply(salsa, FUN=area, mask)
 }
-

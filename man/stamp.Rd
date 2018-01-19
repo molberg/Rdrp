@@ -14,4 +14,3 @@ Try to find a grid of rectangles large enough to hold all the
 spectra and as square like as possible, and "stamp" the individual
 spectra into the grid cells.
 }
-

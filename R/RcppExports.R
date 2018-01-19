@@ -262,13 +262,16 @@ mask <- function(S, limits) {
 #'
 #' Take a file name of a singular Odin scan in binary format and return a spectrum
 #' (i.e. a list consisting of header, frequency and data vectors).
-#' @param filenam file name) including path of the binary file to read
+#' @param filename file name including path of the binary file to read
 #' @return a list with components head, freq and data
 #' @examples
-#' filename = "AOS.278372EA.AVE"
-#' s <- getOdinSpectrum(filename)
-#' print(s$head)      # print spectrum header
-#' plot(s)            # plot the spectrum
+#' \dontrun{
+#' filenames = system("ls datadir/*.SPE", intern=TRUE)
+#' L <- lapply(filenames, getOdinSpectrum)
+#' class(L) <- "spectra"
+#' H <- getHead(L)
+#' print(H)
+#' }
 getOdinSpectrum <- function(filename) {
     .Call('_Rdrp_getOdinSpectrum', PACKAGE = 'Rdrp', filename)
 }

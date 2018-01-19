@@ -19,4 +19,3 @@ drapply(L, FUN, ..., simplify = TRUE)
 Given a dataset of class 'spectra' and a function, apply this
 function to each of the spectra contained in the dataset.
 }
-

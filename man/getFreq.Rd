@@ -18,4 +18,3 @@ From a list of spectra, get the frequency vectors and return as matrix.
 \seealso{
 \code{\link{getVelo}}
 }
-

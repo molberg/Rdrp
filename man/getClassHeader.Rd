@@ -23,4 +23,3 @@ H <- getClassHeader(filename)
 print(H)           # print the resulting data frame
 print(summary(H))  # print a summary
 }
-
