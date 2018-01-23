@@ -2124,7 +2124,7 @@ SEXP OdinFreq(Scan *s)
 //' @return a list with components head, freq and data
 //' @examples
 //' \dontrun{
-//' filenames = system("ls datadir/*.SPE", intern=TRUE)
+//' filenames <- list.files(datadir, patter="SPE")
 //' L <- lapply(filenames, getOdinSpectrum)
 //' class(L) <- "spectra"
 //' H <- getHead(L)

@@ -18,7 +18,7 @@ Take a file name of a singular Odin scan in binary format and return a spectrum
 }
 \examples{
 \dontrun{
-filenames = system("ls datadir/*.SPE", intern=TRUE)
+filenames <- list.files(datadir, patter="SPE")
 L <- lapply(filenames, getOdinSpectrum)
 class(L) <- "spectra"
 H <- getHead(L)
