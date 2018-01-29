@@ -1,7 +1,7 @@
 Package: Rdrp
 Type: Package
 Title: R based data reduction package
-Version: 0.9.5
+Version: 0.9.6
 Date: 2017-09-07
 Author: Michael Olberg
 Maintainer: Michael Olberg <michael.olberg@chalmers.se>

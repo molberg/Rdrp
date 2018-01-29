@@ -227,6 +227,17 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// getHead
+SEXP getHead(SEXP L);
+RcppExport SEXP _Rdrp_getHead(SEXP LSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type L(LSEXP);
+    rcpp_result_gen = Rcpp::wrap(getHead(L));
+    return rcpp_result_gen;
+END_RCPP
+}
 // getOdinSpectrum
 SEXP getOdinSpectrum(SEXP filename);
 RcppExport SEXP _Rdrp_getOdinSpectrum(SEXP filenameSEXP) {
@@ -259,6 +270,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_Rdrp_resample", (DL_FUNC) &_Rdrp_resample, 3},
     {"_Rdrp_rescale", (DL_FUNC) &_Rdrp_rescale, 3},
     {"_Rdrp_mask", (DL_FUNC) &_Rdrp_mask, 2},
+    {"_Rdrp_getHead", (DL_FUNC) &_Rdrp_getHead, 1},
     {"_Rdrp_getOdinSpectrum", (DL_FUNC) &_Rdrp_getOdinSpectrum, 1},
     {NULL, NULL, 0}
 };

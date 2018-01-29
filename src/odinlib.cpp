@@ -753,7 +753,268 @@ int getband(Scan *s, int n, int dsb)
     }
     return 0;
 }
+static void adjust(float d[], double f[], double df,
+                   int b1, int b2, int n, int nbands)
+{
+    int j, k, m, i, i1, i2, order, nmin = 20;
+    float bias;
+    double f1min, f2min, f1max, f2max;
+    static double X, Y, S, SX, SY, SXX, SXY, c1[2], c2[2], D;
 
+    m = n/nbands;
+
+    /* force band b1 (bad) to line up with band b2 (good) */
+    f1min = f[b1*m];
+    f1max = f[(b1+1)*m-1];
+    f2min = f[b2*m];
+    f2max = f[(b2+1)*m-1];
+
+    /* printf("band %d from %f to %f\n", b1, f1min, f1max); */
+    /* printf("band %d from %f to %f\n", b2, f2min, f2max); */
+
+    order = 2;
+
+    if ((f1min >= f2min) && (f1min <= f2max)) {
+        n = (int)((f2max-f1min)/df);
+        if (n < nmin) n = nmin;
+        for (j = 0; j < order; j++) {
+            c1[j] = 0.0;
+        }
+        S = SX = SY = SXX = SXY = 0.0;
+        for (k = 0; k < n; k++) {
+            i1 = b1*m+k;
+            X = (f[i1]-f2max)/MHZ;
+            Y = (double)d[i1];
+            S += 1.0;
+            SX += X;
+            SY += Y;
+            SXX += X*X;
+            SXY += X*Y;
+        }
+
+        D = S*SXX-SX*SX;
+        c1[0] = (SXX*SY-SX*SXY)/D;
+        c1[1] = (S*SXY-SX*SY)/D;
+        /* printf("coeff(1) = %f %f\n", c1[0], c1[1]); */
+
+        for (j = 0; j < order; j++) {
+            c2[j] = 0.0;
+        }
+        S = SX = SY = SXX = SXY = 0.0;
+        for (k = 0; k < n; k++) {
+            i2 = (b2+1)*m-n+k;
+            X = (f[i2]-f2max)/MHZ;
+            Y = (double)d[i2];
+            S += 1.0;
+            SX += X;
+            SY += Y;
+            SXX += X*X;
+            SXY += X*Y;
+        }
+
+        D = S*SXX-SX*SX;
+        c2[0] = (SXX*SY-SX*SXY)/D;
+        c2[1] = (S*SXY-SX*SY)/D;
+        /* printf("coeff(2) = %f %f\n", c2[0], c2[1]); */
+
+        bias = 0.0;
+        for (k = 0; k < n; k++) {
+            i1 = b1*m+k;
+            X = (f[i1]-f2max)/MHZ;
+            bias += c1[0]-c2[0]+(c1[1]-c2[1])*X;
+        }
+        bias /= (float)n;
+        printf("adjust: overlap of band %d and %d: %d channels (%f)\n",
+               b1, b2, n, bias);
+        for (i = b1*m; i < (b1+1)*m; i++) d[i] -= bias;
+    } else if ((f1max >= f2min) && (f1max <= f2max)) {
+        n = (int)((f1max-f2min)/df);
+        if (n < nmin) n = nmin;
+        for (j = 0; j < order; j++) {
+            c1[j] = 0.0;
+        }
+        S = SX = SY = SXX = SXY = 0.0;
+        for (k = 0; k < n; k++) {
+            i1 = (b1+1)*m-n+k;
+            X = (f[i1]-f2min)/MHZ;
+            Y = (double)d[i1];
+            S += 1.0;
+            SX += X;
+            SY += Y;
+            SXX += X*X;
+            SXY += X*Y;
+        }
+
+        D = S*SXX-SX*SX;
+        c1[0] = (SXX*SY-SX*SXY)/D;
+        c1[1] = (S*SXY-SX*SY)/D;
+        /* printf("coeff(1) = %f %f\n", c1[0], c1[1]); */
+
+        for (j = 0; j < order; j++) {
+            c2[j] = 0.0;
+        }
+        S = SX = SY = SXX = SXY = 0.0;
+        for (k = 0; k < n; k++) {
+            i2 = b2*m+k;
+            X = (f[i2]-f2min)/MHZ;
+            Y = (double)d[i2];
+            S += 1.0;
+            SX += X;
+            SY += Y;
+            SXX += X*X;
+            SXY += X*Y;
+        }
+
+        D = S*SXX-SX*SX;
+        c2[0] = (SXX*SY-SX*SXY)/D;
+        c2[1] = (S*SXY-SX*SY)/D;
+
+        bias = 0.0;
+        for (k = 0; k < n; k++) {
+            i1 = (b1+1)*m-n+k;
+            X = (f[i1]-f2min)/MHZ;
+            bias += c1[0]-c2[0]+(c1[1]-c2[1])*X;
+        }
+        bias /= (float)n;
+        printf("adjust: overlap of band %d and %d: %d channels (%f)\n", b1, b2, n, bias);
+        for (i = b1*m; i < (b1+1)*m; i++) d[i] -= bias;
+    }
+}
+
+int fixband(Scan *s, double f[])
+{
+    int m;
+    int mode, nbands;
+    double df;
+
+    /* We only deal with correlator spectra here. */
+    if (s->Backend != AC1 && s->Backend != AC2) {
+        warning("can't fix bands for backend %s", Backend(s));
+        return 0;
+    }
+
+    /* Skip spectra which are already frequency sorted. */
+    if (s->Quality & ISORTED) {
+        warning("can't fix bands for frequency sorted data");
+        return 0;
+    }
+
+    /* Only accept spectra before splitting */
+    if (s->IntMode & AC_SPLIT) {
+        warning("can't fix bands after splitting");
+        return 0;
+    }
+
+    /* Determine number of bands for spectrometer mode. */
+    mode = (s->IntMode & 0x000f);
+    switch (mode) {
+      case AC_XHIRES:
+      case AC_YHIRES:
+        nbands = 1;
+        break;
+      case AC_HIRES:
+        nbands = 2;
+        break;
+      case AC_MEDRES:
+        nbands = 4;
+        break;
+      case AC_LOWRES:
+        nbands = 8;
+        break;
+    }
+
+    /* For 8 band mode we treat two sidebands as one large band. */
+    if (nbands == 8) nbands /= 2;
+
+    m = s->Channels/nbands;
+    frequency(s, f);
+    df = fabs(s->FreqRes);
+    if (mode == AC_MEDRES) {
+        adjust(s->data, f, df, 1, 0, s->Channels, nbands);
+        adjust(s->data, f, df, 3, 2, s->Channels, nbands);
+        adjust(s->data, f, df, 0, 1, s->Channels, nbands/2);
+    } else {
+        adjust(s->data, f, df, 0, 1, s->Channels, nbands);
+        adjust(s->data, f, df, 3, 2, s->Channels, nbands);
+        adjust(s->data, f, df, 3, 0, s->Channels, nbands);
+    }
+
+    s->Quality |= WBANDADJUST;
+    return 1;
+}
+
+#endif
+
+#define LIGHTSPEED 2.997924562e8
+
+#define RFCENTER  3900.0e6   /* IF band center in Hz */
+#define AOSCENTER 2100.0e6   /* IF band center for AOS in Hz */
+#define AC1CENTER 3900.0e6   /* IF band center for AC1 in Hz */
+#define AC2CENTER 3900.0e6   /* IF band center for AC2 in Hz */
+
+/*
+ * A vector big enough to hold channel values for one spectrum.
+ * It will be used by routines below this point.
+ */
+static float u[MAXCHANNELS];
+static float data[MAXCHANNELS];
+static double F[MAXCHANNELS];
+
+/*
+ * Resample a spectrum onto a new grid of frequencies.
+ * May be used to transform an AOS spectrum to a linear frequency scale.
+ */
+void redres(Scan *s, double *f, double df)
+{
+    int i, k, n;
+    float p, q, sig, a, b, h, rf;
+
+    n = s->Channels;
+    int cc = (n-1)/2;
+    data[0] = u[0] = 0.0;
+
+    if (!freqsort(s, f)) {
+        warning("can't sort frequencies");
+        return;
+    }
+    for (i = 1; i <= n-2; i++) {
+        sig = (f[i]-f[i-1])/(f[i+1]-f[i-1]);
+        p = sig*data[i-1]+2.0;
+        data[i] = (sig-1.0)/p;
+        u[i] = (s->data[i+1]-s->data[i])/(f[i+1]-f[i])
+            - (s->data[i]-s->data[i-1])/(f[i]-f[i-1]);
+        u[i] = (6.0*u[i]/(f[i+1]-f[i-1])-sig*u[i-1])/p;
+    }
+
+    data[n-1] = 0.0;
+
+    for (i = n-2; i >= 0; i--) data[i] = data[i]*data[i+1]+u[i];
+
+    for (i = 0; i < n; i++) u[i] = s->data[i];
+
+    rf = f[cc];
+    k = 0;
+    for (i = 0; i < n; i++) {
+        p = rf + (i - cc)*df;
+        if ((p < f[0]) || (p > f[n-1])) {
+            s->data[i] = 0.0;
+            continue;
+        }
+        q = f[k];
+        while (p > f[k+1]) k++;
+
+        h = f[k+1] - f[k];
+        a = (f[k+1] - p)/h;
+        b = (p - f[k])/h;
+        s->data[i] = a*u[k]+b*u[k+1]
+            + ((a*a*a-a)*data[k] + (b*b*b-b)*data[k+1])*(h*h)/6.0;
+    }
+    s->FreqRes = s->FreqCal[1] = df;
+    if (s->SkyFreq < s->LOFreq) s->FreqRes = -df;
+
+    s->FreqCal[2] = s->FreqCal[3] = 0.0;
+    s->Quality |= ILINEAR;
+}
 
 /*
  * this routine will sort frequencies for a spectrum, possibly dropping
@@ -1014,7 +1275,7 @@ int drop(Scan *s, double *f)
     }
 
     s->Channels = n;
-    s->FreqCal[0] = f[0] + df*CenterCh(s);
+    s->FreqCal[0] = f[0] + df*((n-1)/2);
     s->FreqCal[1] = df;
     s->FreqCal[2] = 0.0;
     s->FreqCal[3] = 0.0;
@@ -1047,8 +1308,6 @@ static struct Xaxis {
     double freq;
 } xaxis[MAXCHANNELS];
 
-static float data[MAXCHANNELS];
-
 // int freqcmp(const struct Xaxis *one, const struct Xaxis *two)
 int freqcmp(const void *x1, const void *x2)
 {
@@ -1077,7 +1336,7 @@ int freqcmp(const void *x1, const void *x2)
  * The function will return the (probably new) number of channels
  * or 0 in case of an error.
  */
-int freqsort(Scan *s, double *f)
+int freqsort(Scan *s, double f[])
 {
     int adc, m, n, i, j, k, *seq;
     int backend, mode, split = 0, upper = 0;
@@ -1271,7 +1530,7 @@ int freqsort(Scan *s, double *f)
     for (i = 0; i < m; i++) s->data[i] = data[i];
 
     s->Channels = m;
-    s->FreqCal[0] = fmin + df*CenterCh(s);
+    s->FreqCal[0] = fmin + df*((m-1)/2);
     s->FreqCal[1] = df;
     s->FreqCal[2] = 0.0;
     s->FreqCal[3] = 0.0;
@@ -1283,258 +1542,6 @@ int freqsort(Scan *s, double *f)
     s->Quality |= ILINEAR;
     return m;
 }
-
-/*
- * A vector big enough to hold channel values for one spectrum.
- * It will be used by routines below this point.
- */
-static float u[MAXCHANNELS];
-
-/*
- * Resample a spectrum onto a new grid of frequencies.
- * May be used to transform an AOS spectrum to a linear frequency scale.
- */
-void redres(Scan *s, double *f, double df)
-{
-    int i, k, n;
-    float p, q, sig, a, b, h, rf;
-
-    n = Channels(s);
-    data[0] = u[0] = 0.0;
-
-    if (!freqsort(s, f)) {
-        warning("can't sort frequencies");
-        return;
-    }
-    for (i = 1; i <= n-2; i++) {
-        sig = (f[i]-f[i-1])/(f[i+1]-f[i-1]);
-        p = sig*data[i-1]+2.0;
-        data[i] = (sig-1.0)/p;
-        u[i] = (s->data[i+1]-s->data[i])/(f[i+1]-f[i])
-            - (s->data[i]-s->data[i-1])/(f[i]-f[i-1]);
-        u[i] = (6.0*u[i]/(f[i+1]-f[i-1])-sig*u[i-1])/p;
-    }
-
-    data[n-1] = 0.0;
-
-    for (i = n-2; i >= 0; i--) data[i] = data[i]*data[i+1]+u[i];
-
-    for (i = 0; i < n; i++) u[i] = s->data[i];
-
-    rf = f[CenterCh(s)];
-    k = 0;
-    for (i = 0; i < n; i++) {
-        p = rf + (i - CenterCh(s))*df;
-        if ((p < f[0]) || (p > f[n-1])) {
-            s->data[i] = 0.0;
-            continue;
-        }
-        q = f[k];
-        while (p > f[k+1]) k++;
-
-        h = f[k+1] - f[k];
-        a = (f[k+1] - p)/h;
-        b = (p - f[k])/h;
-        s->data[i] = a*u[k]+b*u[k+1]
-            + ((a*a*a-a)*data[k] + (b*b*b-b)*data[k+1])*(h*h)/6.0;
-    }
-    s->FreqRes = s->FreqCal[1] = df;
-    if (s->SkyFreq < s->LOFreq) s->FreqRes = -df;
-
-    s->FreqCal[2] = s->FreqCal[3] = 0.0;
-    s->Quality |= ILINEAR;
-}
-
-static void adjust(float d[], double f[], double df,
-                   int b1, int b2, int n, int nbands)
-{
-    int j, k, m, i, i1, i2, order, nmin = 20;
-    float bias;
-    double f1min, f2min, f1max, f2max;
-    static double X, Y, S, SX, SY, SXX, SXY, c1[2], c2[2], D;
-
-    m = n/nbands;
-
-    /* force band b1 (bad) to line up with band b2 (good) */
-    f1min = f[b1*m];
-    f1max = f[(b1+1)*m-1];
-    f2min = f[b2*m];
-    f2max = f[(b2+1)*m-1];
-
-    /* printf("band %d from %f to %f\n", b1, f1min, f1max); */
-    /* printf("band %d from %f to %f\n", b2, f2min, f2max); */
-
-    order = 2;
-
-    if ((f1min >= f2min) && (f1min <= f2max)) {
-        n = (int)((f2max-f1min)/df);
-        if (n < nmin) n = nmin;
-        for (j = 0; j < order; j++) {
-            c1[j] = 0.0;
-        }
-        S = SX = SY = SXX = SXY = 0.0;
-        for (k = 0; k < n; k++) {
-            i1 = b1*m+k;
-            X = (f[i1]-f2max)/MHZ;
-            Y = (double)d[i1];
-            S += 1.0;
-            SX += X;
-            SY += Y;
-            SXX += X*X;
-            SXY += X*Y;
-        }
-
-        D = S*SXX-SX*SX;
-        c1[0] = (SXX*SY-SX*SXY)/D;
-        c1[1] = (S*SXY-SX*SY)/D;
-        /* printf("coeff(1) = %f %f\n", c1[0], c1[1]); */
-
-        for (j = 0; j < order; j++) {
-            c2[j] = 0.0;
-        }
-        S = SX = SY = SXX = SXY = 0.0;
-        for (k = 0; k < n; k++) {
-            i2 = (b2+1)*m-n+k;
-            X = (f[i2]-f2max)/MHZ;
-            Y = (double)d[i2];
-            S += 1.0;
-            SX += X;
-            SY += Y;
-            SXX += X*X;
-            SXY += X*Y;
-        }
-
-        D = S*SXX-SX*SX;
-        c2[0] = (SXX*SY-SX*SXY)/D;
-        c2[1] = (S*SXY-SX*SY)/D;
-        /* printf("coeff(2) = %f %f\n", c2[0], c2[1]); */
-
-        bias = 0.0;
-        for (k = 0; k < n; k++) {
-            i1 = b1*m+k;
-            X = (f[i1]-f2max)/MHZ;
-            bias += c1[0]-c2[0]+(c1[1]-c2[1])*X;
-        }
-        bias /= (float)n;
-        printf("adjust: overlap of band %d and %d: %d channels (%f)\n",
-               b1, b2, n, bias);
-        for (i = b1*m; i < (b1+1)*m; i++) d[i] -= bias;
-    } else if ((f1max >= f2min) && (f1max <= f2max)) {
-        n = (int)((f1max-f2min)/df);
-        if (n < nmin) n = nmin;
-        for (j = 0; j < order; j++) {
-            c1[j] = 0.0;
-        }
-        S = SX = SY = SXX = SXY = 0.0;
-        for (k = 0; k < n; k++) {
-            i1 = (b1+1)*m-n+k;
-            X = (f[i1]-f2min)/MHZ;
-            Y = (double)d[i1];
-            S += 1.0;
-            SX += X;
-            SY += Y;
-            SXX += X*X;
-            SXY += X*Y;
-        }
-
-        D = S*SXX-SX*SX;
-        c1[0] = (SXX*SY-SX*SXY)/D;
-        c1[1] = (S*SXY-SX*SY)/D;
-        /* printf("coeff(1) = %f %f\n", c1[0], c1[1]); */
-
-        for (j = 0; j < order; j++) {
-            c2[j] = 0.0;
-        }
-        S = SX = SY = SXX = SXY = 0.0;
-        for (k = 0; k < n; k++) {
-            i2 = b2*m+k;
-            X = (f[i2]-f2min)/MHZ;
-            Y = (double)d[i2];
-            S += 1.0;
-            SX += X;
-            SY += Y;
-            SXX += X*X;
-            SXY += X*Y;
-        }
-
-        D = S*SXX-SX*SX;
-        c2[0] = (SXX*SY-SX*SXY)/D;
-        c2[1] = (S*SXY-SX*SY)/D;
-
-        bias = 0.0;
-        for (k = 0; k < n; k++) {
-            i1 = (b1+1)*m-n+k;
-            X = (f[i1]-f2min)/MHZ;
-            bias += c1[0]-c2[0]+(c1[1]-c2[1])*X;
-        }
-        bias /= (float)n;
-        printf("adjust: overlap of band %d and %d: %d channels (%f)\n", b1, b2, n, bias);
-        for (i = b1*m; i < (b1+1)*m; i++) d[i] -= bias;
-    }
-}
-
-int fixband(Scan *s, double f[])
-{
-    int m;
-    int mode, nbands;
-    double df;
-
-    /* We only deal with correlator spectra here. */
-    if (s->Backend != AC1 && s->Backend != AC2) {
-        warning("can't fix bands for backend %s", Backend(s));
-        return 0;
-    }
-
-    /* Skip spectra which are already frequency sorted. */
-    if (s->Quality & ISORTED) {
-        warning("can't fix bands for frequency sorted data");
-        return 0;
-    }
-
-    /* Only accept spectra before splitting */
-    if (s->IntMode & AC_SPLIT) {
-        warning("can't fix bands after splitting");
-        return 0;
-    }
-
-    /* Determine number of bands for spectrometer mode. */
-    mode = (s->IntMode & 0x000f);
-    switch (mode) {
-      case AC_XHIRES:
-      case AC_YHIRES:
-        nbands = 1;
-        break;
-      case AC_HIRES:
-        nbands = 2;
-        break;
-      case AC_MEDRES:
-        nbands = 4;
-        break;
-      case AC_LOWRES:
-        nbands = 8;
-        break;
-    }
-
-    /* For 8 band mode we treat two sidebands as one large band. */
-    if (nbands == 8) nbands /= 2;
-
-    m = s->Channels/nbands;
-    frequency(s, f);
-    df = fabs(s->FreqRes);
-    if (mode == AC_MEDRES) {
-        adjust(s->data, f, df, 1, 0, s->Channels, nbands);
-        adjust(s->data, f, df, 3, 2, s->Channels, nbands);
-        adjust(s->data, f, df, 0, 1, s->Channels, nbands/2);
-    } else {
-        adjust(s->data, f, df, 0, 1, s->Channels, nbands);
-        adjust(s->data, f, df, 3, 2, s->Channels, nbands);
-        adjust(s->data, f, df, 3, 0, s->Channels, nbands);
-    }
-
-    s->Quality |= WBANDADJUST;
-    return 1;
-}
-#endif
 
 int readODINscan(const char *name, Scan *s)
 {
@@ -1778,12 +1785,6 @@ int *GetACSequence(int mode)
  * for all channels present in the spectrum. The return value of the function
  * will be the number of channels in the spectrum, or 0 in case of an error.
  */
-
-#define RFCENTER  3900.0e6   /* IF band center in Hz */
-#define AOSCENTER 2100.0e6   /* IF band center for AOS in Hz */
-#define AC1CENTER 3900.0e6   /* IF band center for AC1 in Hz */
-#define AC2CENTER 3900.0e6   /* IF band center for AC2 in Hz */
-
 int frequency(Scan *s, double f[])
 {
     int i, j, k, m, n, mode, backend, *seq, adc;
@@ -1999,7 +2000,7 @@ void makePOSIXct(SEXP &t);
 
 SEXP OdinHead(Scan *s)
 {
-    static const char *frontends[] = {"495","549","555","572","119","SPLIT"};
+    static const char *frontends[] = {"555","495","572","549","119","SPLIT"};
     static const char *backends[] = {"AC1","AC2","AOS"};
 
     SEXP head = PROTECT(allocVector(VECSXP, 17));
@@ -2046,8 +2047,8 @@ SEXP OdinHead(Scan *s)
 
     INTEGER(id)[0] = s->STW;
     INTEGER(scanno)[0] = 1;
-    if (s->Frontend >= 1 && s->Frontend <= 6) SET_STRING_ELT(frontend, 0, mkChar(frontends[s->Frontend]));
-    if (s->Backend  >= 1 && s->Backend  <= 3) SET_STRING_ELT(backend, 0, mkChar(frontends[s->Backend]));
+    if (s->Frontend >= 1 && s->Frontend <= 6) SET_STRING_ELT(frontend, 0, mkChar(frontends[s->Frontend-1]));
+    if (s->Backend  >= 1 && s->Backend  <= 3) SET_STRING_ELT(backend, 0, mkChar(backends[s->Backend-1]));
     SET_STRING_ELT(target, 0, mkChar(s->Source));
     SET_STRING_ELT(line, 0, mkChar("unknown"));
     REAL(RA)[0] = s->RA2000;

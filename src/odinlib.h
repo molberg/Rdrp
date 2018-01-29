@@ -231,6 +231,8 @@ int getband(Scan *s, int n, int dsb);
 */    
 int frequency(Scan *s, double f[]);
 
+int *GetACSequence(int mode);
+
 /** Drop channels.
     This routine will turn a correlator spectrum into one contiguous band,
     dropping overlapping frequencies and possibly filling in dummy values
