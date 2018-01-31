@@ -127,7 +127,6 @@ SEXP emptyFrame(int nspec)
     SEXP tsys = PROTECT(allocVector(REALSXP, nspec));      // 11
     SEXP utc = PROTECT(allocVector(REALSXP, nspec));        // 12
     makePOSIXct(utc);
-    Rf_setAttrib(frame, R_RowNamesSymbol, id);
 
     SET_VECTOR_ELT(frame, 0, id);
     SET_VECTOR_ELT(frame, 1, scanno);
@@ -143,8 +142,13 @@ SEXP emptyFrame(int nspec)
     SET_VECTOR_ELT(frame,11, tsys);
     SET_VECTOR_ELT(frame,12, utc);
     UNPROTECT(13); // id, scanno, target, line, RA, Dec, fLO, f0, df, vs, dt, tsys, utc
+
+    SEXP rnms = PROTECT(Rf_allocVector(INTSXP, 2));
+    INTEGER(rnms)[0] = NA_INTEGER;
+    INTEGER(rnms)[1] = -nspec;
     Rf_setAttrib(frame, R_ClassSymbol, Rf_mkString("data.frame"));
-    UNPROTECT(1);  // frame
+    Rf_setAttrib(frame, R_RowNamesSymbol, rnms);
+    UNPROTECT(2);  // rnms, frame
 
     return frame;
 }
