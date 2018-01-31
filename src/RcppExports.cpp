@@ -227,6 +227,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// getHeaderColumn
+SEXP getHeaderColumn(SEXP L, SEXP index);
+RcppExport SEXP _Rdrp_getHeaderColumn(SEXP LSEXP, SEXP indexSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type L(LSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type index(indexSEXP);
+    rcpp_result_gen = Rcpp::wrap(getHeaderColumn(L, index));
+    return rcpp_result_gen;
+END_RCPP
+}
 // getHead
 SEXP getHead(SEXP L);
 RcppExport SEXP _Rdrp_getHead(SEXP LSEXP) {
@@ -270,6 +282,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_Rdrp_resample", (DL_FUNC) &_Rdrp_resample, 3},
     {"_Rdrp_rescale", (DL_FUNC) &_Rdrp_rescale, 3},
     {"_Rdrp_mask", (DL_FUNC) &_Rdrp_mask, 2},
+    {"_Rdrp_getHeaderColumn", (DL_FUNC) &_Rdrp_getHeaderColumn, 2},
     {"_Rdrp_getHead", (DL_FUNC) &_Rdrp_getHead, 1},
     {"_Rdrp_getOdinSpectrum", (DL_FUNC) &_Rdrp_getOdinSpectrum, 1},
     {NULL, NULL, 0}
