@@ -109,7 +109,7 @@ void makePOSIXct(SEXP &t)
 
     SEXP tz = PROTECT(allocVector(STRSXP, 1));
     SET_STRING_ELT(tz, 0, mkChar("UTC"));
-    setAttrib(t, Rf_install("tzone"), tz);
+    Rf_setAttrib(t, Rf_install("tzone"), tz);
     UNPROTECT(1); // tz
 }
 
@@ -180,7 +180,7 @@ SEXP makeSpectrum(SEXP head, SEXP freq, SEXP data)
     namesgets(S, nam);
     UNPROTECT(1); // nam
 
-    setAttrib(S, R_ClassSymbol, Rf_mkString("spectrum"));
+    Rf_setAttrib(S, R_ClassSymbol, Rf_mkString("spectrum"));
 
     SET_VECTOR_ELT(S, 0, head);
     SET_VECTOR_ELT(S, 1, freq);
@@ -363,7 +363,6 @@ SEXP readClass(SEXP filename, SEXP H = R_NilValue)
             __FUNCTION__, nrows, index[0], index[nrows-1]);
 #endif
     SEXP spectra = PROTECT(allocVector(VECSXP, nrows));
-    setAttrib(spectra, R_ClassSymbol, Rf_mkString("spectra"));
 
     for (int i = 0; i < nrows; i++) {
         SEXP S = PROTECT(reader->getSpectrum(index[i], false));
@@ -371,6 +370,7 @@ SEXP readClass(SEXP filename, SEXP H = R_NilValue)
         UNPROTECT(1); // S
     }
 
+    Rf_setAttrib(spectra, R_ClassSymbol, Rf_mkString("spectra"));
     UNPROTECT(1); // spectra
     UNPROTECT(1); // id
     delete reader;
