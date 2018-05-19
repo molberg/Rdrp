@@ -361,7 +361,7 @@ List foo(List S) {
     bool flag = useVelocity();
 
     // put code here
-    
+
     List S1 = List::create(Named("head") = head1, Named("freq") = freq1, Named("data") = data1);
     S1.attr("class") = "spectrum";
     return S1;
@@ -691,13 +691,14 @@ List resample(List S, NumericVector f, bool smooth=false) {
 
     df = fabs(freq0[1]-freq0[0]);
     DF = fabs(freq1[1]-freq1[0]);
-    if (DF < df) stop("can't resample to higher resolution");
+    if (DF < df) stop("can't resample to higher resolution: %f < %f", DF, df);
     df0 = (DF-df)/2.0;
     df1 = (DF+df)/2.0;
 
     if (smooth) {
         for (j = 0; j < nout; j++) {
             if ((freq1[j] < freq0[0]) || (freq1[j] > freq0[nc-1])) {
+                // Rprintf("channel %d outside frequency range: %f %f %f\n", j, freq1[j], freq0[0], freq0[nc-1]);
                 data1[j] = NA_REAL;
             } else {
                 sum = 0.0;
@@ -717,6 +718,7 @@ List resample(List S, NumericVector f, bool smooth=false) {
     } else {
         for (j = 0; j < nout; j++) {
             if ((freq1[j] < freq0[0]) || (freq1[j] > freq0[nc-1])) {
+                // Rprintf("channel %d outside frequency range: %f %f %f\n", j, freq1[j], freq0[0], freq0[nc-1]);
                 data1[j] = NA_REAL;
             } else {
                 sum = 0.0;
