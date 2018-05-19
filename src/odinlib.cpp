@@ -2061,7 +2061,7 @@ SEXP OdinHead(Scan *s)
     REAL(dt)[0] = s->IntTime;
     REAL(tsys)[0] = s->Tsys;
     REAL(orbit)[0] = s->Orbit;
-    REAL(utc)[0] = (s->MJD-40587.0)*86400.0;
+    REAL(utc)[0] = (s->MJD-40587.0)*86400.0; // 1970-01-01 00:00 is JD 2440587.5 = MJD 40587.0
 
     col = 0;
     SET_VECTOR_ELT(head, col, id);       col++;

@@ -37,9 +37,9 @@ int qcmp(const void *x, const void *y) {
 SEXP makeFactor(SEXP str)
 {
     SORT *sorted;
-    int i, level;
+    int i, j, level;
     int num;
-    const char *ptr;
+    const char *ptr, *lptr;
 
     num = Rf_length(str);
     sorted = (SORT *)malloc(num*sizeof(SORT));
@@ -62,14 +62,34 @@ SEXP makeFactor(SEXP str)
     SEXP factor = PROTECT(allocVector(INTSXP, num));
     SEXP unique = PROTECT(allocVector(STRSXP, level));
     level = 0;
-    INTEGER(factor)[0] = level+1;
     SET_STRING_ELT(unique, 0, mkChar(sorted[0].value));
+#ifdef DEBUG
+    Rprintf("level %2d <- %s\n", level+1, sorted[0].value);
+#endif
     for (i = 0; i < num-1; i++) {
         if (strcmp(sorted[i].value, sorted[i+1].value) != 0) {
             level++;
             SET_STRING_ELT(unique, level, mkChar(sorted[i+1].value));
+#ifdef DEBUG
+            Rprintf("level %2d <- %s\n", level+1, sorted[i+1].value);
+#endif
         }
-        INTEGER(factor)[i+1] = level+1;
+    }
+    level++;
+    for (i = 0; i < num; i++) {
+        ptr = CHAR(STRING_ELT(str, i));
+        INTEGER(factor)[i] = 0;
+        for (j = 0; j < level; j++) {
+            lptr = CHAR(STRING_ELT(unique, j));
+            if (strcmp(ptr, lptr) == 0) {
+                INTEGER(factor)[i] = j+1;
+                break;
+            }
+        }
+        if (INTEGER(factor)[i] == 0) {
+            warning("failed to assign level for '%s'\n", ptr);
+            INTEGER(factor)[i] = j+1;
+        }
     }
     Rf_setAttrib(factor, R_LevelsSymbol, unique);
     Rf_setAttrib(factor, R_ClassSymbol, Rf_mkString("factor"));
@@ -89,7 +109,7 @@ void makePOSIXct(SEXP &t)
 
     SEXP tz = PROTECT(allocVector(STRSXP, 1));
     SET_STRING_ELT(tz, 0, mkChar("UTC"));
-    setAttrib(t, Rf_install("tzone"), tz);
+    Rf_setAttrib(t, Rf_install("tzone"), tz);
     UNPROTECT(1); // tz
 }
 
@@ -164,7 +184,7 @@ SEXP makeSpectrum(SEXP head, SEXP freq, SEXP data)
     namesgets(S, nam);
     UNPROTECT(1); // nam
 
-    setAttrib(S, R_ClassSymbol, Rf_mkString("spectrum"));
+    Rf_setAttrib(S, R_ClassSymbol, Rf_mkString("spectrum"));
 
     SET_VECTOR_ELT(S, 0, head);
     SET_VECTOR_ELT(S, 1, freq);
@@ -347,7 +367,6 @@ SEXP readClass(SEXP filename, SEXP H = R_NilValue)
             __FUNCTION__, nrows, index[0], index[nrows-1]);
 #endif
     SEXP spectra = PROTECT(allocVector(VECSXP, nrows));
-    setAttrib(spectra, R_ClassSymbol, Rf_mkString("spectra"));
 
     for (int i = 0; i < nrows; i++) {
         SEXP S = PROTECT(reader->getSpectrum(index[i], false));
@@ -355,6 +374,7 @@ SEXP readClass(SEXP filename, SEXP H = R_NilValue)
         UNPROTECT(1); // S
     }
 
+    Rf_setAttrib(spectra, R_ClassSymbol, Rf_mkString("spectra"));
     UNPROTECT(1); // spectra
     UNPROTECT(1); // id
     delete reader;
