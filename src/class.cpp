@@ -37,9 +37,9 @@ int qcmp(const void *x, const void *y) {
 SEXP makeFactor(SEXP str)
 {
     SORT *sorted;
-    int i, level;
+    int i, j, level;
     int num;
-    const char *ptr;
+    const char *ptr, *lptr;
 
     num = Rf_length(str);
     sorted = (SORT *)malloc(num*sizeof(SORT));
@@ -62,14 +62,34 @@ SEXP makeFactor(SEXP str)
     SEXP factor = PROTECT(allocVector(INTSXP, num));
     SEXP unique = PROTECT(allocVector(STRSXP, level));
     level = 0;
-    INTEGER(factor)[0] = level+1;
     SET_STRING_ELT(unique, 0, mkChar(sorted[0].value));
+#ifdef DEBUG
+    Rprintf("level %2d <- %s\n", level+1, sorted[0].value);
+#endif
     for (i = 0; i < num-1; i++) {
         if (strcmp(sorted[i].value, sorted[i+1].value) != 0) {
             level++;
             SET_STRING_ELT(unique, level, mkChar(sorted[i+1].value));
+#ifdef DEBUG
+            Rprintf("level %2d <- %s\n", level+1, sorted[i+1].value);
+#endif
         }
-        INTEGER(factor)[i+1] = level+1;
+    }
+    level++;
+    for (i = 0; i < num; i++) {
+        ptr = CHAR(STRING_ELT(str, i));
+        INTEGER(factor)[i] = 0;
+        for (j = 0; j < level; j++) {
+            lptr = CHAR(STRING_ELT(unique, j));
+            if (strcmp(ptr, lptr) == 0) {
+                INTEGER(factor)[i] = j+1;
+                break;
+            }
+        }
+        if (INTEGER(factor)[i] == 0) {
+            warning("failed to assign level for '%s'\n", ptr);
+            INTEGER(factor)[i] = j+1;
+        }
     }
     Rf_setAttrib(factor, R_LevelsSymbol, unique);
     Rf_setAttrib(factor, R_ClassSymbol, Rf_mkString("factor"));
