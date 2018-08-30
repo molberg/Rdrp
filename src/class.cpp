@@ -1,6 +1,7 @@
 #include "class.h"
 
 #undef DEBUG
+#define NHEAD 14
 
 typedef struct {
     int origpos;
@@ -115,57 +116,62 @@ void makePOSIXct(SEXP &t)
 
 SEXP emptyFrame(int nspec)
 {
-    SEXP frame = PROTECT(allocVector(VECSXP, 13));
-    SEXP nam = PROTECT(allocVector(STRSXP, 13)); // names attribute (column names)
+    SEXP frame = PROTECT(allocVector(VECSXP, NHEAD));
+    SEXP nam = PROTECT(allocVector(STRSXP, NHEAD)); // names attribute (column names)
+
     SET_STRING_ELT(nam, 0, mkChar("id"));
     SET_STRING_ELT(nam, 1, mkChar("scan"));
     SET_STRING_ELT(nam, 2, mkChar("target"));
     SET_STRING_ELT(nam, 3, mkChar("line"));
-    SET_STRING_ELT(nam, 4, mkChar("RA"));
-    SET_STRING_ELT(nam, 5, mkChar("Dec"));
-    SET_STRING_ELT(nam, 6, mkChar("f.LO"));
-    SET_STRING_ELT(nam, 7, mkChar("f0"));
-    SET_STRING_ELT(nam, 8, mkChar("df"));
-    SET_STRING_ELT(nam, 9, mkChar("v.LSR"));
-    SET_STRING_ELT(nam,10, mkChar("dt"));
-    SET_STRING_ELT(nam,11, mkChar("T.sys"));
-    SET_STRING_ELT(nam,12, mkChar("observed.date"));
+    SET_STRING_ELT(nam, 4, mkChar("instrument"));
+    SET_STRING_ELT(nam, 5, mkChar("RA"));
+    SET_STRING_ELT(nam, 6, mkChar("Dec"));
+    SET_STRING_ELT(nam, 7, mkChar("f.LO"));
+    SET_STRING_ELT(nam, 8, mkChar("f0"));
+    SET_STRING_ELT(nam, 9, mkChar("df"));
+    SET_STRING_ELT(nam,10, mkChar("v.LSR"));
+    SET_STRING_ELT(nam,11, mkChar("dt"));
+    SET_STRING_ELT(nam,12, mkChar("T.sys"));
+    SET_STRING_ELT(nam,13, mkChar("observed.date"));
     namesgets(frame, nam);
     UNPROTECT(1); // nam
 
-    SEXP id = PROTECT(allocVector(INTSXP, nspec));         // 0
-    SEXP scanno = PROTECT(allocVector(INTSXP, nspec));     // 1
-    SEXP target = PROTECT(allocVector(STRSXP, nspec));     // 2
-    SEXP line = PROTECT(allocVector(STRSXP, nspec));       // 3
-    SEXP RA = PROTECT(allocVector(REALSXP, nspec));        // 4
-    SEXP Dec = PROTECT(allocVector(REALSXP, nspec));       // 5
-    SEXP fLO = PROTECT(allocVector(REALSXP, nspec));       // 6
-    SEXP f0 = PROTECT(allocVector(REALSXP, nspec));        // 7
-    SEXP df = PROTECT(allocVector(REALSXP, nspec));        // 8
-    SEXP vs = PROTECT(allocVector(REALSXP, nspec));        // 9
-    SEXP dt = PROTECT(allocVector(REALSXP, nspec));        // 10
+    SEXP id = PROTECT(allocVector(INTSXP, nspec));         //  0
+    SEXP scanno = PROTECT(allocVector(INTSXP, nspec));     //  1
+    SEXP target = PROTECT(allocVector(STRSXP, nspec));     //  2
+    SEXP line = PROTECT(allocVector(STRSXP, nspec));       //  3
+    SEXP instr = PROTECT(allocVector(STRSXP, nspec));      //  4
+    SEXP RA = PROTECT(allocVector(REALSXP, nspec));        //  5
+    SEXP Dec = PROTECT(allocVector(REALSXP, nspec));       //  6
+    SEXP fLO = PROTECT(allocVector(REALSXP, nspec));       //  7
+    SEXP f0 = PROTECT(allocVector(REALSXP, nspec));        //  8
+    SEXP df = PROTECT(allocVector(REALSXP, nspec));        //  9
+    SEXP vs = PROTECT(allocVector(REALSXP, nspec));        // 10
+    SEXP dt = PROTECT(allocVector(REALSXP, nspec));        // 11
     SEXP tsys = PROTECT(allocVector(REALSXP, nspec));      // 11
-    SEXP utc = PROTECT(allocVector(REALSXP, nspec));        // 12
+    SEXP utc = PROTECT(allocVector(REALSXP, nspec));       // 13
     makePOSIXct(utc);
 
     SET_VECTOR_ELT(frame, 0, id);
     SET_VECTOR_ELT(frame, 1, scanno);
     SET_VECTOR_ELT(frame, 2, target);
     SET_VECTOR_ELT(frame, 3, line);
-    SET_VECTOR_ELT(frame, 4, RA);
-    SET_VECTOR_ELT(frame, 5, Dec);
-    SET_VECTOR_ELT(frame, 6, fLO);
-    SET_VECTOR_ELT(frame, 7, f0);
-    SET_VECTOR_ELT(frame, 8, df);
-    SET_VECTOR_ELT(frame, 9, vs);
-    SET_VECTOR_ELT(frame,10, dt);
-    SET_VECTOR_ELT(frame,11, tsys);
-    SET_VECTOR_ELT(frame,12, utc);
-    UNPROTECT(13); // id, scanno, target, line, RA, Dec, fLO, f0, df, vs, dt, tsys, utc
+    SET_VECTOR_ELT(frame, 4, instr);
+    SET_VECTOR_ELT(frame, 5, RA);
+    SET_VECTOR_ELT(frame, 6, Dec);
+    SET_VECTOR_ELT(frame, 7, fLO);
+    SET_VECTOR_ELT(frame, 8, f0);
+    SET_VECTOR_ELT(frame, 9, df);
+    SET_VECTOR_ELT(frame,10, vs);
+    SET_VECTOR_ELT(frame,11, dt);
+    SET_VECTOR_ELT(frame,12, tsys);
+    SET_VECTOR_ELT(frame,13, utc);
+    UNPROTECT(NHEAD); // id, scanno, target, line, instr, RA, Dec, fLO, f0, df, vs, dt, tsys, utc
 
     SEXP rnms = PROTECT(Rf_allocVector(INTSXP, 2));
     INTEGER(rnms)[0] = NA_INTEGER;
     INTEGER(rnms)[1] = -nspec;
+
     Rf_setAttrib(frame, R_ClassSymbol, Rf_mkString("data.frame"));
     Rf_setAttrib(frame, R_RowNamesSymbol, rnms);
     UNPROTECT(2);  // rnms, frame
@@ -244,15 +250,16 @@ SEXP getClassHeader(SEXP filename)
     SEXP scanno = PROTECT(VECTOR_ELT(frame, 1));
     SEXP target = PROTECT(VECTOR_ELT(frame, 2));
     SEXP line = PROTECT(VECTOR_ELT(frame, 3));
-    SEXP RA = PROTECT(VECTOR_ELT(frame, 4));
-    SEXP Dec = PROTECT(VECTOR_ELT(frame, 5));
-    SEXP fLO = PROTECT(VECTOR_ELT(frame, 6));
-    SEXP f0 = PROTECT(VECTOR_ELT(frame, 7));
-    SEXP df = PROTECT(VECTOR_ELT(frame, 8));
-    SEXP vs = PROTECT(VECTOR_ELT(frame, 9));
-    SEXP dt = PROTECT(VECTOR_ELT(frame, 10));
-    SEXP tsys = PROTECT(VECTOR_ELT(frame, 11));
-    SEXP utc = PROTECT(VECTOR_ELT(frame, 12));
+    SEXP instr = PROTECT(VECTOR_ELT(frame, 4));
+    SEXP RA = PROTECT(VECTOR_ELT(frame, 5));
+    SEXP Dec = PROTECT(VECTOR_ELT(frame, 6));
+    SEXP fLO = PROTECT(VECTOR_ELT(frame, 7));
+    SEXP f0 = PROTECT(VECTOR_ELT(frame, 8));
+    SEXP df = PROTECT(VECTOR_ELT(frame, 9));
+    SEXP vs = PROTECT(VECTOR_ELT(frame, 10));
+    SEXP dt = PROTECT(VECTOR_ELT(frame, 11));
+    SEXP tsys = PROTECT(VECTOR_ELT(frame, 12));
+    SEXP utc = PROTECT(VECTOR_ELT(frame, 13));
 
     for (int iscan = 0; iscan < nscans; iscan++) {
         SEXP S = PROTECT(reader->getSpectrum(iscan+1, true));
@@ -261,19 +268,20 @@ SEXP getClassHeader(SEXP filename)
         INTEGER(scanno)[iscan] = INTEGER(VECTOR_ELT(S, 1))[0];
         SET_STRING_ELT(target, iscan, mkChar(CHAR(STRING_ELT(VECTOR_ELT(S, 2), 0))));
         SET_STRING_ELT(line, iscan , mkChar(CHAR(STRING_ELT(VECTOR_ELT(S, 3), 0))));
-        REAL(RA)[iscan] = REAL(VECTOR_ELT(S, 4))[0];
-        REAL(Dec)[iscan] = REAL(VECTOR_ELT(S, 5))[0];
-        REAL(fLO)[iscan] = REAL(VECTOR_ELT(S, 6))[0];
-        REAL(f0)[iscan] = REAL(VECTOR_ELT(S, 7))[0];
-        REAL(df)[iscan] = REAL(VECTOR_ELT(S, 8))[0];
-        REAL(vs)[iscan] = REAL(VECTOR_ELT(S, 9))[0];
-        REAL(dt)[iscan] = REAL(VECTOR_ELT(S, 10))[0];
-        REAL(tsys)[iscan] = REAL(VECTOR_ELT(S, 11))[0];
-        REAL(utc)[iscan] = REAL(VECTOR_ELT(S, 12))[0];
+        SET_STRING_ELT(instr, iscan , mkChar(CHAR(STRING_ELT(VECTOR_ELT(S, 4), 0))));
+        REAL(RA)[iscan] = REAL(VECTOR_ELT(S, 5))[0];
+        REAL(Dec)[iscan] = REAL(VECTOR_ELT(S, 6))[0];
+        REAL(fLO)[iscan] = REAL(VECTOR_ELT(S, 7))[0];
+        REAL(f0)[iscan] = REAL(VECTOR_ELT(S, 8))[0];
+        REAL(df)[iscan] = REAL(VECTOR_ELT(S, 9))[0];
+        REAL(vs)[iscan] = REAL(VECTOR_ELT(S, 10))[0];
+        REAL(dt)[iscan] = REAL(VECTOR_ELT(S, 11))[0];
+        REAL(tsys)[iscan] = REAL(VECTOR_ELT(S, 12))[0];
+        REAL(utc)[iscan] = REAL(VECTOR_ELT(S, 13))[0];
 
         UNPROTECT(1); // S
     }
-    UNPROTECT(13); // id, scanno, target, line, RA, Dec, f0, fLO, df, vs, dt, tsys, utc;
+    UNPROTECT(NHEAD); // id, scanno, target, line, instr, RA, Dec, f0, fLO, df, vs, dt, tsys, utc;
 
     SEXP column = PROTECT(VECTOR_ELT(frame, 2));
     target = PROTECT(makeFactor(column));
@@ -284,6 +292,11 @@ SEXP getClassHeader(SEXP filename)
     line = PROTECT(makeFactor(column));
     SET_VECTOR_ELT(frame, 3, line);
     UNPROTECT(2); // line, column
+
+    column = PROTECT(VECTOR_ELT(frame, 4));
+    instr = PROTECT(makeFactor(column));
+    SET_VECTOR_ELT(frame, 4, instr);
+    UNPROTECT(2); // instr, column
 
     UNPROTECT(1); // frame
     delete reader;
@@ -499,48 +512,51 @@ double ClassReader::rta(float rad)
 }
 
 SEXP ClassReader::headRow(int count, int scan, const char *source, const char *mol,
+                          const char *tel,
                           double lam, double bet,
                           double LO, double restf, double fres, double voff,
                           double time, double T, double datetime)
 {
-    SEXP head = PROTECT(allocVector(VECSXP, 13));
-    SEXP nam = PROTECT(allocVector(STRSXP, 13)); // names attribute (column names)
+    SEXP head = PROTECT(allocVector(VECSXP, NHEAD));
+    SEXP nam = PROTECT(allocVector(STRSXP, NHEAD)); // names attribute (column names)
     SET_STRING_ELT(nam, 0, mkChar("id"));
     SET_STRING_ELT(nam, 1, mkChar("scan"));
     SET_STRING_ELT(nam, 2, mkChar("target"));
     SET_STRING_ELT(nam, 3, mkChar("line"));
-    SET_STRING_ELT(nam, 4, mkChar("RA"));
-    SET_STRING_ELT(nam, 5, mkChar("Dec"));
-    SET_STRING_ELT(nam, 6, mkChar("f.LO"));
-    SET_STRING_ELT(nam, 7, mkChar("f0"));
-    SET_STRING_ELT(nam, 8, mkChar("df"));
-    SET_STRING_ELT(nam, 9, mkChar("v.LSR"));
-    SET_STRING_ELT(nam,10, mkChar("dt"));
-    SET_STRING_ELT(nam,11, mkChar("T.sys"));
-    SET_STRING_ELT(nam,12, mkChar("observed.date"));
+    SET_STRING_ELT(nam, 4, mkChar("instrument"));
+    SET_STRING_ELT(nam, 5, mkChar("RA"));
+    SET_STRING_ELT(nam, 6, mkChar("Dec"));
+    SET_STRING_ELT(nam, 7, mkChar("f.LO"));
+    SET_STRING_ELT(nam, 8, mkChar("f0"));
+    SET_STRING_ELT(nam, 9, mkChar("df"));
+    SET_STRING_ELT(nam,10, mkChar("v.LSR"));
+    SET_STRING_ELT(nam,11, mkChar("dt"));
+    SET_STRING_ELT(nam,12, mkChar("T.sys"));
+    SET_STRING_ELT(nam,13, mkChar("observed.date"));
     namesgets(head, nam);
     UNPROTECT(1); // nam
 
-    SEXP id = PROTECT(allocVector(INTSXP, 1));         // 0
-    SEXP scanno = PROTECT(allocVector(INTSXP, 1));     // 1
-    SEXP target = PROTECT(allocVector(STRSXP, 1));     // 2
-    SEXP line = PROTECT(allocVector(STRSXP, 1));       // 3
-    SEXP RA = PROTECT(allocVector(REALSXP, 1));        // 4
-    SEXP Dec = PROTECT(allocVector(REALSXP, 1));       // 5
-    SEXP fLO = PROTECT(allocVector(REALSXP, 1));       // 6
-    SEXP f0 = PROTECT(allocVector(REALSXP, 1));        // 7
-    SEXP df = PROTECT(allocVector(REALSXP, 1));        // 8
-    SEXP vs = PROTECT(allocVector(REALSXP, 1));        // 9
-    SEXP dt = PROTECT(allocVector(REALSXP, 1));        // 10
-    SEXP tsys = PROTECT(allocVector(REALSXP, 1));      // 11
-    // SEXP utc = PROTECT(allocVector(STRSXP, 1));        // 12
-    SEXP utc = PROTECT(allocVector(REALSXP, 1));        // 12
+    SEXP id = PROTECT(allocVector(INTSXP, 1));         //  0
+    SEXP scanno = PROTECT(allocVector(INTSXP, 1));     //  1
+    SEXP target = PROTECT(allocVector(STRSXP, 1));     //  2
+    SEXP line = PROTECT(allocVector(STRSXP, 1));       //  3
+    SEXP instr = PROTECT(allocVector(STRSXP, 1));      //  4
+    SEXP RA = PROTECT(allocVector(REALSXP, 1));        //  5
+    SEXP Dec = PROTECT(allocVector(REALSXP, 1));       //  6
+    SEXP fLO = PROTECT(allocVector(REALSXP, 1));       //  7
+    SEXP f0 = PROTECT(allocVector(REALSXP, 1));        //  8
+    SEXP df = PROTECT(allocVector(REALSXP, 1));        //  9
+    SEXP vs = PROTECT(allocVector(REALSXP, 1));        // 10
+    SEXP dt = PROTECT(allocVector(REALSXP, 1));        // 11
+    SEXP tsys = PROTECT(allocVector(REALSXP, 1));      // 12
+    SEXP utc = PROTECT(allocVector(REALSXP, 1));       // 13
     makePOSIXct(utc);
 
     INTEGER(id)[0] = count;
     INTEGER(scanno)[0] = scan;
     SET_STRING_ELT(target, 0, mkChar(source));
     SET_STRING_ELT(line, 0, mkChar(mol));
+    SET_STRING_ELT(instr, 0, mkChar(tel));
     REAL(RA)[0] = lam;
     REAL(Dec)[0] = bet;
     REAL(fLO)[0] = LO;
@@ -555,16 +571,17 @@ SEXP ClassReader::headRow(int count, int scan, const char *source, const char *m
     SET_VECTOR_ELT(head, 1, scanno);
     SET_VECTOR_ELT(head, 2, target);
     SET_VECTOR_ELT(head, 3, line);
-    SET_VECTOR_ELT(head, 4, RA);
-    SET_VECTOR_ELT(head, 5, Dec);
-    SET_VECTOR_ELT(head, 6, fLO);
-    SET_VECTOR_ELT(head, 7, f0);
-    SET_VECTOR_ELT(head, 8, df);
-    SET_VECTOR_ELT(head, 9, vs);
-    SET_VECTOR_ELT(head,10, dt);
-    SET_VECTOR_ELT(head,11, tsys);
-    SET_VECTOR_ELT(head,12, utc);
-    UNPROTECT(13); // id, scanno, target, line, RA, Dec, fLO, f0, df, vs, dt, tsys, utc
+    SET_VECTOR_ELT(head, 4, instr);
+    SET_VECTOR_ELT(head, 5, RA);
+    SET_VECTOR_ELT(head, 6, Dec);
+    SET_VECTOR_ELT(head, 7, fLO);
+    SET_VECTOR_ELT(head, 8, f0);
+    SET_VECTOR_ELT(head, 9, df);
+    SET_VECTOR_ELT(head,10, vs);
+    SET_VECTOR_ELT(head,11, dt);
+    SET_VECTOR_ELT(head,12, tsys);
+    SET_VECTOR_ELT(head,13, utc);
+    UNPROTECT(NHEAD); // id, scanno, target, line, instr, RA, Dec, fLO, f0, df, vs, dt, tsys, utc
     UNPROTECT(1);  // head
     return head;
 }
@@ -812,8 +829,8 @@ int Type1Reader::getDirectory()
                 nspec++;
 #ifdef DEBUG
                 Rprintf("%5d: xblock=%6d xnum=%4d xver=%d: xsource='%s'  xline='%s' xtel='%s'\n",
-                       nspec, centry.xblock, centry.xnum, centry.xver,
-                       centry.xsourc, centry.xline, centry.xtel);
+                        nspec, centry.xblock, centry.xnum, centry.xver,
+                        centry.xsourc, centry.xline, centry.xtel);
 #endif
             } else {
                 nrec = nst;
@@ -901,6 +918,7 @@ SEXP Type1Reader::getSpectrum(int scan, bool headerOnly)
     // const char *datetime = obstime(centry.xdobs + 60549, cdesc.ut);
     SEXP head = PROTECT(headRow(scan, centry.xscan,
                                 (const char *)centry.xsourc, (const char *)centry.xline,
+                                (const char *)centry.xtel,
                                 lam*180.0/M_PI, bet*180.0/M_PI, LO, restf, fres,
                                 cdesc.voff, cdesc.time, cdesc.tsys, datetime));
     if (headerOnly) {
@@ -1081,8 +1099,8 @@ SEXP Type2Reader::getSpectrum(int scan, bool headerOnly)
 
     long pos = (ext[iext]-1)*m_reclen;
 #ifdef DEBUG
-    Rprintf("in %s spectrum %d at position %ld in extension %d entry %d at word %d\n",
-            __FUNCTION__, scan, pos, iext, jent, startword);
+    // Rprintf("in %s spectrum %d at position %ld in extension %d entry %d at word %d\n",
+    //         __FUNCTION__, scan, pos, iext, jent, startword);
 #endif
     fseek(cfp, 4*pos, SEEK_SET);
     len = fread(buffer, sizeof(int), isize, cfp);
@@ -1171,6 +1189,7 @@ SEXP Type2Reader::getSpectrum(int scan, bool headerOnly)
     // const char *datetime = obstime(centry.xdobs + 60549, cdesc.ut);
     SEXP head = PROTECT(headRow(scan, centry.xscan,
                                 (const char *)centry.xsourc, (const char *)centry.xline,
+                                (const char *)centry.xtel,
                                 lam*180.0/M_PI, bet*180.0/M_PI, LO, restf, fres,
                                 cdesc.voff, cdesc.time, cdesc.tsys, datetime));
     if (headerOnly) {

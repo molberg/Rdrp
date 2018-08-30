@@ -205,6 +205,7 @@ class ClassReader {
     double rta(float rad);
     SEXP headRow(int count, int scan,
                  const char *source, const char *mol,
+                 const char *tel,
                  double lam, double bet,
                  double LO, double restf, double fres,
                  double voff, double time, double T,

@@ -679,6 +679,14 @@ List resample(List S, NumericVector f, bool smooth=false) {
     if (!S.inherits("spectrum")) stop("input must be a spectrum");
 
     List head0 = S["head"];
+    if (head0.containsElementNamed("df")) {
+        df = as<double>(head0["df"]);
+        if (df < 0.0) {
+            S = reverse(S);
+            head0 = S["head"];
+        }
+    }
+
     List head1 = clone(head0);
     NumericVector freq0 = S["freq"];
     NumericVector data0 = S["data"];
