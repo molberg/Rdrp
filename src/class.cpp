@@ -148,7 +148,7 @@ SEXP emptyFrame(int nspec)
     SEXP df = PROTECT(allocVector(REALSXP, nspec));        //  9
     SEXP vs = PROTECT(allocVector(REALSXP, nspec));        // 10
     SEXP dt = PROTECT(allocVector(REALSXP, nspec));        // 11
-    SEXP tsys = PROTECT(allocVector(REALSXP, nspec));      // 11
+    SEXP tsys = PROTECT(allocVector(REALSXP, nspec));      // 12
     SEXP utc = PROTECT(allocVector(REALSXP, nspec));       // 13
     makePOSIXct(utc);
 
@@ -825,7 +825,7 @@ int Type1Reader::getDirectory()
         getRecord();
         for (int k = 0; k < 4; k++) {
             getEntry(k);
-            if (centry.xnum > 0 && centry.xnum < nst) {
+            if (centry.xver == 1 && centry.xnum > 0 && centry.xnum < nst) {
                 nspec++;
 #ifdef DEBUG
                 Rprintf("%5d: xblock=%6d xnum=%4d xver=%d: xsource='%s'  xline='%s' xtel='%s'\n",
@@ -873,12 +873,12 @@ SEXP Type1Reader::getSpectrum(int scan, bool headerOnly)
     for (int i = 0; i < nsec; i++) csect.sec_len[i] = getInt();
     for (int i = 0; i < nsec; i++) csect.sec_adr[i] = getInt();
 #ifdef DEBUG
-    Rprintf("%12s %12s %d %d %d %d %d %d %d %d %d (%d %d %d %d | %d %d %d %d | %d %d %d %d)\n",
-           centry.xsourc, centry.xline, centry.xkind,
-           csect.nbl, csect.bytes, csect.adr, csect.nhead, csect.len, csect.ientry, csect.nsec, csect.obsnum,
-           csect.sec_cod[0], csect.sec_cod[1], csect.sec_cod[2], csect.sec_cod[3],
-           csect.sec_adr[0], csect.sec_adr[1], csect.sec_adr[2], csect.sec_adr[3],
-           csect.sec_len[0], csect.sec_len[1], csect.sec_len[2], csect.sec_len[3]);
+    Rprintf("%7d %12s %12s %d %d %d %d %d %d %d %d %d (%d %d %d %d | %d %d %d %d | %d %d %d %d)\n",
+            scan, centry.xsourc, centry.xline, centry.xkind,
+            csect.nbl, csect.bytes, csect.adr, csect.nhead, csect.len, csect.ientry, csect.nsec, csect.obsnum,
+            csect.sec_cod[0], csect.sec_cod[1], csect.sec_cod[2], csect.sec_cod[3],
+            csect.sec_adr[0], csect.sec_adr[1], csect.sec_adr[2], csect.sec_adr[3],
+            csect.sec_len[0], csect.sec_len[1], csect.sec_len[2], csect.sec_len[3]);
 #endif
     unsigned int size = csect.nbl*m_reclen*4;
     if (size > sizeof(buffer)) {
